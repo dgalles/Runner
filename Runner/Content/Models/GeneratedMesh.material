@@ -1,0 +1,10 @@
+material Test/GeneratedMesh
+{
+    technique
+    {
+        pass
+        {
+            ambient vertexcolour
+        }
+    }
+}

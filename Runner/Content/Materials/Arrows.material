@@ -1,0 +1,56 @@
+material LeftArrow 
+{
+    receive_shadows on 
+
+    technique
+    {
+        pass 
+        {
+			scene_blend alpha_blend
+            texture_unit 
+            {
+                texture LeftArrow.png
+                scale 1.0 1.0
+                colour_op modulate
+            }
+        }
+    }
+}
+
+material RightArrow 
+{
+    receive_shadows on 
+
+    technique
+    {
+        pass
+        {
+			scene_blend alpha_blend
+            texture_unit 
+            {
+                texture RightArrow.png
+                scale 1.0 1.0
+                colour_op modulate
+            }
+        }
+    }
+}
+
+material CenterArrow 
+{
+    receive_shadows on 
+
+    technique
+    {
+        pass 
+        {
+			scene_blend alpha_blend
+            texture_unit 
+            {
+                texture CenterArrow.png
+                scale 1.0 1.0
+                colour_op modulate
+            }
+        }
+    }
+}
