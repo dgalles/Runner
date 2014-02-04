@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="AIManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Bezier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HUD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InputHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainListener.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Runner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="World.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemQueue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Kinect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XInputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AIManager.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="Bezier.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="HUD.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="InputHandler.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="MainListener.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="Runner.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="World.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemQueue.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="Kinect.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="XInputManager.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header File">
+      <UniqueIdentifier>{154022e6-a24d-46da-9dc7-5badcebec162}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{dbf2b21e-8ed6-4aa6-942a-9851bbbc9e0a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
