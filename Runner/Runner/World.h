@@ -1,4 +1,5 @@
 #include "OgreVector3.h"
+#include "Bezier.h"
 #include <queue>
 
 namespace Ogre {
@@ -17,7 +18,6 @@ class TrackableObject;
 class World
 {
 public:
-	enum Barrier {BARRIER_NONE, BARRIER_LEFT,BARRIER_RIGHT,BARRIER_EDGES,BARRIER_CENTER};
 	
     World(Ogre::SceneManager *sceneManager, HUD *hud);
 
@@ -27,8 +27,9 @@ public:
 
 	BezierPath *trackPath;
 
-	void AddSegment(Ogre::Vector3 deltap1, Ogre::Vector3 deltap2, Ogre::Vector3 deltap3, Barrier b, float barrierPercent = 0.95f);
+	void AddSegment(Ogre::Vector3 deltap1, Ogre::Vector3 deltap2, Ogre::Vector3 deltap3, BezierPath::Kind type = BezierPath::Kind::NORMAL);
 
+    void reset();
 
 	void AddRandomSegment();
 	void AddBarrierSegment();
@@ -56,7 +57,21 @@ public:
 	void addCoins();
 	void AddTwisty();
 	void AddLoop(); 
-	ItemQueue *Walls() { return mWalls; }
+	void AddJump(); 
+	void AddNormalSegment();
+	void setUseFrontBack(bool ufb) {mUseFrontBack = ufb; }
+	bool getUseFrontBack() { return  mUseFrontBack; }
+
+	void setObstacleFrequency(float freq) {mObsFreq = freq; }
+	float getObstacleFrequency() { return  mObsFreq; }
+
+
+	void setObstacleSeparation(int gap) {mObsGap = gap; }
+	int getObstacleSeparation() { return  mObsGap; }
+
+	void AddBlades(int segment);
+
+    ItemQueue *Saws() { return mSaws; }
 	ItemQueue *Coins() { return mCoins; }
 	HUD *getHUD() { return mHUD; }
 
@@ -64,6 +79,8 @@ public:
 
 
 protected:
+
+    void setup();
 
 	void clearBefore(ItemQueue *queue, int segment);
 
@@ -73,11 +90,10 @@ protected:
 
 	std::vector<std::vector<Ogre::SceneNode *>> mTrackSceneNodes;
 
-	void addTrackNodes(int segmentIndextToAdd, Barrier b = BARRIER_NONE, float barrierPercent = 0.9);
-	void addPoints(float percent, int segmentIndexToAdd, std::vector<Ogre::Vector3> &points, std::vector<Ogre::Vector3> &normals, Barrier b = BARRIER_NONE);
+	void addTrackNodes(int segmentIndextToAdd, bool startCap = false, bool endCap = false);
+	void addPoints(float percent, int segmentIndexToAdd, std::vector<Ogre::Vector3> &points, std::vector<Ogre::Vector3> &normals);
 
 
-	int mNumSegments;
 	int mUnitsPerSegment;
 	
 	Player *mPlayer;
@@ -86,8 +102,15 @@ protected:
 
 	int mMeshIDIndex;
 	ItemQueue *mCoins;
-	ItemQueue *mWalls;
+    ItemQueue *mSaws;
 	int mLastCoinAddedSegment;
 	HUD *mHUD;
 	PongCamera *mCamera;
+
+	float mObsFreq;
+	bool mUseFrontBack;
+	int mLastObjSeg;
+	int mObsGap;
+
+    bool mDrawTrack;
 };

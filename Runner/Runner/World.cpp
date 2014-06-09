@@ -8,7 +8,7 @@
 #include "Player.h"
 #include "Camera.h"
 #include <stdlib.h>
-
+#include "RunnerObject.h"
 
 
 //Ogre::SceneManager *
@@ -23,16 +23,28 @@
 
 World::World(Ogre::SceneManager *sceneManager, HUD *hud)   : mSceneManager(sceneManager), mTrackSceneNodes(), width(20.0f), mHUD(hud)
 {
+	mDrawTrack = true;
+	mMeshIDIndex = 0;
+	mObsFreq = 0.15f;
+	mUseFrontBack = true;
+	mObsGap = 3;
+	setup();
+}
+
+void World::setup()
+{
 	// Global illumination for now.  Adding individual light sources will make you scene look more realistic
 	mSceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
+	mTrackSceneNodes.clear();
 
-	mLastCoinAddedSegment = -1;
-	mMeshIDIndex = 0;
-	mNumSegments = 3;
+	mLastObjSeg = 0;
+
+
+	mLastCoinAddedSegment = 0;
 	mUnitsPerSegment = 10;
 	mUnitsPerPathLength = 0.1f;
 	mCoins = new ItemQueue(500);
-	mWalls = new ItemQueue(100);
+	mSaws = new ItemQueue(100);
 
 	trackPath = new BezierPath(Ogre::Vector3(0,0,0),
 		Ogre::Vector3(50,0,0),
@@ -45,23 +57,43 @@ World::World(Ogre::SceneManager *sceneManager, HUD *hud)   : mSceneManager(scene
 	{
 		addTrackNodes(i);
 	}
-
-//	AddTwisty();
-
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 3; i++)
+	{
+		AddNormalSegment();
+	}
+	for (int i = 0; i < 100; i++)
 	{
 		AddRandomSegment();
 		addCoins();
 	}
+	AddBlades(3);
+	AddBlades(4);
+	AddBlades(5);
 
-	// Now that we have a scene node, we can move, scale, and rotate it any way we like
-	//   (take a look at the header file for Ogre::SceneNode -- a good IDE is your friend, here
+	//AddJump();
+	//AddJump();
+	//AddJump();
+	//AddJump();
+
 }
+
+
+void World::reset()
+{
+	delete mSaws;
+	delete mCoins;
+	mSceneManager->clearScene();
+	delete trackPath;
+	trackPath = NULL;
+
+	setup();
+}
+
 
 void 
 	World::clearBarriersBefore(int segment)
 {
-	clearBefore(mWalls, segment);
+	clearBefore(mSaws, segment);
 }
 
 void 
@@ -73,19 +105,9 @@ void
 	ItemQueueData d = queue->atRelativeIndex(0);
 	while (d.segmentIndex < segment && queue->size() > 0)
 	{
-		Ogre::SceneNode *n = d.sceneNode;
-		if (n != 0)
-		{
-			mSceneManager->getRootSceneNode()->removeChild(n);
+		RunnerObject *runnerObj = d.object;
 
-			unsigned short index = 0;
-			Ogre::MovableObject *mo = n->detachObject(index);
-			Ogre::Entity *ent = static_cast<Ogre::Entity *>(mo);
-
-			mSceneManager->destroyEntity(ent);
-			mSceneManager->destroySceneNode(n);
-		}
-
+		delete runnerObj;
 		queue->dequeue();
 		d = queue->atRelativeIndex(0);
 	}
@@ -117,9 +139,9 @@ void
 
 
 void 
-World::removeWorldSegment(int index)
+	World::removeWorldSegment(int index)
 {
-	
+
 
 
 }
@@ -184,7 +206,7 @@ void
 
 	float r =  rand() / (float) RAND_MAX;
 	r = r * 3;
-	r = (int) r;
+	r = (float) ((int) r);
 	r = r -1;
 	float relX =r * width;
 
@@ -194,23 +216,22 @@ void
 		if (mCoins->size() < mCoins->maxSize())
 		{
 
-			Ogre::Entity *ent1 =SceneManager()->createEntity("coin.mesh");
-			Ogre::SceneNode *coinNode = SceneManager()->getRootSceneNode()->createChildSceneNode();
-			coinNode->attachObject(ent1);
-			coinNode->scale(5,5,5);
+			RunnerObject *coin = new RunnerObject();
+			coin->loadModel("coin.mesh", SceneManager());
+			coin->setScale(Ogre::Vector3(5,5,5));
 
 			Ogre::Vector3 center;
 			Ogre::Vector3 forward;
 			Ogre::Vector3 pos;
 			Ogre::Vector3 right;
 			Ogre::Vector3 up;
-			getWorldPositionAndMatrix(segmentToAdd,i* 1.0 / (float) COINS_PER_SEGMENT, relX, 10, pos,forward, right, up);
+			getWorldPositionAndMatrix(segmentToAdd,i* 1.0f / (float) COINS_PER_SEGMENT, relX, 10, pos,forward, right, up);
 			Ogre::Quaternion q(-right,up,forward);
 
-			coinNode->setPosition(pos);
-			coinNode->setOrientation(q);
-			coinNode->roll(Ogre::Degree(90));
-			mCoins->enqueue(segmentToAdd,i* 1.0 / (float) COINS_PER_SEGMENT,relX, 10, coinNode);
+			coin->setPosition(pos);
+			coin->setOrientation(q);
+			coin->roll(Ogre::Degree(90));
+			mCoins->enqueue(segmentToAdd,i* 1.0f / (float) COINS_PER_SEGMENT,relX, 10, coin);
 		}
 	}
 	mLastCoinAddedSegment = std::max(segmentToAdd, mLastCoinAddedSegment);
@@ -219,7 +240,7 @@ void
 }
 
 void 
-	World::addPoints(float percent, int segmentIndextToAdd, std::vector<Ogre::Vector3> &points, std::vector<Ogre::Vector3> &normals, Barrier barrier)
+	World::addPoints(float percent, int segmentIndextToAdd, std::vector<Ogre::Vector3> &points, std::vector<Ogre::Vector3> &normals)
 
 {
 	Ogre::Vector3 centerPoint;
@@ -231,23 +252,6 @@ void
 	float deltaLeft = 30;
 	float deltaRight  = 30;
 	float deltaHeight = 10;
-	if (barrier == BARRIER_LEFT)
-	{
-		deltaLeft = -10;
-		deltaHeight = 15;
-	}
-	if (barrier == BARRIER_RIGHT)
-	{
-		deltaRight  = -10;
-		deltaHeight = 15;
-	}
-
-	if (barrier == BARRIER_EDGES)
-	{
-		deltaRight  = 10;
-		deltaLeft  = 10;
-		deltaHeight = 15;
-	}
 
 
 	points.push_back(centerPoint - right*35 + up * deltaHeight);
@@ -269,15 +273,19 @@ void
 }
 
 void
-	World::addTrackNodes(int segmentIndextToAdd, Barrier barrier, float barrierPercent)
+	World::addTrackNodes(int segmentIndextToAdd, bool startCap, bool endcap)
 {
+	if (!mDrawTrack)
+		return;
 
 	std::vector<Ogre::Vector3> points;
 	std::vector<Ogre::Vector3> normals;
 
+
+	// Add a little before this segment, so we don't see any gaps ..
 	if (segmentIndextToAdd > 0)
 	{
-		addPoints(0.95, segmentIndextToAdd-1, points, normals);
+		addPoints(0.95f, segmentIndextToAdd-1, points, normals);
 	}
 	float deltaPercent = 20 / trackPath->pathLength(segmentIndextToAdd);
 
@@ -285,14 +293,7 @@ void
 	{
 		float percent = ((float) j) / (trackPath->pathLength(segmentIndextToAdd) * mUnitsPerPathLength);
 
-		if (percent >= barrierPercent && percent <= barrierPercent + deltaPercent)
-		{
-			addPoints(percent, segmentIndextToAdd, points, normals, barrier);
-		}
-		else
-		{
-			addPoints(percent, segmentIndextToAdd, points, normals, BARRIER_NONE);
-		}
+		addPoints(percent, segmentIndextToAdd, points, normals);
 	}
 
 	addPoints(1, segmentIndextToAdd, points, normals);
@@ -302,7 +303,7 @@ void
 
 	Ogre::ManualObject *man = mSceneManager->createManualObject();
 	man->begin("BaseWhiteNoLighting",Ogre::RenderOperation::OT_TRIANGLE_LIST);
-	for (int i =0; i < points.size(); i = i +1)
+	for (unsigned int i =0; i < points.size(); i = i +1)
 	{
 		Ogre::Vector3 pos = points[i];
 		man->position(pos);
@@ -321,7 +322,18 @@ void
 		man->normal(normals[i]);
 	}
 
-	for (int i = 0; i < points.size()/8 - 1; i = i + 1)
+	if (startCap)
+	{
+		man->triangle(0,2,1);
+		man->triangle(7,2,0);
+		man->triangle(7,6,2);
+		man->triangle(6,3,2);
+		man->triangle(6,5,3);
+		man->triangle(5,4,3);
+
+	}
+
+	for (unsigned int i = 0; i < points.size()/8 - 1; i = i + 1)
 	{
 		man->triangle(i*8, i*8+1, i*8+8);
 		man->triangle(i*8+1, i*8+9, i*8 + 8);
@@ -372,12 +384,14 @@ void
 	Ogre::Quaternion q(Ogre::Degree(90),direction);
 
 	//q = Ogre::Quaternion::IDENTITY;
-	
+
 	trackPath->AddPathSegment(deltap1 + point, point + 2 * deltap1, point + 3 * deltap1, q*n1, q*(q*n1), q*q*q*n1);
 
 
 	addTrackNodes(trackPath->NumSegments() - 1);
 }
+
+
 
 
 void
@@ -398,8 +412,8 @@ void
 	std::vector<Ogre::Vector3> normals(9);
 	directions[0] = direction;
 	normals[0] = up;  
-	
-	
+
+
 	for (int i = 0; i < 8; i++)
 	{
 		directions[i+1] = q * directions[i];
@@ -419,25 +433,100 @@ void
 	}
 }
 
+void
+	World::AddJump()
+{
+	Ogre::Vector3 point;
+	Ogre::Vector3 direction;
+	Ogre::Vector3 right;
+	Ogre::Vector3 up;
+
+
+	trackPath->getPointAndRotaionMatrix(trackPath->NumSegments()-1, 1,point,direction,right,up);
+
+	Ogre::Vector3 p1 = point + direction*100;
+	Ogre::Vector3 p2 = p1 + direction*150;
+
+	Ogre::Vector3 p3 = p2 + direction * 100;
+	p3.y = p2.y;
+
+	trackPath->AddPathSegment(p1, p2, p3);
+	addTrackNodes(trackPath->NumSegments() - 1);
+
+	Ogre::Vector3 flatDirection;
+	Ogre::Vector3 flatUp;
+	trackPath->getPointAndRotaionMatrix(trackPath->NumSegments()-1, 1,point,flatDirection,right,flatUp);
+
+
+	p1 = point +  flatDirection*50;
+	p2 = point + flatDirection*50 + flatUp * 50;
+	p3 = point + flatDirection * 60 + flatUp * 100;
+
+	trackPath->AddPathSegment(p1, p2, p3);
+	addTrackNodes(trackPath->NumSegments() - 1);
+
+	trackPath->getPointAndRotaionMatrix(trackPath->NumSegments()-1, 1,point,direction,right,up);
+
+	p1 = point +  direction *100;
+	p2 = p1 + flatDirection * 100;
+	p3 = point + flatDirection * 300;
+
+	trackPath->AddPathSegment(p1, p2, p3, BezierPath::Kind::GAP);
+	//	addTrackNodes(trackPath->NumSegments() - 1);
+
+	trackPath->getPointAndRotaionMatrix(trackPath->NumSegments()-1, 1,point,direction,right,up);
+
+	p1 = point + direction * 30;
+	p2 = p1 + (direction + flatDirection) * 30;
+	p3 = p2 + flatDirection * 30;
+
+	trackPath->AddPathSegment(p1, p2, p3);
+	addTrackNodes(trackPath->NumSegments() - 1, true);
+
+	//  {
+	//      RunnerObject *saw = new RunnerObject();
+	//      saw->loadModel("sawblade.mesh", SceneManager());
+	//      saw->setScale(Ogre::Vector3(10,5,10));
+	//Ogre::Vector3 pos;
+	//Ogre::Vector3 forward;
+
+	//float diff = saw->minPointLocalScaled().y * 3;
+
+	//      getWorldPositionAndMatrix(trackPath->NumSegments()-2, .99, 0, diff, pos,forward, right, up);
+	//      Ogre::Quaternion q(-right,up,forward);
+
+	//      saw->setPosition(pos); ///5
+	//      saw->setOrientation(q);
+	//      ItemQueueData d(trackPath->NumSegments()-2,.99,0,diff, saw);
+	//      d.xtraData = HUD::Kind::up;
+	//      mSaws->enqueue(d);
+	//  }
+
+
+}
+
+
 
 
 
 
 void
-	World::AddSegment(Ogre::Vector3 deltap1, Ogre::Vector3 deltap2, Ogre::Vector3 deltap3, Barrier b, float barrierPercent)
+	World::AddSegment(Ogre::Vector3 deltap1, Ogre::Vector3 deltap2, Ogre::Vector3 deltap3, BezierPath::Kind segmentType)
 {
 	Ogre::Vector3 lastPoint = trackPath->getPoint(trackPath->NumSegments() - 1, 1);
 
 
+	int len  = trackPath->NumSegments();
 
 	trackPath->AddPathSegment(deltap1 + lastPoint,
 		deltap2  + lastPoint,
-		deltap3 + lastPoint);
+		deltap3 + lastPoint,
+		segmentType);
 
 
 
 	bool barrier =  (rand() / (float) RAND_MAX > 0.3);
-	addTrackNodes(trackPath->NumSegments() - 1,b, barrierPercent);
+	addTrackNodes(trackPath->NumSegments() - 1);
 }
 
 
@@ -447,7 +536,6 @@ void World::AddBarrierSegment()
 	Ogre::Vector3 direction;
 	Ogre::Vector3 right;
 	Ogre::Vector3 up;
-	float barrierPercent = 0.9;
 
 	trackPath->getPointAndRotaionMatrix(trackPath->NumSegments()-1, 1,point,direction,right,up);
 
@@ -456,76 +544,225 @@ void World::AddBarrierSegment()
 	Ogre::Vector3 direction3 = direction*3;
 
 
-	Barrier b = (Barrier) ((int) (((rand() - 1) / ((float) RAND_MAX))* 3)+1);
+
+	// b = BARRIER_TOP;
+	AddSegment(direction, direction2, direction3, BezierPath::Kind::BLADES);
+
+}
+
+void World::AddBlades(int segment)
+{
+
+	if (trackPath->kind(segment) != BezierPath::Kind::BLADES || trackPath->getBladesPlaced(segment))
+	{
+		return;
+	}
+
+	trackPath->setBladesPlaced(segment, true);
+
+	float barrierPercent = 0.9f;
+
+	float relX[6];
+	float relY[6];
+	int numBlades = 0;
+
+	float b = (float) rand() /(float) RAND_MAX;
+	if (!mUseFrontBack)
+	{
+		b = b * 0.749f;
+	}
+
+	HUD::Kind type;
+	if (b < 0.25)
+	{
+		type = HUD::Kind::right;
+		relX[0] = -width; 
+		relY[0] = 5;
+
+		relX[1] = -width;
+		relY[1] = 11;
+
+		relX[2] = -width;
+		relY[2] = 17;
+
+		relX[3] = 0;
+		relY[3] = 5;
+
+		relX[4] = 0;
+		relY[4] = 11;
+
+		relX[5] = 0;
+		relY[5] = 17;
+		numBlades = 6;
+
+	}
+	else if (b < 0.5)
+	{
+		type = HUD::Kind::left;
+
+		relX[0] = width; 
+		relY[0] = 5;
+
+		relX[1] = width;
+		relY[1] = 11;
+
+		relX[2] = width;
+		relY[2] = 17;
+
+		relX[3] = 0;
+		relY[3] = 5;
+
+		relX[4] = 0;
+		relY[4] = 11;
+
+		relX[5] = 0;
+		relY[5] = 17;
+		numBlades = 6;
+
+	}
+	else if (b < 0.75)
+	{
+		type = HUD::Kind::center;
+
+		relX[0] = width; 
+		relY[0] = 5;
+
+		relX[1] = width;
+		relY[1] = 11;
+
+		relX[2] = width;
+		relY[2] = 17;
+
+		relX[3] = -width;
+		relY[3] = 5;
+
+		relX[4] = -width;
+		relY[4] = 11;
+
+		relX[5] = -width;
+		relY[5] = 17;
+
+		numBlades = 6;
+	}
+	else //  if (b < 1.0)
+	{
+		type = HUD::Kind::down;
+
+		relX[0] = width;
+		relY[0] = 14;
+
+		relX[1] = width;
+		relY[1] = 21;
+
+		relX[2] = 0;
+		relY[2] = 14;
+
+		relX[3] = 0;
+		relY[3] = 21;
+
+		relX[4] = -width;
+		relY[4] = 14;
+
+		relX[5] = -width;
+		relY[5] = 21;
+
+		numBlades = 6;
+
+	}
+
+	for (int i = 0; i < numBlades; i++)
+	{
+		RunnerObject *saw = new RunnerObject();
+		saw->loadModel("sawblade.mesh", SceneManager());
+		if (type == HUD::Kind::down)
+		{
+			saw->setScale(Ogre::Vector3(8,5,8));
+		}
+		else
+		{
+			saw->setScale(Ogre::Vector3(5,5,5));
+		}
+
+		Ogre::Vector3 pos;
+		Ogre::Vector3 forward;
+		Ogre::Vector3 right;
+		Ogre::Vector3 up;
 
 
-	AddSegment(direction,direction2, direction3, b, barrierPercent);
-	int segment = trackPath->NumSegments() - 1;
-	if (b == BARRIER_CENTER)
-	{
-		mWalls->enqueue(segment, barrierPercent, 0, 0, 0);	
-	}
-	else if (b == BARRIER_LEFT)
-	{
-		mWalls->enqueue(segment, barrierPercent, -1, 0, 0);	
-		mWalls->enqueue(segment, barrierPercent, 0, 0, 0);	
-	}
-	else if (b == BARRIER_RIGHT)
-	{
-		mWalls->enqueue(segment, barrierPercent, 0, 0, 0);	
-		mWalls->enqueue(segment, barrierPercent, 1, 0, 0);	
+		getWorldPositionAndMatrix(segment, barrierPercent, relX[i], relY[i], pos,forward, right, up);
+		Ogre::Quaternion q(-right,up,forward);
 
-	}
-	else if (b == BARRIER_EDGES)
-	{
-		mWalls->enqueue(segment, barrierPercent, -1, 0, 0);	
-		mWalls->enqueue(segment, barrierPercent, 1, 0, 0);	
+		saw->setPosition(pos); ///5
+		saw->setOrientation(q);
+		ItemQueueData d(segment,barrierPercent,relX[i], relY[i], saw);
+		d.xtraData = type;
+		mSaws->enqueue(d);
 	}
 }
 
 
+
+void
+	World::AddNormalSegment()
+{		
+	Ogre::Vector3 point;
+	Ogre::Vector3 direction;
+	Ogre::Vector3 right;
+	Ogre::Vector3 up;
+
+
+	trackPath->getPointAndRotaionMatrix(trackPath->NumSegments()-1, 1,point,direction,right,up);
+
+
+	Ogre::Vector3 direction2 = direction + (((rand() / (float) RAND_MAX) * 2  - 1) * right)
+		+  (((rand() / (float) RAND_MAX) * 0.6f  - 0.3f) * up) ;
+
+	direction2.normalise();
+
+	Ogre::Vector3 direction3 = direction2 + (((rand() / (float) RAND_MAX)* 1  - 0.5f) * right)
+		+  (((rand() / (float) RAND_MAX) * 0.2f  - 0.1f) * up) ;
+
+	direction = direction * 400;
+	direction2 = direction + direction2 * 400;
+	direction3 = direction2 + direction3 * 400;
+
+	AddSegment(direction,direction2, direction3);
+}
 void 
 	World::AddRandomSegment()
 {
 
 	float r = (rand() / (float) RAND_MAX);
 
-	if (r > 0.95)
+	if ((r < mObsFreq) && mLastObjSeg >= mObsGap)
 	{
-		AddTwisty();
-	}
-	else if (r > 0.90)
-	{
-		AddLoop();
-	}
-	else if (r > 0.35)
-	{
-		AddBarrierSegment();
+		mLastObjSeg = 0;
+		r = (rand() / (float) RAND_MAX);
+		if (r < 0.25 && mUseFrontBack)
+		{
+			AddJump();
+		}
+		else
+		{
+			AddBarrierSegment();
+		}
 	}
 	else
 	{
-		Ogre::Vector3 point;
-		Ogre::Vector3 direction;
-		Ogre::Vector3 right;
-		Ogre::Vector3 up;
-
-
-		trackPath->getPointAndRotaionMatrix(trackPath->NumSegments()-1, 1,point,direction,right,up);
-
-
-		Ogre::Vector3 direction2 = direction + (((rand() / (float) RAND_MAX) * 2  - 1) * right)
-			+  (((rand() / (float) RAND_MAX) * 0.6  - 0.3) * up) ;
-
-		direction2.normalise();
-
-		Ogre::Vector3 direction3 = direction2 + (((rand() / (float) RAND_MAX)* 1  - 0.5) * right)
-			+  (((rand() / (float) RAND_MAX) * 0.2  - 0.1) * up) ;
-
-		direction = direction * 400;
-		direction2 = direction + direction2 * 400;
-		direction3 = direction2 + direction3 * 400;
-
-		AddSegment(direction,direction2, direction3, BARRIER_NONE);
+		mLastObjSeg++;
+		r = (rand() / (float) RAND_MAX);
+		if (r > 0.95)
+		{
+			AddTwisty();
+		}
+		else if (r > 0.90)
+		{
+			AddLoop();
+		}
+		else
+		{
+			AddNormalSegment();
+		}
 	}
 
 }
@@ -533,33 +770,23 @@ void
 void 
 	World::Think(float time)
 {
-	// This is a pretty silly think method, but it gives you some ideas about how
-	//  to proceed.  The single object will jiggle around randomly, and rotate
 
-	//Vector3 velocity(Ogre::Math::RangeRandom(-30,30), Ogre::Math::RangeRandom(-30,30), Ogre::Math::RangeRandom(-30,30));
-	//Vector3 currentPos = mExampleSceneNode->getPosition();
-	// Vector3 newPos = currentPos + velocity * time;
-	// mExampleSceneNode->setPosition(newPos);
-
-	float radiansPerSecond = 1.0;
+	float radiansPerSecond = 1.0f;
+	float sawRadiansPerSecond = 7.0f;
 
 	for (int i = 0; i < mCoins->size(); i++)
 	{
 		ItemQueueData d = mCoins->atRelativeIndex(i);
-		d.sceneNode->pitch(Ogre::Radian(radiansPerSecond * time));
+		d.object->pitch(Ogre::Radian(radiansPerSecond * time));
 
 	}
-	//  mExampleSceneNode->yaw(Radian(time * radiansPerSecond));
-
-	//for (std::vector<std::vector<Ogre::SceneNode*>>::iterator it = mTrackSceneNodes.begin(); it != mTrackSceneNodes.end(); it++)
-	//{
-	//	for (std::vector<Ogre::SceneNode*>::iterator it2 = it->begin(); it2 != it->end(); it2++)
-	//		(*it2)->yaw(Radian(time * radiansPerSecond));
-
-	//}
-
-
-
+	int direction = 1;
+	for (int i = 0; i < mSaws->size(); i++)
+	{
+		ItemQueueData d = mSaws->atRelativeIndex(i);
+		d.object->yaw(Ogre::Radian(sawRadiansPerSecond * time * direction));
+		direction = direction * -1;
+	}
 }
 
 

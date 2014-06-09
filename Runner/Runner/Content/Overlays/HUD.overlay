@@ -15,7 +15,7 @@ HUD/Score
       width 0.45
       height 0.1
 		
-		element TextArea(HUD/ScorePanel/Score)
+		element TextArea(HUD/ScorePanel/Coins)
 		{
 		metrics_mode relative
 		
@@ -23,11 +23,21 @@ HUD/Score
          font_name Big
          char_height 0.05
          colour 1 1 1
-         caption Score: 0
+         caption Coins = 0
 		}
+		element TextArea(HUD/ScorePanel/Distance)
+		{
+		metrics_mode relative
+		
+         left 0.4
+         font_name Big
+         char_height 0.05
+         colour 1 1 1
+         caption Distance = 0 meters
+		}
+		
     }
 }
-
 
 HUD/LeftArrow
 {
@@ -71,6 +81,34 @@ HUD/CenterArrow
       width 0.2
       height 0.2
 	  material CenterArrow
+    }   
+}
+
+HUD/UpArrow
+{
+    container Panel(HUD/UpArrow/Panel)
+    {
+      metrics_mode relative
+
+	  left 0.4
+      top 0.0
+      width 0.2
+      height 0.2
+	  material UpArrow
+    }   
+}
+
+HUD/DownArrow
+{
+    container Panel(HUD/DownArrow/Panel)
+    {
+      metrics_mode relative
+
+	  left 0.4
+      top 0.0
+      width 0.2
+      height 0.2
+	  material DownArrow
     }   
 }
 

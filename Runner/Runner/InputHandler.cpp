@@ -1,8 +1,8 @@
 #include "InputHandler.h"
 #include "Ogre.h"
 #include "OgreStringConverter.h"
-#include <OIS/OIS.h>
-
+#include "OIS/OISPrereqs.h"
+#include "OIS/OISInputManager.h"
 #include <stdio.h>
 
 
@@ -55,6 +55,20 @@ InputHandler::initialize(Ogre::RenderWindow* win)
 
 	mCurrentKeyboard = static_cast<OIS::Keyboard*>(mInputManager->createInputObject( OIS::OISKeyboard, false /* not buffered */ ));
 	mInitialized = true;
+}
+
+
+
+
+bool
+InputHandler::KeyPressedThisFrame(OIS::KeyCode key)
+{
+	if (!mInitialized)
+	{
+		// Throw exception here ...
+		return false;
+	}
+	return IsKeyDown(key) && !WasKeyDown(key);
 }
 
 

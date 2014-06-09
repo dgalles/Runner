@@ -9,7 +9,7 @@ PongCamera::PongCamera(Ogre::Camera *renderCamera, World *world) :
 mRenderCamera(renderCamera), mWorld(world), mCurrentTrackingObject(0)
 {
 	currentSegment = 0;
-	currentPercent = 0.3;
+	currentPercent = 0.3f;
 	direction = 1;
 	mRenderCamera->setNearClipDistance(2);
 	mFollowDistance = 100;

@@ -36,6 +36,46 @@ material RightArrow
     }
 }
 
+
+material UpArrow 
+{
+    receive_shadows on 
+
+    technique
+    {
+        pass 
+        {
+			scene_blend alpha_blend
+            texture_unit 
+            {
+                texture UpArrow.png
+                scale 1.0 1.0
+                colour_op modulate
+            }
+        }
+    }
+}
+
+material DownArrow 
+{
+    receive_shadows on 
+
+    technique
+    {
+        pass 
+        {
+			scene_blend alpha_blend
+            texture_unit 
+            {
+                texture DownArrow.png
+                scale 1.0 1.0
+                colour_op modulate
+            }
+        }
+    }
+}
+
+
 material CenterArrow 
 {
     receive_shadows on 

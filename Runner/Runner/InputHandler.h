@@ -1,10 +1,12 @@
 #ifndef __InputHandler_h_
 #define __InputHandler_h_
 
-#include <ois/ois.h>
-#include <Ogre.h>
-#include "OgreRenderWindow.h"
-
+// #include <ois/ois.h>
+#include "OIS/OISKeyboard.h"
+namespace Ogre
+{
+    class RenderWindow;
+}
 class World;
 class PongCamera;
 class InputHandler;
@@ -21,6 +23,7 @@ public:
 
 	bool IsKeyDown(OIS::KeyCode key);
 	bool WasKeyDown(OIS::KeyCode key);
+	bool KeyPressedThisFrame(OIS::KeyCode key);
 
 protected:
 	

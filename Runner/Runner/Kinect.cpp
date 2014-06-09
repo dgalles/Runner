@@ -7,7 +7,7 @@
 
 
 
-Kinect::Kinect(void): mListeners()
+Kinect::Kinect(void)
 {
 	mToso1Overlay = Ogre::OverlayManager::getSingleton().getByName("Kinect/Torso1");
 	mToso2Overlay = Ogre::OverlayManager::getSingleton().getByName("Kinect/Torso2");
@@ -21,8 +21,8 @@ Kinect::Kinect(void): mListeners()
 	mToso1Overlay->show();
 	mToso2Overlay->show();
 
-	mToso1Overlay->setScroll(0.85, 0.8);
-	mToso2Overlay->setScroll(0.65, 0.8);
+	mToso1Overlay->setScroll(0.85f, 0.8f);
+	mToso2Overlay->setScroll(0.65f, 0.8f);
 }
 
 
@@ -75,25 +75,18 @@ Kinect::initSensor()
 
 }
 
-void 
-Kinect::addListener(KinectMessageReceiver *listener)
-{
-	mListeners.push_back(listener);
-}
 
 void 
-Kinect::callibrate(float delay)
+Kinect::callibrate(float delay, std::function<void(void)> callback)
 {
+    mCallibrationFinishedCallback = callback;
+
 	if (delay == 0)
 	{
 		recenterNext = true;
 	}
 	else
 	{
-		for (std::vector<KinectMessageReceiver *>::iterator it = mListeners.begin(); it != mListeners.end(); it++)
-		{
-			(*it)->callibrationStarted();
-		}
 		std::string message = "Callibration in ";
 
 		long long printDelay = (long long) (delay + 0.99f);
@@ -106,12 +99,17 @@ Kinect::callibrate(float delay)
 		mCalibrationClock = delay;
 		mCallibrating = true;
 		mCallibrationOverlay->show();
-
 	}
 }
 
-
-
+void
+Kinect::cancelCallibration()
+{
+    mCallibrating = false;
+    // mCallibrationFinishedCallback = NULL; // Note:  Why doesn't this work?
+    mCallibrationOverlay->hide();
+   
+}
 void
 Kinect::update(float time)
 {
@@ -128,10 +126,10 @@ Kinect::update(float time)
 			mCalibrationClock -= time;
 			if (mCalibrationClock <= 0)
 			{
-				for (std::vector<KinectMessageReceiver *>::iterator it = mListeners.begin(); it != mListeners.end(); it++)
-				{
-					(*it)->callibrationCompleted();
-				}
+                if (mCallibrationFinishedCallback != NULL)
+                {
+                    mCallibrationFinishedCallback();
+                }
 				recenterNext = true;
 				mCallibrating = false;	
 				mCallibrationOverlay->hide();
@@ -241,12 +239,12 @@ Kinect::updateKinectSkeleton()
 			// Note:  headPos is a 3D point, baseVector is a 2D point, hence z/y confusion
 			double xDisplacement = (headPos.x - BaseVector.x - baseVectorDelta.x) * leftVector.x + (headPos.z - BaseVector.y-baseVectorDelta.y) * leftVector.y;
 
-			Ogre::Radian leftRightAngle1 = Ogre::Math::ATan2(-xDisplacement, headPos.y - shoulderPos.y + 0.5);
+			Ogre::Radian leftRightAngle1 = Ogre::Math::ATan2(-xDisplacement, headPos.y - shoulderPos.y + 0.5f);
 			mLeftRightAngle = leftRightAngle1 * 4;
 
 			double ZDisplacement = (headPos.x - BaseVector.x-baseVectorDelta.x) * FrontVector.x + (headPos.z - BaseVector.y-baseVectorDelta.y) * FrontVector.y;
 
-			Ogre::Radian frontBackAngle1 = Ogre::Math::ATan2(ZDisplacement, headPos.y - shoulderPos.y + 0.5);
+			Ogre::Radian frontBackAngle1 = Ogre::Math::ATan2(ZDisplacement, headPos.y - shoulderPos.y + 0.5f);
 			mFrontBackAngle = frontBackAngle1 * 4;
 
 
@@ -259,10 +257,10 @@ Kinect::updateKinectSkeleton()
 	//mToso1Overlay->setRotate(Ogre::Radian(-mLeftRightAngle));
 
 	mToso1Overlay->setRotate(Ogre::Radian(-mLeftRightAngle));
-	mToso1Overlay->setScroll(0.85, 0.8);
+	mToso1Overlay->setScroll(0.85f, 0.8f);
 
 	mToso2Overlay->setRotate(Ogre::Radian(-mFrontBackAngle));
-	mToso2Overlay->setScroll(0.65, 0.8);
+	mToso2Overlay->setScroll(0.65f, 0.8f);
 }
 
 
@@ -327,12 +325,13 @@ DWORD WINAPI Kinect::Nui_ProcessThread()
 	while ( continueProcessing )
 	{
 		// Wait for any of the events to be signalled
-		nEventIdx = WaitForMultipleObjects( numEvents, hEvents, FALSE, 100 );
+		nEventIdx = WaitForMultipleObjects( numEvents, hEvents, FALSE, 5000 );
 
 		// Process signal events
 		switch ( nEventIdx )
 		{
 		case WAIT_TIMEOUT:
+//			continueProcessing = false;
 			continue;
 
 			// If the stop event, stop looping and exit
