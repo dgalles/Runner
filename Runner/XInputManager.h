@@ -1,5 +1,5 @@
 #pragma once
-//#pragma comment(lib, "XInput.lib")
+#pragma comment(lib, "XInput.lib")
 
 // include files
 #include <windows.h>

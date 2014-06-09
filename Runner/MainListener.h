@@ -17,19 +17,17 @@ namespace Ogre
 	class RenderWindow;
 }
 
-class MainListener : public Ogre::FrameListener, public KinectMessageReceiver
+class MainListener : public Ogre::FrameListener
 {
 public:
-	MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, PongCamera *pongCam, Kinect *sensor, XInputManager *gamepad, Player *player, HUD *hud, MenuManager *menus);
+ 	MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, PongCamera *pongCam, Kinect *sensor, XInputManager *gamepad, Player *player, HUD *hud);
+	//MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, PongCamera *pongCam, XInputManager *gamepad, Player *player, HUD *hud);
 
 	bool frameStarted(const Ogre::FrameEvent &evt);
 
-	virtual void callibrationStarted();
-	virtual void callibrationCompleted();
 	bool paused() { return mPaused; }
 	void setPaused(bool paused) { mPaused = paused;}
-
-	void callibrateKinect(float time) { mKinect->callibrate(time); }
+    void quit() { mQuit = true;}
 
 protected:
 	InputHandler *mInputHandler;
@@ -43,4 +41,5 @@ protected:
 	Ogre::RenderWindow *mRenderWindow;
 	bool mPaused;
 	MenuManager *mMenus;
+    bool mQuit;
 };

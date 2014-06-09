@@ -7,22 +7,51 @@
 #include "ItemQueue.h"
 #include "Kinect.h"
 #include "HUD.h"
+#include "RunnerObject.h"
+#include "InputHandler.h"
 
-Player::Player(World *world, XInputManager *inputManager, Kinect *k) : mWorld(world), mInputManager(inputManager), mKinect(k)
+const float Player::SPEED_MULTIPLYER = 20;
+
+ Player::Player(World *world, XInputManager *inputManager, Kinect *k) : mWorld(world), mXInputManager(inputManager), mKinect(k)
+//Player::Player(World *world, XInputManager *inputManager) : mWorld(world), mInputManager(inputManager)
 {
-	Ogre::Entity *ent1 = mWorld->SceneManager()->createEntity("car.mesh");
-	mPlayerSceneNode =mWorld->SceneManager()->getRootSceneNode()->createChildSceneNode();
-	mPlayerSceneNode->attachObject(ent1);
-	mPlayerSceneNode->scale(5,5,10);
+    mKinectSensitivityLR = 1.0f;
+    mKinectSensitivityFB = 1.0f;
+    FORWARD_SPEED = 30;
+    mAutoCallibrate = true;
+	mEnableGamepad = false;
+	mEnableKeyboard = false;
+	mEnableKinect = true;
+	mInvertControls = false;
+    setup();
+
+
+}
+
+ void Player::reset()
+ {
+     setup();
+     mWorld->trackObject(this);
+
+ }
+
+void Player::setup()
+{
+    mPlayerObject = new RunnerObject();
+    mPlayerObject->loadModel("car.mesh", mWorld->SceneManager());
+    mPlayerObject->setScale(Ogre::Vector3(5,6,10));
+
+
 
 	mCurrentSegment = 0;
-	mSegmentPercent = 0.3;
+	mSegmentPercent = 0.3f;
 	mRelativeX = 0;
 	mRelativeY = 5;
-	FORWARD_SPEED = 600.0f;
-	LATERAL_SPEED = 600.0f;
 	mCoinsCollected = 0;
+    mDistance = 0;
 	mAlive = true;
+	mTargetDeltaY = 0.0f;
+	mDeltaY = 0.0f;
 
 	Ogre::Vector3 pos;
 	Ogre::Vector3 forward;
@@ -31,15 +60,48 @@ Player::Player(World *world, XInputManager *inputManager, Kinect *k) : mWorld(wo
 	mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,forward, right, up);
 	Ogre::Quaternion q(-right,up,forward);
 
-	mPlayerSceneNode->setPosition(pos);
-	mPlayerSceneNode->setOrientation(q);
+	mPlayerObject->setPosition(pos);
+	mPlayerObject->setOrientation(q);
 
+    float mTimeSinceSpeedIncrease = 0;
+    mSpeedIncrease = 0;
 }
 
 Ogre::Vector3 
-	Player::worldPosition() { return mPlayerSceneNode->getPosition();}
+	Player::worldPosition() { return mPlayerObject->getPosition();}
 
 
+void
+    Player::startGame()
+{
+	mWorld->getHUD()->stopAllArrows();
+
+    if (mAutoCallibrate)
+    {
+        mKinect->callibrate(4.0f, [this]() { this->setPaused(false); });
+    }
+    else
+    {
+        mPaused = false;
+    }
+
+}
+
+void
+    Player::stopArrows(int segment, float percent)
+{
+    for (int i = 0; i< mWorld->Saws()->size(); i++)
+    {
+        ItemQueueData d = mWorld->Saws()->atRelativeIndex(i);
+        if (d.segmentIndex > segment)
+            break;
+        if(d.segmentIndex == segment && d.segmentPercent < percent)
+        {
+            mWorld->getHUD()->stopArrow(d.xtraData);
+        }
+
+    }
+}
 
 void
 	Player::startArrows(int newSegment)
@@ -47,32 +109,15 @@ void
 	if (mCurrentSegment != newSegment)
 	{
 		bool oneWall = false;
-		bool walls[HUD::last];
-		for (int i = 0; i < HUD::last; i++)
+
+		if (mWorld->Saws()->size() > 0)
 		{
-			walls[i] = false;
-		}
-		if (mWorld->Walls()->size() > 0)
-		{
-			for (int i = 0; i < mWorld->Walls()->size(); i++)
+			for (int i = 0; i < mWorld->Saws()->size(); i++)
 			{
-				ItemQueueData d = mWorld->Walls()->atRelativeIndex(i);
+				ItemQueueData d = mWorld->Saws()->atRelativeIndex(i);
 				if (d.segmentIndex == newSegment)
 				{
-					oneWall = true;
-					if ((d.relativeX) == 0)
-					{
-						walls[(int)HUD::center] = true;
-					}
-					else if (d.relativeX < 0)
-					{
-						walls[(int)HUD::left] = true;
-					}
-					else // d.relativeX > 0
-					{
-						walls[(int)HUD::right] = true;
-					}
-
+                    mWorld->getHUD()->startArrow(d.xtraData);
 				}
 				else if (d.segmentIndex  > newSegment)
 				{
@@ -82,18 +127,6 @@ void
 
 			}
 
-			if (oneWall)
-			{
-				for (int i = 0; i < HUD::last; i++)
-				{
-					if (!walls[i]) 
-					{
-						float time = mWorld->trackPath->pathLength(newSegment) / FORWARD_SPEED;
-						mWorld->getHUD()-> startArrow(((HUD::Kind) i), time);
-					}
-
-				}
-			}
 		}
 
 	}
@@ -109,22 +142,18 @@ void
 		for (int i = 0; i < mWorld->Coins()->size(); i++)
 		{
 			ItemQueueData d = mWorld->Coins()->atRelativeIndex(i);
-			if (d.segmentIndex > newSegment || (d.segmentIndex == newSegment && d.segmentPercent > newPercent))
+			if (d.segmentIndex > newSegment + 1)
 			{
 				break;
 			}
 
-			if (d.segmentIndex == newSegment && std::abs(d.segmentPercent- newPercent) < 0.1)
+            Ogre::Vector3 MTV;
+            if (d.object->collides(mPlayerObject, MTV))
 			{
-
-				if (std::abs((d.relativeX - newX)) < 10)
-				{
-					d.sceneNode->scale(0,0,0);
-					d.relativeX = 500;
-					mWorld->Coins()->setRelativeIndex(i, d);
-					mCoinsCollected++;
-					mWorld->getHUD()->setScore(mCoinsCollected);
-				}
+                d.object->setScale(Ogre::Vector3::ZERO);
+				d.object->translate(Ogre::Vector3(100,100,100));
+                mCoinsCollected++;
+                mWorld->getHUD()->setCoins(mCoinsCollected);
 			}
 		}
 
@@ -136,36 +165,89 @@ bool
 {
 
 	bool collide = false;
-	if (mWorld->Walls()->size() > 0)
+	if (mWorld->Saws()->size() > 0)
 	{
-		for (int i = 0; i < mWorld->Walls()->size(); i++)
+		for (int i = 0; i < mWorld->Saws()->size(); i++)
 		{
-			ItemQueueData d = mWorld->Walls()->atRelativeIndex(i);
-			if (d.segmentIndex > newSegment || (d.segmentIndex == newSegment && d.segmentPercent > newPercent))
+			ItemQueueData d = mWorld->Saws()->atRelativeIndex(i);
+			if (d.segmentIndex > newSegment)
 			{
 				break;
 			}
-
-			if (d.segmentIndex == mCurrentSegment && d.segmentPercent >= mSegmentPercent)
-			{
-				if (d.relativeX == 0 && std::abs(newX) < 20)
-				{
-					collide = true;
-				}
-				if (d.relativeX == 1 && newX > 15)
-				{
-					collide = true;
-				}
-
-				if (d.relativeX == -1 &&  newX < -15)
-				{
-					collide = true;
-				}
-			}
+            Ogre::Vector3 MTD;
+            if (d.object->collides(mPlayerObject, MTD))
+            {
+                collide = true;
+                break;
+            }
 		}
 	}
 	return collide;
 }
+
+void Player::setLevel(int level)
+{
+
+
+    FORWARD_SPEED = 300 + level*200;
+    // Also do rate change?
+
+}
+
+
+void Player::updateAnglesFromConrols(Ogre::Degree &angle, Ogre::Degree &angle2)
+{
+	if (mEnableKinect)
+	{
+		angle =  mKinect->leftRightAngle() * mKinectSensitivityLR;
+		angle2 = mKinect->frontBackAngle() * 0.8 *  mKinectSensitivityFB;
+	}
+
+	if (mEnableGamepad)
+	{
+		short stickLeftRight = mXInputManager->state[0].Gamepad.sThumbLX;
+		short stickForwardBack = mXInputManager->state[0].Gamepad.sThumbLY;
+
+		angle = (Ogre::Real) stickLeftRight / 1000;
+		angle2 =  - (Ogre::Real)  stickForwardBack / 1000;
+	}
+
+	if (mEnableKeyboard)
+		{
+			if (InputHandler::getInstance()->IsKeyDown(OIS::KC_LEFT))
+			{
+				angle = -Ogre::Degree(30);
+			} 
+			else if (InputHandler::getInstance()->IsKeyDown(OIS::KC_RIGHT))
+			{
+				angle = Ogre::Degree(30);
+
+			}
+			if (InputHandler::getInstance()->IsKeyDown(OIS::KC_UP))
+			{
+				angle2 = Ogre::Degree(-30);
+			}
+			else if (InputHandler::getInstance()->IsKeyDown(OIS::KC_DOWN))
+			{
+				angle2 = Ogre::Degree(30);
+			}
+			else
+			{
+				angle2 = Ogre::Degree(0);
+			}
+		}
+		if (!mUseFrontBack)
+		{
+			angle2 = Ogre::Degree(0);
+		}
+		if (mInvertControls)
+		{
+
+			angle2 = -angle2;
+		}
+
+}
+
 
 void 
 	Player::Think(float time)
@@ -175,15 +257,34 @@ void
 	{
 		return;
 	}
-	LATERAL_SPEED = FORWARD_SPEED;
+
+	Ogre::Degree angle = Ogre::Degree(0);
+
+	Ogre::Degree angle2 = Ogre::Degree(0);
+
+	updateAnglesFromConrols(angle, angle2);
+
+
+
 	int newSegment = mCurrentSegment;
 	float newPercent = mSegmentPercent;
+
+	mTimeSinceSpeedIncrease  += time;
+	if (mTimeSinceSpeedIncrease > 1)
+    {
+        mTimeSinceSpeedIncrease = 0;
+        FORWARD_SPEED += mSpeedIncrease;
+    }
+
+	LATERAL_SPEED = FORWARD_SPEED;
 
 	if (mAlive)
 	{
 
 
-		float distance = time * FORWARD_SPEED;
+		float distance = time * FORWARD_SPEED * SPEED_MULTIPLYER;
+		mDistance += distance;
+        mWorld->getHUD()->setDistance((int) mDistance / 200);
 
 		while (distance < 0 && -distance > mWorld->trackPath->pathLength(newSegment)*newPercent)
 		{
@@ -197,39 +298,73 @@ void
 		{
 			distance -= mWorld->trackPath->pathLength(newSegment) * (1 - newPercent);
 			newSegment++;
+			mWorld->AddBlades(newSegment + 5);
 			newPercent = 0.0f;
+			if ((mWorld->trackPath->kind(newSegment + 2) == BezierPath::Kind::GAP) ||
+				(mWorld->trackPath->kind(newSegment + 1) == BezierPath::Kind::GAP)  ||
+				(mWorld->trackPath->kind(newSegment + 3) == BezierPath::Kind::GAP))
+			{
+				mWorld->getHUD()->startArrow(HUD::Kind::up);
+			}
+			if (mWorld->trackPath->kind(newSegment - 1) == BezierPath::Kind::GAP)
+			{
+				mWorld->getHUD()->stopArrow(HUD::Kind::up);
+				if (mTargetDeltaY < 0)
+				{
+					kill();
+					return;
+				}
+			}
+			if (mWorld->trackPath->kind(newSegment) == BezierPath::Kind::GAP)
+			{
+				if (angle2.valueDegrees() >  5)
+				{
+					mTargetDeltaY = 0;
+					mDeltaY = 0;
+				}
+				else
+				{
+					mTargetDeltaY = -10;
+					mDeltaY = 0;
+				}
+			}
+
 		}
 		newPercent += distance / mWorld->trackPath->pathLength(newSegment);
 
+		if (mTargetDeltaY == 0)
+		{
+			mDeltaY = 0;
+		}
+		else
+		{
+			mDeltaY =- time * 10;
+			mDeltaY = std::max(mTargetDeltaY, mDeltaY);
+		}
 
-		if (newSegment > mWorld->trackPath->NumSegments() - 500)
+		if (newSegment > mWorld->trackPath->NumSegments() - 100)
 		{
 			mWorld->AddRandomSegment();
 		}
-		if (newSegment > mWorld->lastCoinAddedSegment() - 10)
+		if (newSegment > mWorld->lastCoinAddedSegment() - 5)
 		{
 			mWorld->addCoins();
 		}
 
-		short stickRight = mInputManager->state[0].Gamepad.sThumbRY;
 
-		if (stickRight < -10000)
+		if (angle2 < Ogre::Degree(0))
 		{
-			FORWARD_SPEED -= 5;
-
+			float diff = (angle2.valueDegrees() / 10) + 6;
+			diff = std::max(diff, 0.5f);
+			mPlayerObject->setScale(Ogre::Vector3(5,diff,10));
 		}
-		else if (stickRight > 10000)
+		else
 		{
-			FORWARD_SPEED += 5;
+			mPlayerObject->setScale(Ogre::Vector3(5,6,10));
 		}
 
-		//	LATERAL_SPEED = FORWARD_SPEED / 3 * 4;
-
-		Ogre::Degree angle = mKinect->leftRightAngle();
-
-
-		short stickLeft = mInputManager->state[0].Gamepad.sThumbLX;
-		float distanceX = time * LATERAL_SPEED;
+		
+		float distanceX = time * LATERAL_SPEED * SPEED_MULTIPLYER;
 		float newX;
 
 
@@ -252,61 +387,58 @@ void
 		else
 		{
 			newX = mRelativeX + distanceX;
-		}
+        }
+
+        mWorld->clearCoinsBefore(mCurrentSegment-1);
+        mWorld->clearBarriersBefore(mCurrentSegment-1);
 
 
+		/// Arrow detection
 
+		stopArrows(newSegment, newPercent);
 
-		for (int i = mCurrentSegment -1; i < newSegment - 1; i++)
-		{
-			mWorld->clearCoinsBefore(mCurrentSegment-1);
-			mWorld->clearBarriersBefore(mCurrentSegment-1);
-			//mWorld->removeWorldSegments();
-			// TODO:  Also clear track here!
-		}
-
+		startArrows(newSegment);
 
 		Ogre::Vector3 pos;
 		Ogre::Vector3 forward;
 		Ogre::Vector3 right;
 		Ogre::Vector3 up;
 
-		/// Arrow detection
+		mSegmentPercent = newPercent;
+		mCurrentSegment = newSegment;
+		mRelativeX = newX;
 
-		startArrows(newSegment);
+
+		mRelativeY = - mPlayerObject->minPointLocalScaled().y + mDeltaY;
+
+		mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,forward, right, up);
+		Ogre::Quaternion q(-right,up,forward);
+
+		mPlayerObject->setOrientation(q);
+		mPlayerObject->setPosition(pos);
+
+		if (angle2 > Ogre::Degree(0))
+		{
+			mPlayerObject->pitch(Ogre::Radian(-angle2));
+			mPlayerObject->setPosition(pos  + up *( - Ogre::Math::Sin(angle2) * mPlayerObject->minPointLocalScaled().z* 0.8f) + mDeltaY);
+		}
+
+
+		mPlayerObject->roll(Ogre::Radian(angle));
+
 
 
 		// Collision with walls
-
 
 		bool collide = detectCollision(newSegment, newPercent, newX);
 
 		// Collision with coins
 
-
 		coinCollision(newSegment, newPercent, newX);
 
 
-
-		if (!collide)
+		if (collide)
 		{
-			mSegmentPercent = newPercent;
-			mCurrentSegment = newSegment;
-			mRelativeX = newX;
-
-
-			mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,forward, right, up);
-			Ogre::Quaternion q(-right,up,forward);
-
-			mPlayerSceneNode->setPosition(pos);
-			mPlayerSceneNode->setOrientation(q);
-
-			mPlayerSceneNode->roll(Ogre::Radian(angle));
-
-		}
-		else
-		{
-			mAlive = false;
 			kill();
 		}
 	}
@@ -322,9 +454,15 @@ Player::moveExplosion(float time)
 {
 	mExplodeTimer -= time;
 	debris[0]->translate(-mExplosionforward * time * 100);
+	debris[0]->roll(Ogre::Degree(time * 600));
 	debris[1]->translate(mExplosionright * time * 100);
+	debris[1]->pitch(Ogre::Degree(time * 500));
 	debris[2]->translate(-mExplosionright * time * 100);
+		debris[2]->roll(Ogre::Degree(time * 300));
+	debris[2]->pitch(Ogre::Degree(time * 200));
+
 	debris[3]->translate(mExplosionup * time * 100);
+	debris[3]->yaw(Ogre::Degree(time * 700));
 
 }
 
@@ -332,6 +470,7 @@ Player::moveExplosion(float time)
 void 
 	Player::kill()
 {
+	mAlive = false;
 	mExplodeTimer = 3.0;
 
 	Ogre::Entity *debrisEntity[4];
@@ -345,17 +484,10 @@ void
 	{
 		debris[i] = mWorld->SceneManager()->getRootSceneNode()->createChildSceneNode();
 		debris[i]->attachObject(debrisEntity[i]);
-		debris[i]->scale(5,5,10);
+		debris[i]->scale(mPlayerObject->getScale());
 	}
 
-	mWorld->SceneManager()->getRootSceneNode()->removeChild(mPlayerSceneNode);
-
-	unsigned short index = 0;
-	Ogre::MovableObject *mo = mPlayerSceneNode->detachObject(index);
-	Ogre::Entity *ent = static_cast<Ogre::Entity *>(mo);
-
-	mWorld->SceneManager()->destroyEntity(ent);
-	mWorld->SceneManager()->destroySceneNode(mPlayerSceneNode);
+    delete mPlayerObject;
 
 
 	Ogre::Vector3 pos;
@@ -370,6 +502,6 @@ void
 		debris[i]->setOrientation(q);
 	}
 
-	mWorld->trackObject(NULL);
-
+	 mWorld->trackObject(NULL);
+	 mWorld->getHUD()->stopAllArrows();
 }

@@ -12,10 +12,6 @@ namespace Ogre
 	class OverlayContainer;
 }
 
-typedef void (*SelectType)(void);  
-typedef void (*ChooseInt)(int);  
-typedef void (*ChooseBool)(bool);  
-
 class InputHandler;
 
 
@@ -25,17 +21,19 @@ class Menu
 public:
 	Menu();
 
-	Menu(Ogre::String header, Ogre::String name, float xpos, float ypos);
+	Menu(Ogre::String header, Ogre::String name, float xpos, float ypos, float ydelta = 0.1f);
 
 	void enable();
 
 	void disable();
 
-	void AddSelectElement(Ogre::String name, SelectType);
+    bool enabled() { return mEnabled; }
+	void AddSelectElement(Ogre::String name, std::function<void(void)> callback);
 
-	void AddChooseInt(Ogre::String name, ChooseInt);
+	void AddChooseInt(Ogre::String name,  std::function<void(int)> callback,  int minValue, int maxValue, int initialValue,  int delta = 1);
+	void AddChooseFloat(Ogre::String name,  std::function<void(float)> callback, float minValue, float maxValue, float initialValue,  float delta);
 
-	void AddChooseBool(Ogre::String name, ChooseBool);
+	void AddChooseBool(Ogre::String name,  std::function<void(bool)> callback, bool intialValue = false);
 
 	void think(float time);
 
@@ -67,7 +65,9 @@ protected:
 	Ogre::ColourValue mHighlightColor;
 	Ogre::ColourValue mUnHighlightColor;
 
-	class MenuItem
+	void AddMenuItem(MenuItem *item);
+
+	class MenuItem 
 	{
 	public:
 
@@ -85,33 +85,56 @@ protected:
 
 	};
 
-	class SelectMenuItem : MenuItem
+	class SelectMenuItem : public MenuItem
 	{
 	public:
-		SelectMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, SelectType callback);
+		SelectMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(void)> callback);
 		virtual void Enter();
 
 	protected:
-		SelectType mCallback;
+		 std::function<void(void)> mCallback;
 
 	};
 
 	class ChooseIntMenuItem : public MenuItem
 	{
 	public:
-		ChooseIntMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, ChooseInt callback);
+		ChooseIntMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(int)> callback, int minValue, int maxValue, int initialValue, int delta);
 		virtual void Increase();
 		virtual void Decrease();
 	protected:
 		int mIntValue;
-		ChooseInt mCallback;
+		int mMinValue;
+		int mMaxValue;
+        int mDelta;
+		Ogre::String mText;
+		std::function<void(int)>  mCallback;
 
 	};
+
+
+    	class ChooseFloatMenuItem : public MenuItem
+	{
+	public:
+		ChooseFloatMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(float)> callback, float minValue, float maxValue, float initialValue, float delta);
+		virtual void Increase();
+		virtual void Decrease();
+	protected:
+		float mFloatValue;
+		float mMinValue;
+		float mMaxValue;
+        float mDelta;
+        void updateOverlayFromValue();
+		Ogre::String mText;
+		std::function<void(float)>  mCallback;
+
+	};
+
 
 	class ChooseBoolMenuItem : public MenuItem
 	{
 	public:
-		ChooseBoolMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, ChooseBool callback);
+		ChooseBoolMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(bool)> callback, bool initialValue);
 
 		virtual void Increase();
 		virtual void Decrease();
@@ -119,8 +142,10 @@ protected:
 
 
 	protected:
-		bool mIntValue;
-		ChooseBool mCallback;
+		bool mBoolValue;
+		Ogre::String mText;
+
+		std::function<void(bool)> mCallback;
 
 	};
 
@@ -133,7 +158,7 @@ class MenuManager
 
 public:
 	static MenuManager* getInstance();
-	void addMenu(Menu *menu, Ogre::String);
+	void addMenu(Menu *menu);
 	Menu *getMenu(Ogre::String);
 	Menu *getActiveMenu();
 	void deactivateCurrentMenu();
@@ -144,7 +169,6 @@ private:
 	MenuManager() { }
 	static MenuManager *mInstance;
 	std::map<Ogre::String, Menu*> mMenus;
-
 };
 
 #endif

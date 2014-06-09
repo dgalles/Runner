@@ -58,7 +58,8 @@ Runner::createCamera()
 void 
 Runner::createFrameListener(void)
 {
-	mFrameListener = new MainListener(mWindow, mAIManager, mWorld, mPongCamera, mKinect,mGamepad, mPlayer, mHUD, mMenuManager);
+	mFrameListener = new MainListener(mWindow, mAIManager, mWorld, mPongCamera, mKinect, mGamepad, mPlayer, mHUD);
+	//mFrameListener = new MainListener(mWindow, mAIManager, mWorld, mPongCamera, mGamepad, mPlayer, mHUD);
 	mRoot->addFrameListener(mFrameListener);
 	// mFrameListener->showDebugOverlay(true);
 
@@ -94,8 +95,74 @@ Runner::createScene()
 	mPlayer = new Player(mWorld, mGamepad, mKinect);
 	mPongCamera->TrackObject(mPlayer);
 	mWorld->addCamera(mPongCamera);
-	mMenuManager =MenuManager::getInstance();
-//	Menu *m = new Menu("Menu Test", "name");
+
+
+
+}
+
+void
+Runner::setupMenus()
+{
+    MenuManager *menus = MenuManager::getInstance();
+
+    HUD *h = mHUD;
+    MainListener *l = mFrameListener;
+    Player *p = mPlayer;
+    World *w = mWorld;
+    Kinect *k = mKinect;
+
+    Menu *options = new Menu("Options", "options", 0.1f, 0.1f, 0.07f);
+    Menu *controlOptions = new Menu("Control Options", "controloptions", 0.1f, 0.1f, 0.07f);
+    Menu *gameplayOptions = new Menu("Gameplay Options", "gameplayoptions", 0.1f, 0.1f, 0.07f);
+    Menu *mainMenu = new Menu("Main Menu", "main", 0.1f, 0.1f);
+    Menu *pauseMenu = new Menu("Pause Menu", "pause", 0.1f, 0.1f);
+
+    pauseMenu->disable();
+    options->disable();
+	controlOptions->disable();
+	gameplayOptions->disable();
+
+	menus->addMenu(mainMenu);
+    menus->addMenu(options);
+    menus->addMenu(pauseMenu);
+	menus->addMenu(gameplayOptions);
+	menus->addMenu(controlOptions);
+
+    options->AddSelectElement("Control Options", [options, controlOptions]() {options->disable(); controlOptions->enable();});
+    options->AddSelectElement("Gameplay Options", [options, gameplayOptions]() {options->disable(); gameplayOptions->enable();});
+	options->AddSelectElement("Return to Main Menu", [options, mainMenu]() {options->disable(); mainMenu->enable();});
+
+    gameplayOptions->AddChooseBool("Arrow Indicators", [h](bool show) {h->showArrows(show);}, h->arrowsShown());
+	gameplayOptions->AddChooseBool("Use Forward / Backward Leaning", [w, p](bool use) {w->setUseFrontBack(use); p->setUseFrontBack(use);} , w->getUseFrontBack());
+    gameplayOptions->AddChooseFloat("Obstacle Frequency", [w](float x) {w->setObstacleFrequency(x); }, 0.0f, 1.0f,w->getObstacleFrequency(), 0.1f);
+    gameplayOptions->AddChooseInt("Minimum Obstacle Separation", [w](int x) {w->setObstacleSeparation(x); }, 0, 15, w->getObstacleSeparation(), 1);
+    gameplayOptions->AddChooseInt("Initial Speed", [p](int x) {p->setSpeed(x); }, 5, 100, p->getSpeed(), 5);
+    gameplayOptions->AddChooseInt("Speed Increase", [p](int x) {p->setSpeedIncrease(x); }, 0, 20, p->getSpeedIncrease(), 1);
+    gameplayOptions->AddSelectElement("Return to Options Menu", [gameplayOptions,options]() {gameplayOptions->disable(); options->enable();});
+
+
+    controlOptions->AddChooseBool("Callibrate Kinect Every Game", [p](bool x) {p->setAutoCallibrate(x); }, p->getAutoCallibrate());
+    controlOptions->AddChooseFloat("Kinect Sensitivity Left / Right", [p](float x) {p->setKinectSentitivityLR(x); }, 0.7f, 1.5f, 1.f, 0.1f);
+    controlOptions->AddChooseFloat("Kinect Sensitivity Front / Back", [p](float x) {p->setKinectSentitivityFB(x); }, 0.7f, 1.5f, 1.f, 0.1f);
+    controlOptions->AddSelectElement("Callibrate Kinect Now", [options, k]() {options->disable(); k->callibrate(4.0f, [options]() {options->enable();});});
+    controlOptions->AddChooseBool("Invert Front/Back Controls", [p](bool x) {p->setInvertControls(x); }, p->getInvertControls());
+	controlOptions->AddChooseBool("Enable Kinect", [p](bool x) { p->setEnableKinect(x);  if (!x) p->setAutoCallibrate(false); }, p->getEnableKinect());
+	controlOptions->AddChooseBool("Enable Keyboard", [p](bool x) { p->setEnableKeyboard(x);}, p->getEnableKeyboard());
+	controlOptions->AddChooseBool("Enable Gamepad", [p](bool x) { p->setEnableGamepad(x);}, p->getEnableGamepad());
+
+
+    controlOptions->AddSelectElement("Return to Options Menu", [controlOptions,options]() {controlOptions->disable(); options->enable();});
+
+
+
+
+    mainMenu->AddSelectElement("Start Game", [mainMenu, w, p]() {mainMenu->disable();  p->startGame(); });
+    mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
+    mainMenu->AddSelectElement("Quit", [l]() {l->quit();});
+
+    pauseMenu->AddSelectElement("Continue", [pauseMenu, p]() {pauseMenu->disable(); p->setPaused(false); });
+    pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w]() {pauseMenu->disable();mainMenu->enable(); p->setPaused(true);w->reset(); p->reset(); });
+    pauseMenu->AddSelectElement("Quit (Close Program)", [l]() {l->quit();});
 }
 
 bool 
@@ -141,13 +208,8 @@ Runner::setup(void)
 
     Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     createScene();
-
-    // When we start the renderer, it will run forever, making callbacks every
-    // frame to the frame listeners.  These listeners are where all of the non-
-    // rendering work is done.  
     createFrameListener();
-
-	mKinect->callibrate(4);
+    setupMenus();
 
 
 	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);

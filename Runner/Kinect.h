@@ -15,12 +15,6 @@ namespace Ogre
 }
 
 
-class KinectMessageReceiver
-{
-public:
-	virtual void callibrationStarted() { }
-	virtual void callibrationCompleted() { }
-};
 
 
 class Kinect
@@ -31,12 +25,14 @@ public:
 	HRESULT initSensor();
 	void update(float);
 
-	void callibrate(float delay = 4.0f);
-	void addListener(KinectMessageReceiver *listener);
+	void callibrate(float delay = 4.0f, std::function<void(void)> callback = NULL);
 	void shutdown();
 
 	Ogre::Degree leftRightAngle() { return mLeftRightAngle; }
 	Ogre::Degree frontBackAngle() { return mFrontBackAngle; }
+
+    bool callibrating() { return mCallibrating; }
+    void cancelCallibration();
 
 protected:
 	void updateKinectSkeleton( );
@@ -71,7 +67,7 @@ protected:
 	Ogre::Overlay *mCallibrationOverlay;
 	bool mCallibrating;
 	Ogre::OverlayElement *mCallibrationText;
-	std::vector<KinectMessageReceiver*> mListeners;
+    std::function<void()>  mCallibrationFinishedCallback;
 
 };
 

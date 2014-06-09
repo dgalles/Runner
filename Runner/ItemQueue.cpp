@@ -1,6 +1,7 @@
 #include "ItemQueue.h"
 #include "OgreSceneManager.h"
 #include "OgreSceneNode.h"
+#include "RunnerObject.h"
 
 //int mHead;
 //int mTail;
@@ -22,10 +23,24 @@ ItemQueue::ItemQueue(int maxSize)
 	mTail = 0;
 }
 
-void 
-ItemQueue::enqueue(int segmentIndex, float segmentPercent, int relativeX, float relativeY, Ogre::SceneNode* sceneNode)
+ItemQueue::~ItemQueue()
 {
-	ItemQueueData d(segmentIndex, segmentPercent, relativeX, relativeY, sceneNode);
+
+    ItemQueueData d;
+    while (size() > 0)
+    {
+        d = dequeue();
+        if (d.object != NULL)
+        {
+            delete d.object;
+        }
+    }
+}
+
+void 
+ItemQueue::enqueue(int segmentIndex, float segmentPercent, float relativeX, float relativeY, RunnerObject* obj)
+{
+	ItemQueueData d(segmentIndex, segmentPercent, relativeX, relativeY, obj);
 	enqueue(d);
 }
 
@@ -84,7 +99,7 @@ ItemQueue::setRelativeIndex(int index, ItemQueueData data)
 
 }
 
-void ItemQueue::atRelativeIndex(int index, int &segmentIndex, float &segmentPercent, int &relativeX, float &relativeY, Ogre::SceneNode* &sceneNode)
+void ItemQueue::atRelativeIndex(int index, int &segmentIndex, float &segmentPercent, float &relativeX, float &relativeY, Ogre::SceneNode* &sceneNode)
 {
 	ItemQueueData d = atRelativeIndex(index);
 	segmentIndex = d.segmentIndex;

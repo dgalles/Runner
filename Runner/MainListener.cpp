@@ -11,27 +11,15 @@
 #include <stdio.h>
 
 
-MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, PongCamera *cam, Kinect *sensor, XInputManager *gamepad, Player *player,  HUD *hud, MenuManager *menus) :
-mRenderWindow(window), mAIManager(aiManager), mWorld(world), mPongCamera(cam), mKinect(sensor), mGamepad(gamepad), mPlayer(player), mHUD(hud), mMenus(menus)
+MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, PongCamera *cam, Kinect *sensor, XInputManager *gamepad, Player *player,  HUD *hud) :
+//MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, PongCamera *cam, XInputManager *gamepad, Player *player,  HUD *hud) :
+mRenderWindow(window), mAIManager(aiManager), mWorld(world), mPongCamera(cam), mGamepad(gamepad), mPlayer(player), mHUD(hud),  mKinect(sensor)
 {
 	mPaused = false;
-	mKinect->addListener(this);
+    mQuit = false;
 	//mInputHandler->setFrameListener(this);
 }
 
-
-void 
-MainListener::callibrationStarted()
-{
-	mPaused = true;
-	mPlayer->setPaused(true);
-}
-void 
-MainListener::callibrationCompleted()
-{
-	mPlayer->setPaused(false);
-	mPaused = false;
-}
 
 // On every frame, call the appropriate managers
 bool 
@@ -46,7 +34,7 @@ bool
 
 
 	
-	mKinect->update(evt.timeSinceLastFrame);
+ 	mKinect->update(evt.timeSinceLastFrame);
 	mHUD->update(time);
 	InputHandler::getInstance()->Think(time);
 
@@ -63,15 +51,35 @@ bool
 
 		bool keepGoing = true;
 	}
-	mMenus->think(time);
+	MenuManager::getInstance()->think(time);
 
-	bool keepGoing = true;
+    bool keepGoing = true;
+
+    if (InputHandler::getInstance()->IsKeyDown(OIS::KC_ESCAPE))
+    {
+        if (mKinect->callibrating())
+        {
+            mKinect->cancelCallibration();
+            MenuManager::getInstance()->getMenu("main")->enable();
+        }
+        else if (MenuManager::getInstance()->getActiveMenu() != NULL)
+        {
+            // do nothing
+        }
+        else 
+        {
+            MenuManager::getInstance()->getMenu("pause")->enable();
+            mPlayer->setPaused(true);
+        }
+    }
+
 	// Ogre will shut down if a listener returns false.  We will shut everything down if
 	// either the user presses escape or the main render window is closed.  Feel free to 
 	// modify this as you like.
-	if (InputHandler::getInstance()->IsKeyDown(OIS::KC_ESCAPE) || mRenderWindow->isClosed())
+	if ( mRenderWindow->isClosed() || mQuit)
 	{
 		keepGoing = false;
+	//	mKinect->shutdown();
 	}
 	return keepGoing;
 }

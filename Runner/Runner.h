@@ -22,7 +22,7 @@ class InputHandler;
 class World;
 class MainListener;
 class PongCamera;
-class Kinect;
+ class Kinect;
 class XInputManager;
 class Player;
 class HUD;
@@ -73,16 +73,16 @@ protected:
     //  game logic
 	void createFrameListener(void);
 
+    void setupMenus() ;
 
 	AIManager *mAIManager;
 	InputHandler *mInputHandler;
 	World *mWorld;
     PongCamera *mPongCamera;
-	Kinect *mKinect;
+    Kinect *mKinect;
 	XInputManager *mGamepad;
 	Player *mPlayer;
 	HUD *mHUD;
-	MenuManager *mMenuManager;
 
     Ogre::Root *mRoot;
     Ogre::Camera* mCamera;
