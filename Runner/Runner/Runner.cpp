@@ -8,6 +8,7 @@
 #include "Player.h"
 #include "HUD.h"
 #include "Menu.h"
+#include "Achievements.h"
 
 #include "Ogre.h"
 #include "OgreConfigFile.h"
@@ -58,8 +59,8 @@ Runner::createCamera()
 void 
 Runner::createFrameListener(void)
 {
-	mFrameListener = new MainListener(mWindow, mAIManager, mWorld, mPongCamera, mKinect, mGamepad, mPlayer, mHUD);
-	//mFrameListener = new MainListener(mWindow, mAIManager, mWorld, mPongCamera, mGamepad, mPlayer, mHUD);
+	mFrameListener = new MainListener(mWindow, mAIManager, mWorld, mRunnerCamera, mKinect, mGamepad, mPlayer, mHUD, mAchievements);
+	//mFrameListener = new MainListener(mWindow, mAIManager, mWorld, mRunnerCamera, mGamepad, mPlayer, mHUD);
 	mRoot->addFrameListener(mFrameListener);
 	// mFrameListener->showDebugOverlay(true);
 
@@ -85,16 +86,17 @@ Runner::createScene()
 	//f->load();
 
 	mHUD = new HUD();
+	mAchievements = new Achievements();
 	mWorld = new World(mSceneMgr, mHUD);
 	mAIManager = new AIManager(mWorld);
-	mPongCamera = new PongCamera(mCamera, mWorld);
+	mRunnerCamera = new RunnerCamera(mCamera, mWorld);
 	InputHandler::getInstance()->initialize(mWindow);
 	mKinect = new Kinect();
 	mKinect->initSensor();
 	mGamepad = new XInputManager();
-	mPlayer = new Player(mWorld, mGamepad, mKinect);
-	mPongCamera->TrackObject(mPlayer);
-	mWorld->addCamera(mPongCamera);
+	mPlayer = new Player(mWorld, mGamepad, mKinect, mAchievements);
+	mRunnerCamera->TrackObject(mPlayer);
+	mWorld->addCamera(mRunnerCamera);
 
 
 
@@ -110,6 +112,7 @@ Runner::setupMenus()
     Player *p = mPlayer;
     World *w = mWorld;
     Kinect *k = mKinect;
+	Achievements *a = mAchievements;
 
     Menu *options = new Menu("Options", "options", 0.1f, 0.1f, 0.07f);
     Menu *controlOptions = new Menu("Control Options", "controloptions", 0.1f, 0.1f, 0.07f);
@@ -156,12 +159,12 @@ Runner::setupMenus()
 
 
 
-    mainMenu->AddSelectElement("Start Game", [mainMenu, w, p]() {mainMenu->disable();  p->startGame(); });
+    mainMenu->AddSelectElement("Start Game", [mainMenu, a, p]() {mainMenu->disable();  a->ResetActive(); p->startGame(); });
     mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
     mainMenu->AddSelectElement("Quit", [l]() {l->quit();});
 
     pauseMenu->AddSelectElement("Continue", [pauseMenu, p]() {pauseMenu->disable(); p->setPaused(false); });
-    pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w]() {pauseMenu->disable();mainMenu->enable(); p->setPaused(true);w->reset(); p->reset(); });
+    pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w, h]() {h->showHUDElements(false); pauseMenu->disable();mainMenu->enable(); p->setPaused(true);w->reset(); p->reset(); });
     pauseMenu->AddSelectElement("Quit (Close Program)", [l]() {l->quit();});
 }
 
@@ -283,7 +286,7 @@ Runner::destroyScene()
 {
     delete mWorld;
     delete mAIManager;
-    delete mPongCamera;
+    delete mRunnerCamera;
 	InputHandler::destroyInstance();
 }
 

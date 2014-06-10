@@ -8,12 +8,13 @@
 #include "Player.h"
 #include "HUD.h"
 #include "Menu.h"
+#include "Achievements.h"
 #include <stdio.h>
 
 
-MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, PongCamera *cam, Kinect *sensor, XInputManager *gamepad, Player *player,  HUD *hud) :
-//MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, PongCamera *cam, XInputManager *gamepad, Player *player,  HUD *hud) :
-mRenderWindow(window), mAIManager(aiManager), mWorld(world), mPongCamera(cam), mGamepad(gamepad), mPlayer(player), mHUD(hud),  mKinect(sensor)
+MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *cam, Kinect *sensor, XInputManager *gamepad, Player *player,  HUD *hud, Achievements *ach) :
+//MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *cam, XInputManager *gamepad, Player *player,  HUD *hud) :
+mRenderWindow(window), mAIManager(aiManager), mWorld(world), mRunnerCamera(cam), mGamepad(gamepad), mPlayer(player), mHUD(hud),  mKinect(sensor), mAchievements(ach)
 {
 	mPaused = false;
     mQuit = false;
@@ -47,8 +48,8 @@ bool
 		mWorld->Think(time);
 		mGamepad->update();
 		mPlayer->Think(time);
-		mPongCamera->Think(time);
-
+		mRunnerCamera->Think(time);
+		mAchievements->Think(time);
 		bool keepGoing = true;
 	}
 	MenuManager::getInstance()->think(time);

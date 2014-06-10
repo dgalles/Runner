@@ -5,36 +5,48 @@
 #include "OgreVector3.h"
 #include "Player.h"
 
-PongCamera::PongCamera(Ogre::Camera *renderCamera, World *world) :
+RunnerCamera::RunnerCamera(Ogre::Camera *renderCamera, World *world) :
 mRenderCamera(renderCamera), mWorld(world), mCurrentTrackingObject(0)
 {
 	currentSegment = 0;
 	currentPercent = 0.3f;
 	direction = 1;
 	mRenderCamera->setNearClipDistance(2);
-	mFollowDistance = 100;
+	mFollowDistance = 200;
+	mType = FollowType::NORMAL;
+
 	// Any other initialization that needs to happen
 }
 
+
+void
+		RunnerCamera::SetFollowType(FollowType typ)
+{
+
+
+
+}
+
+
 void 
-PongCamera::Pause()
+RunnerCamera::Pause()
 {
 	mPaused = true;
 }
 void 
-PongCamera::UnPause()
+RunnerCamera::UnPause()
 {
 	mPaused = false;
 }
 
 void
-PongCamera::TrackObject(TrackableObject *objectToTrack)
+RunnerCamera::TrackObject(TrackableObject *objectToTrack)
 {
 	mCurrentTrackingObject = objectToTrack;
 
 }
 void
-PongCamera::Think(float time)
+RunnerCamera::Think(float time)
 {
 	if (mCurrentTrackingObject != 0)
 	{
@@ -73,7 +85,7 @@ PongCamera::Think(float time)
 
 		mWorld->trackPath->getPointAndRotaionMatrix(segment, cameraPercent, cameraPos, cameraForward, cameraRight,cameraUp);
 
-		cameraPos += cameraUp *20;
+		cameraPos += cameraUp *50;
 
 		cameraForward= trackPos - cameraPos;
 		cameraForward.normalise();

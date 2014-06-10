@@ -11,7 +11,7 @@ class BezierPath;
 class Player;
 class ItemQueue;
 class HUD;
-class PongCamera;
+class RunnerCamera;
 class TrackableObject;
 
 
@@ -32,13 +32,13 @@ public:
     void reset();
 
 	void AddRandomSegment();
-	void AddBarrierSegment();
+	void AddBarrierSegment(BezierPath::Kind type);
 
 	Ogre::Vector3 getWorldPosition(int segment, float percentage, float relativeX, float relativeY);
 	Ogre::Vector3 getTrackUp(int segment, float percentage);
 
 	
-	void addCamera(PongCamera *c) { mCamera = c; }
+	void addCamera(RunnerCamera *c) { mCamera = c; }
 
 	void removeWorldSegment(int index);
 
@@ -69,9 +69,9 @@ public:
 	void setObstacleSeparation(int gap) {mObsGap = gap; }
 	int getObstacleSeparation() { return  mObsGap; }
 
-	void AddBlades(int segment);
+	void AddObjects(int segment);
 
-    ItemQueue *Saws() { return mSaws; }
+    ItemQueue *SawPowerup() { return mSawPowerup; }
 	ItemQueue *Coins() { return mCoins; }
 	HUD *getHUD() { return mHUD; }
 
@@ -102,10 +102,10 @@ protected:
 
 	int mMeshIDIndex;
 	ItemQueue *mCoins;
-    ItemQueue *mSaws;
+    ItemQueue *mSawPowerup;
 	int mLastCoinAddedSegment;
 	HUD *mHUD;
-	PongCamera *mCamera;
+	RunnerCamera *mCamera;
 
 	float mObsFreq;
 	bool mUseFrontBack;

@@ -21,12 +21,13 @@ class AIManager;
 class InputHandler;
 class World;
 class MainListener;
-class PongCamera;
+class RunnerCamera;
  class Kinect;
 class XInputManager;
 class Player;
 class HUD;
 class MenuManager;
+class Achievements;
 
 class Runner :  public Ogre::WindowEventListener
 {
@@ -78,11 +79,12 @@ protected:
 	AIManager *mAIManager;
 	InputHandler *mInputHandler;
 	World *mWorld;
-    PongCamera *mPongCamera;
+    RunnerCamera *mRunnerCamera;
     Kinect *mKinect;
 	XInputManager *mGamepad;
 	Player *mPlayer;
 	HUD *mHUD;
+	Achievements *mAchievements;
 
     Ogre::Root *mRoot;
     Ogre::Camera* mCamera;

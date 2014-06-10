@@ -49,6 +49,9 @@
     <ClCompile Include="RunnerObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Achievements.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIManager.h">
@@ -94,6 +97,9 @@
       <Filter>Header File</Filter>
     </ClInclude>
     <ClInclude Include="CollisionManager.h">
+      <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="Achievements.h">
       <Filter>Header File</Filter>
     </ClInclude>
   </ItemGroup>

@@ -112,6 +112,7 @@ copy resources.cfg "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Achievements.h" />
     <ClInclude Include="AIManager.h" />
     <ClInclude Include="Bezier.h" />
     <ClInclude Include="Camera.h" />
@@ -129,6 +130,7 @@ copy resources.cfg "$(OutDir)"</Command>
     <ClInclude Include="XInputManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Achievements.cpp" />
     <ClCompile Include="AIManager.cpp" />
     <ClCompile Include="Bezier.cpp" />
     <ClCompile Include="Camera.cpp" />

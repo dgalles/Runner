@@ -9,10 +9,11 @@
 #include "HUD.h"
 #include "RunnerObject.h"
 #include "InputHandler.h"
+#include "Achievements.h"
 
 const float Player::SPEED_MULTIPLYER = 20;
 
- Player::Player(World *world, XInputManager *inputManager, Kinect *k) : mWorld(world), mXInputManager(inputManager), mKinect(k)
+ Player::Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach) : mWorld(world), mXInputManager(inputManager), mKinect(k), mAchievements(ach)
 //Player::Player(World *world, XInputManager *inputManager) : mWorld(world), mInputManager(inputManager)
 {
     mKinectSensitivityLR = 1.0f;
@@ -25,6 +26,10 @@ const float Player::SPEED_MULTIPLYER = 20;
 	mInvertControls = false;
     setup();
 
+	int mTotalCoins = 0;
+	int mTotalMeters = 0;
+	int mLongestRun = 0;
+	int mMostCoins = 0;
 
 }
 
@@ -37,11 +42,20 @@ const float Player::SPEED_MULTIPLYER = 20;
 
 void Player::setup()
 {
-    mPlayerObject = new RunnerObject();
-    mPlayerObject->loadModel("car.mesh", mWorld->SceneManager());
-    mPlayerObject->setScale(Ogre::Vector3(5,6,10));
+    mPlayerObject = new RunnerObject(RunnerObject::PLAYER);
+	mPlayerObject->loadModel("car.mesh", mWorld->SceneManager());
+	mPlayerObject->setScale(Ogre::Vector3(5,6,10));
 
+	mDistSinceMissedCoin = 0;
+	mShielded = false;
+	mBoosting = false;
+	mBoostTime = 0;
+	mShieldTime = 0;
 
+	mBoostsHit = 0;
+
+	mDistanceWithoutCoins = 0.0f;
+	mMaxDistWithoutCoins = 0.0f;
 
 	mCurrentSegment = 0;
 	mSegmentPercent = 0.3f;
@@ -75,27 +89,29 @@ void
     Player::startGame()
 {
 	mWorld->getHUD()->stopAllArrows();
+	mWorld->getHUD()->showHUDElements(true);
+	mAchievements->ResetActive();
 
     if (mAutoCallibrate)
     {
-        mKinect->callibrate(4.0f, [this]() { this->setPaused(false); });
+        mKinect->callibrate(4.0f, [this]() { 	mAchievements->DisplayActiveAchievements(3); this->setPaused(false); });
     }
     else
     {
+		mAchievements->DisplayActiveAchievements(3);
         mPaused = false;
     }
-
 }
 
 void
     Player::stopArrows(int segment, float percent)
 {
-    for (int i = 0; i< mWorld->Saws()->size(); i++)
+    for (int i = 0; i< mWorld->SawPowerup()->size(); i++)
     {
-        ItemQueueData d = mWorld->Saws()->atRelativeIndex(i);
+        ItemQueueData d = mWorld->SawPowerup()->atRelativeIndex(i);
         if (d.segmentIndex > segment)
             break;
-        if(d.segmentIndex == segment && d.segmentPercent < percent)
+        if(d.segmentIndex == segment && d.segmentPercent < percent && d.object->type() == RunnerObject::BLADE)
         {
             mWorld->getHUD()->stopArrow(d.xtraData);
         }
@@ -110,12 +126,12 @@ void
 	{
 		bool oneWall = false;
 
-		if (mWorld->Saws()->size() > 0)
+		if (mWorld->SawPowerup()->size() > 0)
 		{
-			for (int i = 0; i < mWorld->Saws()->size(); i++)
+			for (int i = 0; i < mWorld->SawPowerup()->size(); i++)
 			{
-				ItemQueueData d = mWorld->Saws()->atRelativeIndex(i);
-				if (d.segmentIndex == newSegment)
+				ItemQueueData d = mWorld->SawPowerup()->atRelativeIndex(i);
+				if (d.segmentIndex == newSegment && d.object->type() == RunnerObject::BLADE)
 				{
                     mWorld->getHUD()->startArrow(d.xtraData);
 				}
@@ -153,7 +169,15 @@ void
                 d.object->setScale(Ogre::Vector3::ZERO);
 				d.object->translate(Ogre::Vector3(100,100,100));
                 mCoinsCollected++;
+				mTotalCoins++;
+				mMaxDistWithoutCoins = std::max(mMaxDistWithoutCoins, mDistanceWithoutCoins);
+				mDistanceWithoutCoins = 0.0f;
                 mWorld->getHUD()->setCoins(mCoinsCollected);
+			}
+			if (d.object->getScale() != Ogre::Vector3::ZERO && d.segmentIndex == newSegment && d.segmentPercent < newPercent)
+			{
+				mDistSinceMissedCoin = 0;
+
 			}
 		}
 
@@ -165,11 +189,11 @@ bool
 {
 
 	bool collide = false;
-	if (mWorld->Saws()->size() > 0)
+	if (mWorld->SawPowerup()->size() > 0)
 	{
-		for (int i = 0; i < mWorld->Saws()->size(); i++)
+		for (int i = 0; i < mWorld->SawPowerup()->size(); i++)
 		{
-			ItemQueueData d = mWorld->Saws()->atRelativeIndex(i);
+			ItemQueueData d = mWorld->SawPowerup()->atRelativeIndex(i);
 			if (d.segmentIndex > newSegment)
 			{
 				break;
@@ -177,9 +201,24 @@ bool
             Ogre::Vector3 MTD;
             if (d.object->collides(mPlayerObject, MTD))
             {
-                collide = true;
-                break;
-            }
+				if (d.object->type() == RunnerObject::BLADE && !mShielded)
+				{
+					// TODO: Add armor here
+					mAchievements->AchievementCleared("Buzzed");
+					kill();
+					break;
+				}
+				else if (d.object->type() == RunnerObject::SPEED)
+				{
+					mBoostsHit++;
+					mBoosting = true;
+					mShielded = true;
+					mShieldTime = 5;
+					mBoostTime = 6;
+				}
+
+
+			}
 		}
 	}
 	return collide;
@@ -200,7 +239,7 @@ void Player::updateAnglesFromConrols(Ogre::Degree &angle, Ogre::Degree &angle2)
 	if (mEnableKinect)
 	{
 		angle =  mKinect->leftRightAngle() * mKinectSensitivityLR;
-		angle2 = mKinect->frontBackAngle() * 0.8 *  mKinectSensitivityFB;
+		angle2 = mKinect->frontBackAngle() * 0.8f *  mKinectSensitivityFB;
 	}
 
 	if (mEnableGamepad)
@@ -258,6 +297,26 @@ void
 		return;
 	}
 
+	if (mBoostTime < time)
+	{
+		mBoostTime = 0;
+		mBoosting = false;
+	}
+	else
+	{
+		mBoostTime -= time;
+	}
+	if (mShieldTime < time)
+	{
+		mShieldTime = 0;
+		mShielded = false;
+	}
+	else 
+	{
+		mShieldTime -= time;
+	}
+
+
 	Ogre::Degree angle = Ogre::Degree(0);
 
 	Ogre::Degree angle2 = Ogre::Degree(0);
@@ -271,19 +330,33 @@ void
 
 	mTimeSinceSpeedIncrease  += time;
 	if (mTimeSinceSpeedIncrease > 1)
-    {
-        mTimeSinceSpeedIncrease = 0;
-        FORWARD_SPEED += mSpeedIncrease;
-    }
+	{
+		mTimeSinceSpeedIncrease = 0;
+		FORWARD_SPEED += mSpeedIncrease;
+	}
 
-	LATERAL_SPEED = FORWARD_SPEED;
+	if (mBoosting)
+	{
+		LATERAL_SPEED = FORWARD_SPEED *3;
+
+	}
+	else
+	{
+		LATERAL_SPEED = FORWARD_SPEED / 2;
+
+	}
 
 	if (mAlive)
 	{
 
 
 		float distance = time * FORWARD_SPEED * SPEED_MULTIPLYER;
+		if (mBoosting)
+		{
+			distance *= 5;
+		}
 		mDistance += distance;
+		mTotalMeters += distance;
         mWorld->getHUD()->setDistance((int) mDistance / 200);
 
 		while (distance < 0 && -distance > mWorld->trackPath->pathLength(newSegment)*newPercent)
@@ -298,7 +371,7 @@ void
 		{
 			distance -= mWorld->trackPath->pathLength(newSegment) * (1 - newPercent);
 			newSegment++;
-			mWorld->AddBlades(newSegment + 5);
+			mWorld->AddObjects(newSegment + 5);
 			newPercent = 0.0f;
 			if ((mWorld->trackPath->kind(newSegment + 2) == BezierPath::Kind::GAP) ||
 				(mWorld->trackPath->kind(newSegment + 1) == BezierPath::Kind::GAP)  ||
@@ -315,9 +388,17 @@ void
 					return;
 				}
 			}
+			if ((mWorld->trackPath->kind(newSegment -1) == BezierPath::Kind::LOOP) && (mWorld->trackPath->kind(newSegment) != BezierPath::Kind::LOOP))
+			{
+				mAchievements->AchievementCleared("Looper");
+			}
+			if ((mWorld->trackPath->kind(newSegment -1) == BezierPath::Kind::TWIST) && (mWorld->trackPath->kind(newSegment) != BezierPath::Kind::TWIST))
+			{
+				mAchievements->AchievementCleared("Snap");
+			}
 			if (mWorld->trackPath->kind(newSegment) == BezierPath::Kind::GAP)
 			{
-				if (angle2.valueDegrees() >  5)
+				if (angle2.valueDegrees() >  5 || mShielded)
 				{
 					mTargetDeltaY = 0;
 					mDeltaY = 0;
@@ -392,6 +473,7 @@ void
         mWorld->clearCoinsBefore(mCurrentSegment-1);
         mWorld->clearBarriersBefore(mCurrentSegment-1);
 
+		updateAchievements();
 
 		/// Arrow detection
 
@@ -428,19 +510,18 @@ void
 
 
 
-		// Collision with walls
+		// Collision with walls & powerups
 
 		bool collide = detectCollision(newSegment, newPercent, newX);
 
 		// Collision with coins
 
+		mDistanceWithoutCoins += distance;
 		coinCollision(newSegment, newPercent, newX);
 
+		mDistSinceMissedCoin+= distance;
 
-		if (collide)
-		{
-			kill();
-		}
+
 	}
 	else if (mExplodeTimer > 0)
 	{
@@ -448,6 +529,84 @@ void
 	}
 
 }
+
+void
+Player::updateAchievements()
+{
+	if (mCoinsCollected >= 100)
+	{
+		mAchievements->AchievementCleared("Pennies From Hevean");
+	}
+	if (mCoinsCollected >= 200)
+	{
+		mAchievements->AchievementCleared("Making Money");
+	}
+	if (mCoinsCollected >= 500)
+	{
+		mAchievements->AchievementCleared("Getting Bank");
+	}
+
+	if (mDistance / 200 > 100)
+	{
+		mAchievements->AchievementCleared("Getting Started");
+	}
+		if (mDistance / 200 > 500)
+	{
+		mAchievements->AchievementCleared("Middle Distance");
+	}
+
+			if (mDistance / 200 > 1000)
+	{
+		mAchievements->AchievementCleared("Long Haul");
+	}
+
+	if (mTotalMeters / 200 >= 5000)
+	{
+		mAchievements->AchievementCleared("Marathon I");
+	}
+		if (mTotalMeters / 200 >= 10000)
+	{
+		mAchievements->AchievementCleared("Marathon II");
+	}
+	if (mTotalMeters / 200 >= 50000)
+	{
+		mAchievements->AchievementCleared("Marathon III");
+	}
+	if (mTotalCoins >=5000)
+	{
+		mAchievements->AchievementCleared("Building Bling");
+	}
+	if (mDistSinceMissedCoin / 200 > 20)
+	{
+
+		mAchievements->AchievementCleared("Greedy I");
+	}
+	if (mDistSinceMissedCoin / 200 > 50)
+	{
+
+		mAchievements->AchievementCleared("Greedy II");
+	}	if (mDistSinceMissedCoin / 200 > 100)
+	{
+
+		mAchievements->AchievementCleared("Greedy III");
+	}
+	if (mDistanceWithoutCoins / 200 > 10)
+	{
+		mAchievements->AchievementCleared("Penniless I");
+	}
+	if (mDistanceWithoutCoins / 200 > 50)
+	{
+		mAchievements->AchievementCleared("Penniless II");
+	}
+
+	if (mDistanceWithoutCoins / 200 > 100)
+	{
+		mAchievements->AchievementCleared("Penniless III");
+	}
+
+
+}
+
 
 void 
 Player::moveExplosion(float time)
@@ -472,6 +631,10 @@ void
 {
 	mAlive = false;
 	mExplodeTimer = 3.0;
+
+	
+	mLongestRun = std::max(mLongestRun, (int) mDistance);
+	mMostCoins = std::max(mMostCoins, mCoinsCollected);
 
 	Ogre::Entity *debrisEntity[4];
 

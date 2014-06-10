@@ -13,6 +13,7 @@ Kinect::Kinect(void)
 	mToso2Overlay = Ogre::OverlayManager::getSingleton().getByName("Kinect/Torso2");
 	mCallibrationText = Ogre::OverlayManager::getSingleton().getOverlayElement("Kinect/Calibrate2");
 
+	mCallibrating = false;
 
 	mCallibrationOverlay = Ogre::OverlayManager::getSingleton().getByName("Kinect/CallibrationOverlay");
 

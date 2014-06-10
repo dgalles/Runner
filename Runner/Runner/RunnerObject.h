@@ -14,8 +14,14 @@ namespace Ogre
 class RunnerObject
 {
 public:
-    RunnerObject(void);
+
+	enum ObjectType {PLAYER, COIN, BLADE, SPEED, SHEILD, REBUILD_ARMOR};
+
+    RunnerObject(ObjectType type);
     ~RunnerObject(void);
+
+	ObjectType type() {return mType;}
+
     void loadModel(Ogre::String modelName, Ogre::SceneManager *sm);
     void setPosition(Ogre::Vector3 newPosition);
     void setOrientation(Ogre::Quaternion newOrientation);
@@ -40,7 +46,8 @@ public:
     Ogre::Quaternion getOrientation() { return mOrentation; }
     Ogre::Vector3 getScale() { return mScale;}
 
-private:
+protected:
+	ObjectType mType;
     Ogre::SceneNode *mSceneNode;
     OBB *mCollision;
     Ogre::Vector3 mPosition;

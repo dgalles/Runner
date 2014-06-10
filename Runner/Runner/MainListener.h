@@ -5,12 +5,13 @@
 class InputHandler;
 class AIManager;
 class World;
-class PongCamera;
+class RunnerCamera;
 class Kinect;
 class XInputManager;
 class Player;
 class HUD;
 class MenuManager;
+class Achievements;
 
 namespace Ogre
 {
@@ -20,8 +21,8 @@ namespace Ogre
 class MainListener : public Ogre::FrameListener
 {
 public:
- 	MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, PongCamera *pongCam, Kinect *sensor, XInputManager *gamepad, Player *player, HUD *hud);
-	//MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, PongCamera *pongCam, XInputManager *gamepad, Player *player, HUD *hud);
+ 	MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *pongCam, Kinect *sensor, XInputManager *gamepad, Player *player, HUD *hud, Achievements *ach);
+	//MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *pongCam, XInputManager *gamepad, Player *player, HUD *hud);
 
 	bool frameStarted(const Ogre::FrameEvent &evt);
 
@@ -33,10 +34,11 @@ protected:
 	InputHandler *mInputHandler;
 	AIManager *mAIManager;
 	World *mWorld;
-    PongCamera *mPongCamera;
+    RunnerCamera *mRunnerCamera;
 	Kinect     *mKinect;
 	XInputManager *mGamepad;
 	Player *mPlayer;
+	Achievements *mAchievements;
 	HUD *mHUD;
 	Ogre::RenderWindow *mRenderWindow;
 	bool mPaused;
