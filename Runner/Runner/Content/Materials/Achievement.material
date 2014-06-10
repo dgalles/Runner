@@ -1,0 +1,36 @@
+material AchievementBackground 
+{
+    receive_shadows off
+
+    technique
+    {
+        pass 
+        {
+			scene_blend alpha_blend
+            texture_unit 
+            {
+                texture AchievementBackground.png
+                scale 1.0 1.0
+                colour_op modulate
+            }
+        }
+    }
+}
+
+material AchievementBackground2 
+{
+    receive_shadows off
+
+    technique
+    {
+        pass 
+        {
+			scene_blend alpha_blend
+            texture_unit 
+            {
+                texture AchievementBackground.png
+			    alpha_op_ex source1 src_manual src_current 0.8
+            }
+        }
+    }
+}
