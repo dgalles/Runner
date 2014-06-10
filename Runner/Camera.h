@@ -7,17 +7,21 @@ class World;
 class TrackableObject;
 
 
-class PongCamera
+class RunnerCamera
 {
 
 
 public:
-    PongCamera(Ogre::Camera *renderCamera, World *world); 
+
+	enum FollowType {CLOSE, NORMAL, HIGH};
+
+    RunnerCamera(Ogre::Camera *renderCamera, World *world); 
     void Think(float time);
     // If you have a different cameras, you'll want some acessor methods here.
     //  If your camera always stays still, you could remove this class entirely
 
 	void TrackObject(TrackableObject *objectToTrack);
+	void SetFollowType(FollowType typ);
 	void Pause();
 	void UnPause();
 protected:
@@ -32,4 +36,5 @@ protected:
 	TrackableObject *mCurrentTrackingObject;
 	float mFollowDistance;
 	Ogre::Vector3 oldPosition;
+	FollowType mType;
 };

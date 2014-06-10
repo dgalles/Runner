@@ -27,7 +27,8 @@ HUD::HUD()
 	}
 
 	mScoreOverlay = Ogre::OverlayManager::getSingleton().getByName("HUD/Score");
-	mScoreOverlay->show();
+	mShowHUDElems = false;
+	//mScoreOverlay->show();
 
 	Ogre::String s = mScoreOverlay->getName();
 
@@ -35,6 +36,20 @@ HUD::HUD()
 	mDistanceText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Distance");
 
 }
+
+
+	void HUD::showHUDElements(bool show)
+	{
+		mShowHUDElems = show;
+		if (show)
+		{
+				mScoreOverlay->show();
+		}
+		else
+		{
+				mScoreOverlay->hide();
+		}
+	}
 
 void 
 HUD::stopAllArrows()
@@ -78,7 +93,7 @@ void HUD::update(float time)
             {
                 mArrowFlashTime[i] += mArrowFlashDelay[i] - time;
                 mArrowStatus[i] = !mArrowStatus[i];
-                if (mArrowStatus[i] && mShowArrows)
+                if (mArrowStatus[i] && mShowArrows && mShowHUDElems)
                 {
                     mArrowOverlay[i]->show();
                 }
@@ -114,7 +129,7 @@ void HUD::startArrow(HUD::Kind type, float time /*= 5.0*/,  float flashDelay /* 
 	mArrowFlashDelay[(int) type] = flashDelay;
 	mArrowStatus[(int) type] = true;
 	mArrowTimeRemaining[(int) type] = time;
-    if (mShowArrows)
+    if (mShowArrows && mShowHUDElems)
     {
 	    mArrowOverlay[(int) type]->show();
     }

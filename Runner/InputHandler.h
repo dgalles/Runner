@@ -8,7 +8,7 @@ namespace Ogre
     class RenderWindow;
 }
 class World;
-class PongCamera;
+class RunnerCamera;
 class InputHandler;
 
 

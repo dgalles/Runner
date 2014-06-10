@@ -3,7 +3,7 @@
 #include "OgreEntity.h"
 #include "CollisionManager.h"
 
-RunnerObject::RunnerObject(void)
+RunnerObject::RunnerObject(ObjectType type) : mType(type)
 {
     mCollision = NULL;
     mSceneNode = NULL;

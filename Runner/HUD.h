@@ -25,6 +25,8 @@ public:
     void stopArrow(Kind type);
 	void stopAllArrows();
 
+	void showHUDElements(bool show);
+
 protected:
 	Ogre::Overlay *mArrowOverlay[(int) HUD::last];
 	Ogre::Overlay *mScoreOverlay;
@@ -35,4 +37,5 @@ protected:
 	bool mArrowStatus[(int) HUD::last];
 	float mArrowTimeRemaining[(int) HUD::last];
     bool mShowArrows;
+	bool mShowHUDElems;
 };

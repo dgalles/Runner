@@ -8,7 +8,7 @@
 class BezierPath
 {
 public:
-	enum Kind {NORMAL, GAP, BLADES};
+	enum Kind {NORMAL, GAP, BLADES, LOOP, TWIST, BOOST};
 
 
 	BezierPath(Ogre::Vector3 pt0, Ogre::Vector3 pt1, Ogre::Vector3 pt2, Ogre::Vector3 pt3);
@@ -22,8 +22,8 @@ public:
 	void getPointAndForward(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward);
 	void getPointAndRotaionMatrix(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward, Ogre::Vector3 &right, Ogre::Vector3 &up);
 	int kind(int segmentIndex) { return mKind[segmentIndex]; }
-	bool getBladesPlaced(int segmentIndex) { return mBladesPlaced[segmentIndex]; }
-	void setBladesPlaced(int segmentIndex, bool bladeSet) {  mBladesPlaced[segmentIndex] = bladeSet;  }
+	bool getObjectPlaced(int segmentIndex) { return mBladesPlaced[segmentIndex]; }
+	void setObjectPlaced(int segmentIndex, bool bladeSet) {  mBladesPlaced[segmentIndex] = bladeSet;  }
 
 private:
 	std::vector<Ogre::Vector3> mControlPoints;

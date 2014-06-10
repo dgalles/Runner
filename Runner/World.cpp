@@ -44,7 +44,7 @@ void World::setup()
 	mUnitsPerSegment = 10;
 	mUnitsPerPathLength = 0.1f;
 	mCoins = new ItemQueue(500);
-	mSaws = new ItemQueue(100);
+	mSawPowerup = new ItemQueue(100);
 
 	trackPath = new BezierPath(Ogre::Vector3(0,0,0),
 		Ogre::Vector3(50,0,0),
@@ -66,9 +66,9 @@ void World::setup()
 		AddRandomSegment();
 		addCoins();
 	}
-	AddBlades(3);
-	AddBlades(4);
-	AddBlades(5);
+	AddObjects(3);
+	AddObjects(4);
+	AddObjects(5);
 
 	//AddJump();
 	//AddJump();
@@ -80,7 +80,7 @@ void World::setup()
 
 void World::reset()
 {
-	delete mSaws;
+	delete mSawPowerup;
 	delete mCoins;
 	mSceneManager->clearScene();
 	delete trackPath;
@@ -93,7 +93,7 @@ void World::reset()
 void 
 	World::clearBarriersBefore(int segment)
 {
-	clearBefore(mSaws, segment);
+	clearBefore(mSawPowerup, segment);
 }
 
 void 
@@ -216,7 +216,7 @@ void
 		if (mCoins->size() < mCoins->maxSize())
 		{
 
-			RunnerObject *coin = new RunnerObject();
+			RunnerObject *coin = new RunnerObject(RunnerObject::COIN);
 			coin->loadModel("coin.mesh", SceneManager());
 			coin->setScale(Ogre::Vector3(5,5,5));
 
@@ -385,7 +385,7 @@ void
 
 	//q = Ogre::Quaternion::IDENTITY;
 
-	trackPath->AddPathSegment(deltap1 + point, point + 2 * deltap1, point + 3 * deltap1, q*n1, q*(q*n1), q*q*q*n1);
+	trackPath->AddPathSegment(deltap1 + point, point + 2 * deltap1, point + 3 * deltap1, q*n1, q*(q*n1), q*q*q*n1,  BezierPath::Kind::TWIST);
 
 
 	addTrackNodes(trackPath->NumSegments() - 1);
@@ -427,7 +427,7 @@ void
 		Ogre::Vector3 p1 =previous + directions[i*3] * 100 + right*10;
 		Ogre::Vector3 p2 =p1 + directions[i*3 + 1] * 100 + right*10;
 		Ogre::Vector3 p3 =p2 + directions[i*3 + 2] * 100 + right*10;
-		trackPath->AddPathSegment(p1, p2, p3, normals[i*3], normals[i*3+1], normals[i*3+2]);
+		trackPath->AddPathSegment(p1, p2, p3, normals[i*3], normals[i*3+1], normals[i*3+2], BezierPath::Kind::LOOP);
 		addTrackNodes(trackPath->NumSegments() - 1);
 		previous = p3;
 	}
@@ -499,7 +499,7 @@ void
 	//      saw->setOrientation(q);
 	//      ItemQueueData d(trackPath->NumSegments()-2,.99,0,diff, saw);
 	//      d.xtraData = HUD::Kind::up;
-	//      mSaws->enqueue(d);
+	//      mSawPowerup->enqueue(d);
 	//  }
 
 
@@ -530,7 +530,7 @@ void
 }
 
 
-void World::AddBarrierSegment()
+void World::AddBarrierSegment(BezierPath::Kind type)
 {
 	Ogre::Vector3 point;
 	Ogre::Vector3 direction;
@@ -546,157 +546,204 @@ void World::AddBarrierSegment()
 
 
 	// b = BARRIER_TOP;
-	AddSegment(direction, direction2, direction3, BezierPath::Kind::BLADES);
+	AddSegment(direction, direction2, direction3, type);
 
 }
 
-void World::AddBlades(int segment)
+void World::AddObjects(int segment)
 {
 
-	if (trackPath->kind(segment) != BezierPath::Kind::BLADES || trackPath->getBladesPlaced(segment))
+	if (((trackPath->kind(segment) != BezierPath::Kind::BLADES) && trackPath->kind(segment) != BezierPath::Kind::BOOST) || trackPath->getObjectPlaced(segment))
 	{
 		return;
 	}
 
-	trackPath->setBladesPlaced(segment, true);
+	trackPath->setObjectPlaced(segment, true);
 
-	float barrierPercent = 0.9f;
-
-	float relX[6];
-	float relY[6];
-	int numBlades = 0;
-
-	float b = (float) rand() /(float) RAND_MAX;
-	if (!mUseFrontBack)
+	if (trackPath->kind(segment) == BezierPath::Kind::BLADES)
 	{
-		b = b * 0.749f;
-	}
 
-	HUD::Kind type;
-	if (b < 0.25)
-	{
-		type = HUD::Kind::right;
-		relX[0] = -width; 
-		relY[0] = 5;
+		float barrierPercent = 0.9f;
 
-		relX[1] = -width;
-		relY[1] = 11;
+		float relX[6];
+		float relY[6];
+		int numBlades = 0;
 
-		relX[2] = -width;
-		relY[2] = 17;
-
-		relX[3] = 0;
-		relY[3] = 5;
-
-		relX[4] = 0;
-		relY[4] = 11;
-
-		relX[5] = 0;
-		relY[5] = 17;
-		numBlades = 6;
-
-	}
-	else if (b < 0.5)
-	{
-		type = HUD::Kind::left;
-
-		relX[0] = width; 
-		relY[0] = 5;
-
-		relX[1] = width;
-		relY[1] = 11;
-
-		relX[2] = width;
-		relY[2] = 17;
-
-		relX[3] = 0;
-		relY[3] = 5;
-
-		relX[4] = 0;
-		relY[4] = 11;
-
-		relX[5] = 0;
-		relY[5] = 17;
-		numBlades = 6;
-
-	}
-	else if (b < 0.75)
-	{
-		type = HUD::Kind::center;
-
-		relX[0] = width; 
-		relY[0] = 5;
-
-		relX[1] = width;
-		relY[1] = 11;
-
-		relX[2] = width;
-		relY[2] = 17;
-
-		relX[3] = -width;
-		relY[3] = 5;
-
-		relX[4] = -width;
-		relY[4] = 11;
-
-		relX[5] = -width;
-		relY[5] = 17;
-
-		numBlades = 6;
-	}
-	else //  if (b < 1.0)
-	{
-		type = HUD::Kind::down;
-
-		relX[0] = width;
-		relY[0] = 14;
-
-		relX[1] = width;
-		relY[1] = 21;
-
-		relX[2] = 0;
-		relY[2] = 14;
-
-		relX[3] = 0;
-		relY[3] = 21;
-
-		relX[4] = -width;
-		relY[4] = 14;
-
-		relX[5] = -width;
-		relY[5] = 21;
-
-		numBlades = 6;
-
-	}
-
-	for (int i = 0; i < numBlades; i++)
-	{
-		RunnerObject *saw = new RunnerObject();
-		saw->loadModel("sawblade.mesh", SceneManager());
-		if (type == HUD::Kind::down)
+		float b = (float) rand() /(float) RAND_MAX;
+		if (!mUseFrontBack)
 		{
-			saw->setScale(Ogre::Vector3(8,5,8));
-		}
-		else
-		{
-			saw->setScale(Ogre::Vector3(5,5,5));
+			b = b * 0.749f;
 		}
 
-		Ogre::Vector3 pos;
-		Ogre::Vector3 forward;
-		Ogre::Vector3 right;
-		Ogre::Vector3 up;
+		HUD::Kind type;
+		if (b < 0.25)
+		{
+			type = HUD::Kind::right;
+			relX[0] = -width; 
+			relY[0] = 5;
+
+			relX[1] = -width;
+			relY[1] = 11;
+
+			relX[2] = -width;
+			relY[2] = 17;
+
+			relX[3] = 0;
+			relY[3] = 5;
+
+			relX[4] = 0;
+			relY[4] = 11;
+
+			relX[5] = 0;
+			relY[5] = 17;
+			numBlades = 6;
+
+		}
+		else if (b < 0.5)
+		{
+			type = HUD::Kind::left;
+
+			relX[0] = width; 
+			relY[0] = 5;
+
+			relX[1] = width;
+			relY[1] = 11;
+
+			relX[2] = width;
+			relY[2] = 17;
+
+			relX[3] = 0;
+			relY[3] = 5;
+
+			relX[4] = 0;
+			relY[4] = 11;
+
+			relX[5] = 0;
+			relY[5] = 17;
+			numBlades = 6;
+
+		}
+		else if (b < 0.75)
+		{
+			type = HUD::Kind::center;
+
+			relX[0] = width; 
+			relY[0] = 5;
+
+			relX[1] = width;
+			relY[1] = 11;
+
+			relX[2] = width;
+			relY[2] = 17;
+
+			relX[3] = -width;
+			relY[3] = 5;
+
+			relX[4] = -width;
+			relY[4] = 11;
+
+			relX[5] = -width;
+			relY[5] = 17;
+
+			numBlades = 6;
+		}
+		else //  if (b < 1.0)
+		{
+			type = HUD::Kind::down;
+
+			relX[0] = width;
+			relY[0] = 14;
+
+			relX[1] = width;
+			relY[1] = 21;
+
+			relX[2] = 0;
+			relY[2] = 14;
+
+			relX[3] = 0;
+			relY[3] = 21;
+
+			relX[4] = -width;
+			relY[4] = 14;
+
+			relX[5] = -width;
+			relY[5] = 21;
+
+			numBlades = 6;
+
+		}
+
+		for (int i = 0; i < numBlades; i++)
+		{
+			RunnerObject *saw = new RunnerObject(RunnerObject::BLADE);
+			saw->loadModel("sawblade.mesh", SceneManager());
+			if (type == HUD::Kind::down)
+			{
+				saw->setScale(Ogre::Vector3(8,5,8));
+			}
+			else
+			{
+				saw->setScale(Ogre::Vector3(5,5,5));
+			}
+
+			Ogre::Vector3 pos;
+			Ogre::Vector3 forward;
+			Ogre::Vector3 right;
+			Ogre::Vector3 up;
 
 
-		getWorldPositionAndMatrix(segment, barrierPercent, relX[i], relY[i], pos,forward, right, up);
-		Ogre::Quaternion q(-right,up,forward);
+			getWorldPositionAndMatrix(segment, barrierPercent, relX[i], relY[i], pos,forward, right, up);
+			Ogre::Quaternion q(-right,up,forward);
 
-		saw->setPosition(pos); ///5
-		saw->setOrientation(q);
-		ItemQueueData d(segment,barrierPercent,relX[i], relY[i], saw);
-		d.xtraData = type;
-		mSaws->enqueue(d);
+			saw->setPosition(pos); ///5
+			saw->setOrientation(q);
+			ItemQueueData d(segment,barrierPercent,relX[i], relY[i], saw);
+			d.xtraData = type;
+			mSawPowerup->enqueue(d);
+		}
+	}
+	else 
+	{
+
+		float barrierPercent = 0.9f;
+
+		float relX;
+		float relY = 5;
+
+		float b = (float) rand() /(float) RAND_MAX;
+		if (b < 0.33)
+		{
+			relX = -width;
+		}
+		else if (b < 0.66)
+		{
+			relX = 0;
+		}
+		else 
+		{
+			relX = width;
+		}
+
+			RunnerObject *boost = new RunnerObject(RunnerObject::SPEED);
+			boost->loadModel("Arrow.mesh", SceneManager());
+			boost->setScale(Ogre::Vector3(5,5,5));
+			boost->pitch(Ogre::Degree(90));
+
+
+			Ogre::Vector3 pos;
+			Ogre::Vector3 forward;
+			Ogre::Vector3 right;
+			Ogre::Vector3 up;
+
+			getWorldPositionAndMatrix(segment, barrierPercent, relX, relY, pos,forward, right, up);
+			Ogre::Quaternion q(-right,up,forward);
+
+			boost->setPosition(pos); ///5
+			boost->setOrientation(q);
+			ItemQueueData d(segment,barrierPercent,relX, relY, boost);
+			// d.xtraData = type;
+			mSawPowerup->enqueue(d);
+		
 	}
 }
 
@@ -744,18 +791,22 @@ void
 		}
 		else
 		{
-			AddBarrierSegment();
+			AddBarrierSegment(BezierPath::Kind::BLADES);
 		}
 	}
 	else
 	{
 		mLastObjSeg++;
 		r = (rand() / (float) RAND_MAX);
-		if (r > 0.95)
+		if (r > 0.60)
+		{
+			AddBarrierSegment(BezierPath::Kind::BOOST);
+		}
+		else if (r > 0.90)
 		{
 			AddTwisty();
 		}
-		else if (r > 0.90)
+		else if (r > 0.85)
 		{
 			AddLoop();
 		}
@@ -781,11 +832,18 @@ void
 
 	}
 	int direction = 1;
-	for (int i = 0; i < mSaws->size(); i++)
+	for (int i = 0; i < mSawPowerup->size(); i++)
 	{
-		ItemQueueData d = mSaws->atRelativeIndex(i);
-		d.object->yaw(Ogre::Radian(sawRadiansPerSecond * time * direction));
-		direction = direction * -1;
+		ItemQueueData d = mSawPowerup->atRelativeIndex(i);
+		if (d.object->type() == RunnerObject::BLADE)
+		{
+			d.object->yaw(Ogre::Radian(sawRadiansPerSecond * time * direction));
+			direction = direction * -1;
+		}
+		else if (d.object->type() == RunnerObject::SPEED)
+		{
+			d.object->yaw(Ogre::Radian(radiansPerSecond * time));
+		}
 	}
 }
 

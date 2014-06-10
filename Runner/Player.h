@@ -4,7 +4,7 @@ class XInputManager;
 class Ogre::SceneNode;
 class Kinect;
 class RunnerObject;
-
+class Achievements;
 
 
 
@@ -28,7 +28,7 @@ class Player : public TrackableObject
 {
 
 public:
-	Player(World *world, XInputManager *inputManager, Kinect *k);
+	Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach);
 
 	void Think(float time);
 
@@ -71,6 +71,8 @@ public:
     void reset();
 
 protected:
+	void updateAchievements();
+
 	void updateAnglesFromConrols(Ogre::Degree &angle, Ogre::Degree &angle2);
 
 	void kill();
@@ -121,6 +123,20 @@ protected:
 		bool mUseFrontBack;
 		bool mInvertControls;
 
-
+	Achievements *mAchievements;
     static const float SPEED_MULTIPLYER;
+
+
+	int mTotalCoins;
+	float mTotalMeters;
+	int mLongestRun;
+	int mMostCoins;
+	float mDistanceWithoutCoins;
+	float mMaxDistWithoutCoins;
+	float mDistSinceMissedCoin;
+	bool mShielded;
+	bool mBoosting;
+	float mBoostTime;
+	float mShieldTime;
+	int mBoostsHit;
 };
