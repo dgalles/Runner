@@ -1,0 +1,154 @@
+ 	
+
+// The name of the overlay comes first
+
+
+
+Achievements/Completed1
+{
+    zorder 200
+    container Panel(Achievements/Completed1/Panel)
+    {
+      metrics_mode relative
+
+	  left 0.05
+      top 0.05
+      width 0.9
+      height 0.15
+	  material AchievementBackground
+	  
+	  	element TextArea(Achievements/Completed1/Text)
+		{
+		metrics_mode relative
+		
+         left 0.05
+		 top  0.05
+         font_name Big
+         char_height 0.05
+         colour 0 0.1 0
+         caption Achievement Name Here (Completed)
+		}	  
+    }   
+}
+
+Achievements/Completed2
+{
+    zorder 200
+
+    container Panel(Achievements/Completed2/Panel)
+    {
+      metrics_mode relative
+
+	  left 0.05
+      top 0.20
+      width 0.9
+      height 0.15
+	  material AchievementBackground
+	  
+	  	element TextArea(Achievements/Completed2/Text)
+		{
+		metrics_mode relative
+		
+         left 0.05
+		 top  0.05
+         font_name Big
+         char_height 0.05
+         colour 0 0.1 0
+         caption Achievement Name Here (Completed)
+		}	  
+    }   
+}
+
+Achievements/Completed3
+{
+    zorder 200
+
+    container Panel(Achievements/Completed3/Panel)
+    {
+      metrics_mode relative
+
+	  left 0.05
+      top 0.35
+      width 0.9
+      height 0.15
+	  material AchievementBackground
+	  
+	  	element TextArea(Achievements/Completed3/Text)
+		{
+		metrics_mode relative
+		
+         left 0.05
+		 top  0.05
+         font_name Big
+         char_height 0.05
+         colour 0 0.1 0
+         caption Achievement Name Here (Completed)
+		}	  
+    }   
+}
+
+Achievements/Active
+{
+    zorder 100
+    container Panel(Achievements/Active/Panel)
+    {
+      metrics_mode relative
+
+	  left 0.05
+      top 0.05
+      width 0.9
+      height 0.34
+	  material AchievementBackground2
+	  
+	  
+	  	 element TextArea((Achievements/Active/Caption)
+		{
+		metrics_mode relative
+		
+         left 0.3
+		 top 0.05
+         font_name Big
+         char_height 0.05
+         colour 0 0.1 0
+         caption Active Achievements
+		}	  
+
+	  
+	  
+	  	element TextArea((Achievements/Active/Text1)
+		{
+		metrics_mode relative
+		
+         left 0.05
+		 top 0.11
+         font_name Big
+         char_height 0.05
+         colour 0 0.1 0
+         caption Achievement Name 1 Here
+		}	  
+		element TextArea((Achievements/Active/Text2)
+		{
+		metrics_mode relative
+		
+         left 0.05
+         font_name Big
+		 top 0.18
+
+         char_height 0.05
+         colour 0 0.1 0
+         caption Achievement Name 2 Here
+		}	 
+		element TextArea((Achievements/Active/Text3)
+		{
+		metrics_mode relative
+		
+         left 0.05
+		 top 0.25
+         font_name Big
+         char_height 0.05
+         colour 0 0.1 0
+         caption Achievement Name 3 Here
+		}	 
+    }   
+}
+
