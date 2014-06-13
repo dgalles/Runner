@@ -87,6 +87,47 @@ Achievements/Completed3
     }   
 }
 
+
+Achievements/All
+{
+
+    container Panel(Achievements/All/Panel)
+    {
+
+	left 0.05
+	top 0.05
+	width 0.9
+	height .6
+	material AchievementBackground3
+	
+	  	element TextArea(Achievements/All/Active)
+		{
+		metrics_mode relative
+		
+         left 0.05
+		 top  0.05
+         font_name Big
+         char_height 0.05
+         colour 0 0.1 0
+         caption Active Goals
+		}
+
+	  	element TextArea(Achievements/All/Completed)
+		{
+		metrics_mode relative
+		
+         left 0.05
+		 top  0.05
+         font_name Big
+         char_height 0.05
+         colour 0 0.1 0
+         caption Completed Goals
+		}	  
+		
+    }
+
+}
+
 Achievements/Active
 {
     zorder 100
@@ -110,7 +151,7 @@ Achievements/Active
          font_name Big
          char_height 0.05
          colour 0 0.1 0
-         caption Active Achievements
+         caption Active Goals
 		}	  
 
 	  
