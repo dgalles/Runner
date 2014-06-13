@@ -35,6 +35,8 @@ public:
 
 	void AddChooseBool(Ogre::String name,  std::function<void(bool)> callback, bool intialValue = false);
 
+	void AddChooseEnum(Ogre::String name, std::vector<Ogre::String> enumNames, std::vector<std::function<void()>> callbacks, int initialVal = 0);
+
 	void think(float time);
 
 	void setItemHeight(float height);
@@ -102,6 +104,7 @@ protected:
 		ChooseIntMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(int)> callback, int minValue, int maxValue, int initialValue, int delta);
 		virtual void Increase();
 		virtual void Decrease();
+
 	protected:
 		int mIntValue;
 		int mMinValue;
@@ -111,6 +114,26 @@ protected:
 		std::function<void(int)>  mCallback;
 
 	};
+
+
+
+	class ChooseEnumMenuItem : public MenuItem
+	{
+	public:
+		ChooseEnumMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::vector<Ogre::String> choiceNames, std::vector<std::function<void()>> callbacks, int initialValue);
+		virtual void Increase();
+		virtual void Decrease();
+		virtual void Enter() { Increase(); }
+
+	protected:
+		std::vector<Ogre::String> mChoiceNames;
+		std::vector<std::function<void()>> mCallbacks;
+		int mCurrentValue;
+		Ogre::String mText;
+		std::function<void(int)>  mCallback;
+
+	};
+
 
 
     	class ChooseFloatMenuItem : public MenuItem

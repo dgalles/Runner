@@ -34,7 +34,13 @@ protected:
 	int direction;
 	bool mPaused;
 	TrackableObject *mCurrentTrackingObject;
-	float mFollowDistance;
 	Ogre::Vector3 oldPosition;
 	FollowType mType;
+
+	float mDesiredFollowDistance;
+	float mDesiredFollowHeight;
+
+	float mCurrentFollowDistance;
+	float mCurrentFollowHeight;
+
 };

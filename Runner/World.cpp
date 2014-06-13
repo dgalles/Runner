@@ -702,7 +702,7 @@ void World::AddObjects(int segment)
 			mSawPowerup->enqueue(d);
 		}
 	}
-	else 
+	else if (trackPath->kind(segment) == BezierPath::Kind::BOOST)
 	{
 
 		float barrierPercent = 0.9f;
@@ -726,8 +726,7 @@ void World::AddObjects(int segment)
 
 			RunnerObject *boost = new RunnerObject(RunnerObject::SPEED);
 			boost->loadModel("Arrow.mesh", SceneManager());
-			boost->setScale(Ogre::Vector3(5,5,5));
-			boost->pitch(Ogre::Degree(90));
+			boost->setScale(Ogre::Vector3(6,6,6));
 
 
 			Ogre::Vector3 pos;
@@ -740,10 +739,19 @@ void World::AddObjects(int segment)
 
 			boost->setPosition(pos); ///5
 			boost->setOrientation(q);
+			boost->pitch(Ogre::Degree(50));
+
 			ItemQueueData d(segment,barrierPercent,relX, relY, boost);
 			// d.xtraData = type;
 			mSawPowerup->enqueue(d);
-		
+
+	}
+	else
+	{
+		int x = 3;
+		x++;
+
+
 	}
 }
 
@@ -798,15 +806,15 @@ void
 	{
 		mLastObjSeg++;
 		r = (rand() / (float) RAND_MAX);
-		if (r > 0.60)
+		if (r > 0.97)
 		{
 			AddBarrierSegment(BezierPath::Kind::BOOST);
 		}
-		else if (r > 0.90)
+		else if (r > 0.92)
 		{
 			AddTwisty();
 		}
-		else if (r > 0.85)
+		else if (r > 0.87)
 		{
 			AddLoop();
 		}

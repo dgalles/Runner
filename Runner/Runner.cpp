@@ -136,22 +136,33 @@ Runner::setupMenus()
 	options->AddSelectElement("Return to Main Menu", [options, mainMenu]() {options->disable(); mainMenu->enable();});
 
     gameplayOptions->AddChooseBool("Arrow Indicators", [h](bool show) {h->showArrows(show);}, h->arrowsShown());
-	gameplayOptions->AddChooseBool("Use Forward / Backward Leaning", [w, p](bool use) {w->setUseFrontBack(use); p->setUseFrontBack(use);} , w->getUseFrontBack());
+	gameplayOptions->AddChooseBool("Use Forward / Backward Leaning", [w, p](bool use) {w->setUseFrontBack(use); p->setUseFrontBack(use);} , p->getUseFrontBack());
     gameplayOptions->AddChooseFloat("Obstacle Frequency", [w](float x) {w->setObstacleFrequency(x); }, 0.0f, 1.0f,w->getObstacleFrequency(), 0.1f);
     gameplayOptions->AddChooseInt("Minimum Obstacle Separation", [w](int x) {w->setObstacleSeparation(x); }, 0, 15, w->getObstacleSeparation(), 1);
-    gameplayOptions->AddChooseInt("Initial Speed", [p](int x) {p->setSpeed(x); }, 5, 100, p->getSpeed(), 5);
-    gameplayOptions->AddChooseInt("Speed Increase", [p](int x) {p->setSpeedIncrease(x); }, 0, 20, p->getSpeedIncrease(), 1);
-    gameplayOptions->AddSelectElement("Return to Options Menu", [gameplayOptions,options]() {gameplayOptions->disable(); options->enable();});
+    gameplayOptions->AddChooseInt("Initial Speed", [p](int x) {p->setInitialSpeed(x); }, 5, 100, p->getInitialSpeed(), 5);
+    gameplayOptions->AddChooseInt("Max Speed", [p](int x) {p->setMaxSpeed(x); }, 30, 100, p->getMaxSpeed(), 5);
+    gameplayOptions->AddChooseInt("Auto Speed Increase Rate", [p](int x) {p->setAutoAceelerateRate(x); }, 0, 20, p->getAutoAccelerateRate(), 1);
 
+	std::vector<Ogre::String> names;
+	std::vector<std::function<void()>> callbacks;
+	names.push_back("Duck / Lean");
+	callbacks.push_back([p, w]() { p->setLeanEqualsDuck(true); w->setUseFrontBack(p->getUseFrontBack()); });
+
+	names.push_back("Change Speed");
+	callbacks.push_back([p,w]() {  p->setLeanEqualsDuck(false); w->setUseFrontBack(false); });
+
+	gameplayOptions->AddChooseEnum("Forward / Back Controls",names,callbacks,0);	
+    gameplayOptions->AddChooseInt("Manual Speed Change Rate", [p](int x) {p->setManualAceelerateRate(x); }, 0, 20, p->getManualAccelerateRate(), 1);
+    gameplayOptions->AddSelectElement("Return to Options Menu", [gameplayOptions,options]() {gameplayOptions->disable(); options->enable();});
 
     controlOptions->AddChooseBool("Callibrate Kinect Every Game", [p](bool x) {p->setAutoCallibrate(x); }, p->getAutoCallibrate());
     controlOptions->AddChooseFloat("Kinect Sensitivity Left / Right", [p](float x) {p->setKinectSentitivityLR(x); }, 0.7f, 1.5f, 1.f, 0.1f);
     controlOptions->AddChooseFloat("Kinect Sensitivity Front / Back", [p](float x) {p->setKinectSentitivityFB(x); }, 0.7f, 1.5f, 1.f, 0.1f);
-    controlOptions->AddSelectElement("Callibrate Kinect Now", [options, k]() {options->disable(); k->callibrate(4.0f, [options]() {options->enable();});});
+    controlOptions->AddSelectElement("Callibrate Kinect Now", [controlOptions, k]() {controlOptions->disable(); k->callibrate(4.0f, [controlOptions]() {controlOptions->enable();});});
     controlOptions->AddChooseBool("Invert Front/Back Controls", [p](bool x) {p->setInvertControls(x); }, p->getInvertControls());
 	controlOptions->AddChooseBool("Enable Kinect", [p](bool x) { p->setEnableKinect(x);  if (!x) p->setAutoCallibrate(false); }, p->getEnableKinect());
 	controlOptions->AddChooseBool("Enable Keyboard", [p](bool x) { p->setEnableKeyboard(x);}, p->getEnableKeyboard());
-	controlOptions->AddChooseBool("Enable Gamepad", [p](bool x) { p->setEnableGamepad(x);}, p->getEnableGamepad());
+	// controlOptions->AddChooseBool("Enable Gamepad", [p](bool x) { p->setEnableGamepad(x);}, p->getEnableGamepad());
 
 
     controlOptions->AddSelectElement("Return to Options Menu", [controlOptions,options]() {controlOptions->disable(); options->enable();});
@@ -159,12 +170,12 @@ Runner::setupMenus()
 
 
 
-    mainMenu->AddSelectElement("Start Game", [mainMenu, a, p]() {mainMenu->disable();  a->ResetActive(); p->startGame(); });
+    mainMenu->AddSelectElement("Start Game", [mainMenu, a, p, w]() {mainMenu->disable(); w->reset(); p->reset(); a->ResetActive(); p->startGame(); });
     mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
     mainMenu->AddSelectElement("Quit", [l]() {l->quit();});
 
     pauseMenu->AddSelectElement("Continue", [pauseMenu, p]() {pauseMenu->disable(); p->setPaused(false); });
-    pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w, h]() {h->showHUDElements(false); pauseMenu->disable();mainMenu->enable(); p->setPaused(true);w->reset(); p->reset(); });
+    pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w, h]() {h->showHUDElements(false); pauseMenu->disable();mainMenu->enable(); p->setPaused(true); });
     pauseMenu->AddSelectElement("Quit (Close Program)", [l]() {l->quit();});
 }
 

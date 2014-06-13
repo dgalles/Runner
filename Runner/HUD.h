@@ -15,6 +15,7 @@ public:
 
 	void setCoins(int newScore);
     void setDistance(int distance);
+    void setSpeed(int speed);
 
 	void update(float time);
     
@@ -25,6 +26,9 @@ public:
     void stopArrow(Kind type);
 	void stopAllArrows();
 
+	void setShowIncreaseSpeed(bool show);
+	void setShowDecreaseSpeed(bool show);
+
 	void showHUDElements(bool show);
 
 protected:
@@ -32,10 +36,14 @@ protected:
 	Ogre::Overlay *mScoreOverlay;
 	Ogre::OverlayElement *mCoinsText;
 	Ogre::OverlayElement *mDistanceText;
+	Ogre::OverlayElement *mSpeedText;
+	Ogre::Overlay *mSpeedUpOverlay;
+	Ogre::Overlay *mSlowDownOverlay;
 	float mArrowFlashTime[(int) HUD::last];
 	float mArrowFlashDelay[(int) HUD::last];
 	bool mArrowStatus[(int) HUD::last];
 	float mArrowTimeRemaining[(int) HUD::last];
     bool mShowArrows;
 	bool mShowHUDElems;
+	int mSpeed;
 };

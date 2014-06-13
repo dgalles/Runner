@@ -38,13 +38,13 @@ public:
 	virtual Ogre::Vector3 worldPosition();
 	void setPaused(bool p) { mPaused = p; }
 
-    void setSpeed(int speed) {FORWARD_SPEED = speed;}
-	int getSpeed() { return FORWARD_SPEED; }
-    void setSpeedIncrease(int delta) { mSpeedIncrease = delta; }
-	int getSpeedIncrease() {return mSpeedIncrease;} 
+    void setInitialSpeed(int speed) {mInitialSpeed = (float) speed;}
+	int getInitialSpeed() { return (int) mInitialSpeed; }
     void setKinectSentitivityLR(float sensitivity) {mKinectSensitivityLR = sensitivity; }
     void setKinectSentitivityFB(float sensitivity) {mKinectSensitivityFB = sensitivity; }
     void setLevel(int level);
+
+	void setLeanEqualsDuck(bool val);
 
     void startGame();
     void setAutoCallibrate(bool autoCal) { mAutoCallibrate = autoCal; }
@@ -59,12 +59,21 @@ public:
 	bool getEnableGamepad() { return mEnableGamepad; }
 	void setEnableGamepad(bool enable) { mEnableGamepad = enable; }
 
+	int getMaxSpeed() {return (int) mMaxSpeed; }
+	void setMaxSpeed(int newSpeed) { mMaxSpeed = (float) newSpeed;}
 
 	void setUseFrontBack(bool ufb) {mUseFrontBack = ufb; }
 	bool getUseFrontBack() { return  mUseFrontBack; }
 
 	void setInvertControls(bool ufb) {mInvertControls = ufb; }
 	bool getInvertControls() { return  mInvertControls; }
+
+	void setAutoAceelerateRate(int rate) { mAutoAccel = rate;} 
+	int getAutoAccelerateRate() { return mAutoAccel; }
+
+		void setManualAceelerateRate(int rate) { mManualAccel = rate;} 
+	int getManualAccelerateRate() { return mManualAccel; }
+
 
 
 
@@ -73,7 +82,7 @@ public:
 protected:
 	void updateAchievements();
 
-	void updateAnglesFromConrols(Ogre::Degree &angle, Ogre::Degree &angle2);
+	void updateAnglesFromControls(Ogre::Degree &angle, Ogre::Degree &angle2);
 
 	void kill();
     void setup();
@@ -97,21 +106,21 @@ protected:
 
 	Ogre::SceneNode *debris[4];
 
-	int FORWARD_SPEED;
-	int LATERAL_SPEED;
+	float mCurrentSpeed;
+	float mInitialSpeed;
+
 	int mCoinsCollected;
 	bool mAlive;
 	float mExplodeTimer;
     float mTimeSinceSpeedIncrease;
-    int mSpeedIncrease;
 
 	Ogre::Vector3 mExplosionforward;
 	Ogre::Vector3 mExplosionright;
 	Ogre::Vector3 mExplosionup;
     float mKinectSensitivityLR;
-    float mKinectSensitivityFB;
+	float mKinectSensitivityFB;
 
-    double mDistance;
+	double mDistance;
 
 	bool mEnableKinect;
 	bool mEnableKeyboard;
@@ -120,11 +129,15 @@ protected:
 	float mTargetDeltaY;
 	float mDeltaY;
 
-		bool mUseFrontBack;
-		bool mInvertControls;
+	bool mUseFrontBack;
+	bool mInvertControls;
+
+
+	int mAutoAccel;
+	int mManualAccel;
 
 	Achievements *mAchievements;
-    static const float SPEED_MULTIPLYER;
+	static const float SPEED_MULTIPLYER;
 
 
 	int mTotalCoins;
@@ -139,4 +152,6 @@ protected:
 	float mBoostTime;
 	float mShieldTime;
 	int mBoostsHit;
+	bool mLeanEqualsDuck;
+	float mMaxSpeed;
 };

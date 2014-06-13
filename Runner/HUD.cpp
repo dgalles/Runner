@@ -20,6 +20,8 @@ HUD::HUD()
 	mArrowOverlay[HUD::down] =om.getByName("HUD/DownArrow");
 	mArrowOverlay[HUD::up] =om.getByName("HUD/UpArrow");
 
+	mSpeedUpOverlay = om.getByName("HUD/SpeedUp");
+	mSlowDownOverlay = om.getByName("HUD/SlowDown");
 	for (int i = HUD::none + 1; i < HUD::last; i++)
 	{
 		mArrowTimeRemaining[i] = 0;
@@ -34,7 +36,7 @@ HUD::HUD()
 
 	mCoinsText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Coins");
 	mDistanceText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Distance");
-
+	mSpeedText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Speed");
 }
 
 
@@ -68,6 +70,42 @@ void HUD::setCoins(int newScore)
 	mCoinsText->setCaption(score);
 }
 
+
+
+void  HUD::setShowIncreaseSpeed(bool show)
+{
+	if (show)
+	{
+		mSpeedUpOverlay->show();
+	}
+	else
+	{
+		mSpeedUpOverlay->hide();
+	}
+}
+void  HUD::setShowDecreaseSpeed(bool show)
+{
+	if (show)
+	{
+		mSlowDownOverlay->show();
+	}
+	else
+	{
+		mSlowDownOverlay->hide();
+	}
+
+}
+
+
+void HUD::setSpeed(int speed)
+{
+	std::string score = "Speed = ";
+	score.append(std::to_string((long long)speed));
+    score.append(" m / s");
+	mSpeedText->setCaption(score);
+
+
+}
 
 void HUD::setDistance(int newScore)
 {

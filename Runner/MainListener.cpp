@@ -61,7 +61,6 @@ bool
         if (mKinect->callibrating())
         {
             mKinect->cancelCallibration();
-            MenuManager::getInstance()->getMenu("main")->enable();
         }
         else if (MenuManager::getInstance()->getActiveMenu() != NULL)
         {
@@ -71,6 +70,8 @@ bool
         {
             MenuManager::getInstance()->getMenu("pause")->enable();
             mPlayer->setPaused(true);
+			mWorld->getHUD()->setShowDecreaseSpeed(false);
+			mWorld->getHUD()->setShowIncreaseSpeed(false);
         }
     }
 

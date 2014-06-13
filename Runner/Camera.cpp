@@ -12,19 +12,38 @@ mRenderCamera(renderCamera), mWorld(world), mCurrentTrackingObject(0)
 	currentPercent = 0.3f;
 	direction = 1;
 	mRenderCamera->setNearClipDistance(2);
-	mFollowDistance = 200;
 	mType = FollowType::NORMAL;
+
+	mDesiredFollowDistance = 200;
+	mDesiredFollowHeight = 50;
+
+	mCurrentFollowDistance = mDesiredFollowDistance;
+	mCurrentFollowHeight = mDesiredFollowHeight;
 
 	// Any other initialization that needs to happen
 }
 
 
 void
-		RunnerCamera::SetFollowType(FollowType typ)
+	RunnerCamera::SetFollowType(FollowType typ)
 {
+	if (typ == FollowType::NORMAL)
+	{
+		mDesiredFollowDistance = 200;
+		mDesiredFollowHeight = 50;
 
+	}
+	else if (typ == FollowType::CLOSE)
+	{
+		mDesiredFollowDistance = 150;
+		mDesiredFollowHeight = 15;
 
-
+	}
+	else if (typ = FollowType::HIGH)
+	{
+		mDesiredFollowDistance = 200;
+		mDesiredFollowHeight = 80;
+	}
 }
 
 
@@ -50,6 +69,7 @@ RunnerCamera::Think(float time)
 {
 	if (mCurrentTrackingObject != 0)
 	{
+
 		int segment = mCurrentTrackingObject->currentSegment();
 		float percent = mCurrentTrackingObject->segmentPercent();
 		Ogre::Vector3 trackPos = mCurrentTrackingObject->worldPosition();
@@ -58,8 +78,47 @@ RunnerCamera::Think(float time)
 		Ogre::Vector3 cameraRight;
 		Ogre::Vector3 cameraUp;
 
+
+		float cameraSpeed = 100;
+
+
+		float horzDelta = mDesiredFollowDistance - mCurrentFollowDistance;
+		float vertDelta = mDesiredFollowHeight - mCurrentFollowHeight;
+
+		float vertSpeed;
+		float horzSpeed;
+
+		if (abs(horzDelta) > abs(vertDelta))
+		{
+			horzSpeed =cameraSpeed;
+			vertSpeed = cameraSpeed * abs(vertDelta / horzDelta);
+		}
+		else
+		{
+			vertSpeed = cameraSpeed;
+			if (vertDelta != 0)
+			{
+				horzSpeed = cameraSpeed * abs(horzDelta / vertDelta);
+			}
+			else
+			{
+				horzSpeed = cameraSpeed;
+			}
+		}
+
+		if ((vertSpeed * time) > abs(mDesiredFollowHeight - mCurrentFollowHeight))
+		{
+			mCurrentFollowHeight = mDesiredFollowHeight;
+			mCurrentFollowDistance = mDesiredFollowDistance;
+		}
+		else
+		{
+			mCurrentFollowHeight += vertSpeed * Ogre::Math::Sign(vertDelta) * time;
+			mCurrentFollowDistance += horzSpeed * Ogre::Math::Sign(horzDelta) * time;
+		}
+
 		float size = mWorld->trackPath->pathLength(segment);
-		float fDist = mFollowDistance;
+		float fDist = mCurrentFollowDistance;
 		while (size * percent < fDist)
 		{
 			fDist -= size*percent;
@@ -85,7 +144,7 @@ RunnerCamera::Think(float time)
 
 		mWorld->trackPath->getPointAndRotaionMatrix(segment, cameraPercent, cameraPos, cameraForward, cameraRight,cameraUp);
 
-		cameraPos += cameraUp *50;
+		cameraPos += cameraUp *mCurrentFollowHeight;
 
 		cameraForward= trackPos - cameraPos;
 		cameraForward.normalise();
