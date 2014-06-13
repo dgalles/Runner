@@ -34,3 +34,20 @@ material AchievementBackground2
         }
     }
 }
+
+material AchievementBackground3
+ {
+   technique
+   {
+     pass
+     {
+       scene_blend alpha_blend
+       depth_write off
+ 
+       texture_unit
+       {
+         colour_op_ex source1 src_manual src_current 0.5 0.7 0.5
+      }
+     }
+   }
+ }
