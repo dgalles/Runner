@@ -10,18 +10,18 @@ HUD/Score
     {
       metrics_mode relative
 
-      left 0.05
+      left 0.0
       top 0.9
-      width 0.45
+      width 1
       height 0.1
 		
 		element TextArea(HUD/ScorePanel/Coins)
 		{
 		metrics_mode relative
 		
-         left 0.1
+         left 0.02
          font_name Big
-         char_height 0.05
+         char_height 0.04
          colour 1 1 1
          caption Coins = 0
 		}
@@ -29,12 +29,24 @@ HUD/Score
 		{
 		metrics_mode relative
 		
-         left 0.4
+         left 0.3
          font_name Big
-         char_height 0.05
+         char_height 0.04
          colour 1 1 1
          caption Distance = 0 meters
 		}
+		
+		element TextArea(HUD/ScorePanel/Speed)
+		{
+		metrics_mode relative
+		
+         left 0.7
+         font_name Big
+         char_height 0.04
+         colour 1 1 1
+         caption Speed = 0 m / s
+		}
+
 		
     }
 }
@@ -96,6 +108,51 @@ HUD/UpArrow
       height 0.2
 	  material UpArrow
     }   
+}
+
+HUD/SpeedUp
+{
+    container Panel(HUD/SpeedUp/Panel)
+    {
+      metrics_mode relative
+
+      left 0.3
+      top 0.7
+		
+		element TextArea(HUD/SpeedUp/Text)
+		{
+		metrics_mode relative
+		
+         font_name Big
+         char_height 0.08
+		 
+         colour 0.5 1 0.5
+         caption Increasing Speed
+		}
+	}
+}
+
+
+HUD/SlowDown
+{
+   container Panel(HUD/SlowDown/Panel)
+    {
+      metrics_mode relative
+
+      left 0.3
+      top 0.7
+		
+		element TextArea(HUD/SlowDown/Text)
+		{
+		metrics_mode relative
+		
+         font_name Big
+         char_height 0.08
+		 
+         colour 1 0.5 0.5
+         caption Decreasing Speed
+		}
+	}
 }
 
 HUD/DownArrow
