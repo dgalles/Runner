@@ -1,5 +1,5 @@
 #pragma once
-#pragma comment(lib, "XInput.lib")
+//#pragma comment(lib, "XInput.lib")
 
 // include files
 #include <windows.h>
@@ -10,8 +10,8 @@ class XInputManager
 {
 public:
 
-	DWORD controller_OK[4];
-	XINPUT_STATE state[4];   
+	//DWORD controller_OK[4];
+	//XINPUT_STATE state[4];   
 
 
 	void update();

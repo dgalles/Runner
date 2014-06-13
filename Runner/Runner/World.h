@@ -39,6 +39,7 @@ public:
 
 	
 	void addCamera(RunnerCamera *c) { mCamera = c; }
+	RunnerCamera *getCamera() { return mCamera;}
 
 	void removeWorldSegment(int index);
 

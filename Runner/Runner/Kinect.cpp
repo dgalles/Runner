@@ -107,6 +107,7 @@ void
 Kinect::cancelCallibration()
 {
     mCallibrating = false;
+	mCallibrationFinishedCallback();
     // mCallibrationFinishedCallback = NULL; // Note:  Why doesn't this work?
     mCallibrationOverlay->hide();
    

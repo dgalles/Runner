@@ -220,6 +220,18 @@ void Menu::AddChooseBool(Ogre::String text,  std::function<void(bool)> callback,
 	AddMenuItem(new Menu::ChooseBoolMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback, initialValue));
 }
 
+void Menu::AddChooseEnum(Ogre::String name, std::vector<Ogre::String> enumNames, std::vector<std::function<void()>> callbacks, int initialVal /* = 0 */)
+{
+	float x = mStartingX;
+	float y = mStartingY + (mNumMenuItems + 1.5f) * mItemSpacing; 
+
+	AddMenuItem(new Menu::ChooseEnumMenuItem(name, mName + "_" + std::to_string(mNumMenuItems),this,x,y, enumNames, callbacks, initialVal));
+
+}
+
+
+
+
 void  Menu::MenuItem::Select() 
 {
 	mItemText->setColour(mParent->mHighlightColor);
@@ -267,6 +279,34 @@ void  Menu::SelectMenuItem::Enter()
 
 // handler->addHandler([](int x) { std::cout << "x is " << x << '\n'; });
 
+
+Menu::ChooseEnumMenuItem::ChooseEnumMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::vector<Ogre::String> choiceNames, std::vector<std::function<void()>> callbacks, int initialValue) 
+	: Menu::MenuItem(text, name, parent, x, y),mCallbacks(callbacks), mChoiceNames(choiceNames), mCurrentValue(initialValue), mText(text)
+{
+	mItemText->setCaption(mText + ":" + "  " +mChoiceNames[mCurrentValue]);
+}
+
+
+void Menu::ChooseEnumMenuItem::Increase() 
+{ 
+	mCurrentValue++;
+	if (mCurrentValue >= mChoiceNames.size())
+	{
+		mCurrentValue = 0;
+	}
+	mItemText->setCaption(mText + ":" + "  " +mChoiceNames[mCurrentValue]);
+	mCallbacks[mCurrentValue]();
+}
+void Menu::ChooseEnumMenuItem::Decrease() 
+{ 
+	mCurrentValue--;
+	if (mCurrentValue < 0)
+	{
+		mCurrentValue = mChoiceNames.size() - 1;
+	}
+	mItemText->setCaption(mText + ":" + "  " +mChoiceNames[mCurrentValue]);
+	mCallbacks[mCurrentValue];
+}
 
 Menu::ChooseIntMenuItem::ChooseIntMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(int)> callback,  int minValue, int maxValue, int initialValue, int delta)
 	: Menu::MenuItem(text, name, parent, x, y), mCallback(callback), mIntValue(initialValue), mText(text), mMinValue(minValue), mMaxValue(maxValue), mDelta(delta)

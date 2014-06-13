@@ -34,6 +34,8 @@ public:
     void roll(Ogre::Radian r);
     void setScale(Ogre::Vector3 newScale);
 
+	void setAlpha(float alpha);
+
 	void translate(Ogre::Vector3 delta);
 
     bool collides(RunnerObject *other, Ogre::Vector3 &MTD);
@@ -46,6 +48,10 @@ public:
     Ogre::Quaternion getOrientation() { return mOrentation; }
     Ogre::Vector3 getScale() { return mScale;}
 
+	void setMaterial(Ogre::String materialName);
+	void restoreOriginalMaterial();
+
+
 protected:
 	ObjectType mType;
     Ogre::SceneNode *mSceneNode;
@@ -56,7 +62,7 @@ protected:
     Ogre::Vector3 mScale;
 	Ogre::Vector3 mMinPointLocal;
 	Ogre::Vector3 mMaxPointLocal;
-
-
+	Ogre::Entity *mEntity;
+	Ogre::String mMaterialName;
 };
 

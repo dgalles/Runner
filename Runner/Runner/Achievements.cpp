@@ -127,21 +127,25 @@ void
 void
 	Achievements::ReadAchievements(Ogre::String filename)
 {
+
 	AddAchievement("Getting Started", "Run 100 Meters in one run");
 	AddAchievement("Pennies From Hevean", "Collect 100 Coints in one run");
 	AddAchievement("Making Money", "Collect 200 Coints in one run");
 	AddAchievement("Looper", "Complete a Loop-de-loop");
 	AddAchievement("Greedy I", "Get all coints in a 20 meter segment");
 	AddAchievement("Buzzed", "Hit a Sawblade");
+		AddAchievement("Booster", "Use a Boost");
 	AddAchievement("Penniless I", "Run 10 Meters without picking up a coin");
 	AddAchievement("Marathon I", "Run 5000 Meters Lifetime");
 	AddAchievement("Snap", "Complete a Snap Turn");
 	AddAchievement("Greedy II", "Get all coints in a 50 meter segment");
+	AddAchievement("Need for Speed", "Use 2 Boosts on one run");
+	AddAchievement("Getting Bank", "Collect 500 Coints in one run");
 	AddAchievement("Penniless II", "Run 50 Meters without picking up a coin");
+	AddAchievement("Blazin'", "Use 3 Boosts on one run");
 	AddAchievement("Middle Distance", "Run 500 Meters in one run");
 	AddAchievement("Greedy III", "Get all coints in a 100 meter segment");
 	AddAchievement("Long Haul", "Run 1000 Meters in one run");
-	AddAchievement("Getting Bank", "Collect 500 Coints in one run");
 	AddAchievement("Building Bling", "Collect 5000 Coins Lifetime");
 	AddAchievement("Penniless III", "Run 100 Meters without picking up a coin");
 	AddAchievement("Marathon II", "Run 10000 Meters Lifetime");

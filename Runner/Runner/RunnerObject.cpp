@@ -2,6 +2,8 @@
 #include "OgreSceneManager.h"
 #include "OgreEntity.h"
 #include "CollisionManager.h"
+#include "OgreSubEntity.h"
+#include "OgreMaterial.h"
 
 RunnerObject::RunnerObject(ObjectType type) : mType(type)
 {
@@ -68,18 +70,46 @@ void
 	RunnerObject::loadModel(Ogre::String modelName, Ogre::SceneManager *sm)
 {
     mSceneManager = sm;
-    Ogre::Entity *ent1 =sm->createEntity(modelName);
+    mEntity =sm->createEntity(modelName);
 	mSceneNode =sm->getRootSceneNode()->createChildSceneNode();
-	mSceneNode->attachObject(ent1);
-    mCollision = new OBB(ent1->getBoundingBox());
-	mMaxPointLocal = ent1->getBoundingBox().getMaximum();
-	mMinPointLocal =  ent1->getBoundingBox().getMinimum();
+	mSceneNode->attachObject(mEntity);
+    mCollision = new OBB(mEntity->getBoundingBox());
+	mMaxPointLocal = mEntity->getBoundingBox().getMaximum();
+	mMinPointLocal =  mEntity->getBoundingBox().getMinimum();
+	mMaterialName = mEntity->getSubEntity(0)->getMaterialName();
 }
+
+
+
+void RunnerObject::setMaterial(Ogre::String materialName)
+{
+	mEntity->setMaterialName(materialName);
+}
+
+void RunnerObject::restoreOriginalMaterial()
+{
+	mEntity->setMaterialName(mMaterialName);
+}
+
+
+void RunnerObject::setAlpha(float alpha)
+{
+	for (unsigned int i = 0; i < mEntity->getNumSubEntities(); i++)
+	{
+
+		mEntity->getSubEntity(i)->getMaterial()->getBestTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+		mEntity->getSubEntity(i)->getMaterial()->getBestTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(Ogre::LBX_MODULATE, Ogre::LBS_MANUAL, Ogre::LBS_TEXTURE, alpha);
+
+	}
+
+
+}
+
 void RunnerObject::setPosition(Ogre::Vector3 newPosition)
 {
-    mSceneNode->setPosition(newPosition);
-    mCollision->setPosition(newPosition);
-    mPosition = newPosition;
+	mSceneNode->setPosition(newPosition);
+	mCollision->setPosition(newPosition);
+	mPosition = newPosition;
 
 }
 void RunnerObject::setOrientation(Ogre::Quaternion newOrientation)

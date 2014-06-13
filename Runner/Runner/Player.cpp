@@ -10,6 +10,7 @@
 #include "RunnerObject.h"
 #include "InputHandler.h"
 #include "Achievements.h"
+#include "Camera.h"
 
 const float Player::SPEED_MULTIPLYER = 20;
 
@@ -18,7 +19,7 @@ const float Player::SPEED_MULTIPLYER = 20;
 {
     mKinectSensitivityLR = 1.0f;
     mKinectSensitivityFB = 1.0f;
-    FORWARD_SPEED = 30;
+    mInitialSpeed = 30;
     mAutoCallibrate = true;
 	mEnableGamepad = false;
 	mEnableKeyboard = false;
@@ -30,6 +31,10 @@ const float Player::SPEED_MULTIPLYER = 20;
 	int mTotalMeters = 0;
 	int mLongestRun = 0;
 	int mMostCoins = 0;
+
+	mMaxSpeed = 80;
+
+	mLeanEqualsDuck = true;
 
 }
 
@@ -54,6 +59,9 @@ void Player::setup()
 
 	mBoostsHit = 0;
 
+	mCurrentSpeed = mInitialSpeed;
+
+	mPaused = true;
 	mDistanceWithoutCoins = 0.0f;
 	mMaxDistWithoutCoins = 0.0f;
 
@@ -78,7 +86,8 @@ void Player::setup()
 	mPlayerObject->setOrientation(q);
 
     float mTimeSinceSpeedIncrease = 0;
-    mSpeedIncrease = 0;
+	mAutoAccel = 0;
+	mManualAccel = 5;
 }
 
 Ogre::Vector3 
@@ -167,7 +176,7 @@ void
             if (d.object->collides(mPlayerObject, MTV))
 			{
                 d.object->setScale(Ogre::Vector3::ZERO);
-				d.object->translate(Ogre::Vector3(100,100,100));
+				d.object->setPosition(Ogre::Vector3(0,0,0));
                 mCoinsCollected++;
 				mTotalCoins++;
 				mMaxDistWithoutCoins = std::max(mMaxDistWithoutCoins, mDistanceWithoutCoins);
@@ -210,31 +219,51 @@ bool
 				}
 				else if (d.object->type() == RunnerObject::SPEED)
 				{
+					d.object->setScale(Ogre::Vector3::ZERO);
+					d.object->setPosition(Ogre::Vector3(0,0,0));
+
 					mBoostsHit++;
+					if (mBoostsHit == 1)
+					{
+						mAchievements->AchievementCleared("Booster");
+					}
+					if (mBoostsHit == 2)
+					{
+						mAchievements->AchievementCleared("Need for Speed");
+					}
+					if (mBoostsHit == 3)
+					{
+						mAchievements->AchievementCleared("Blazin'");
+					}
+
+					mPlayerObject->setAlpha(0.4f);
+				//	mPlayerObject->setMaterial("Kinect/Blue");
+
 					mBoosting = true;
 					mShielded = true;
 					mShieldTime = 5;
-					mBoostTime = 6;
+					mBoostTime = 3;
+					mWorld->getCamera()->SetFollowType(RunnerCamera::CLOSE);
 				}
-
-
 			}
 		}
 	}
 	return collide;
 }
 
+
+
 void Player::setLevel(int level)
 {
 
 
-    FORWARD_SPEED = 300 + level*200;
+    mCurrentSpeed = 300 + level*200;
     // Also do rate change?
 
 }
 
 
-void Player::updateAnglesFromConrols(Ogre::Degree &angle, Ogre::Degree &angle2)
+void Player::updateAnglesFromControls(Ogre::Degree &angle, Ogre::Degree &angle2)
 {
 	if (mEnableKinect)
 	{
@@ -244,11 +273,11 @@ void Player::updateAnglesFromConrols(Ogre::Degree &angle, Ogre::Degree &angle2)
 
 	if (mEnableGamepad)
 	{
-		short stickLeftRight = mXInputManager->state[0].Gamepad.sThumbLX;
-		short stickForwardBack = mXInputManager->state[0].Gamepad.sThumbLY;
+		//short stickLeftRight = mXInputManager->state[0].Gamepad.sThumbLX;
+		//short stickForwardBack = mXInputManager->state[0].Gamepad.sThumbLY;
 
-		angle = (Ogre::Real) stickLeftRight / 1000;
-		angle2 =  - (Ogre::Real)  stickForwardBack / 1000;
+		//angle = (Ogre::Real) stickLeftRight / 1000;
+		//angle2 =  - (Ogre::Real)  stickForwardBack / 1000;
 	}
 
 	if (mEnableKeyboard)
@@ -288,6 +317,13 @@ void Player::updateAnglesFromConrols(Ogre::Degree &angle, Ogre::Degree &angle2)
 }
 
 
+void Player::setLeanEqualsDuck(bool val)
+{
+	mLeanEqualsDuck = val;
+
+}
+
+
 void 
 	Player::Think(float time)
 {
@@ -297,19 +333,29 @@ void
 		return;
 	}
 
-	if (mBoostTime < time)
+
+
+	if (mAlive)
+	{
+
+			if (mBoostTime  > 0 && mBoostTime <= time)
 	{
 		mBoostTime = 0;
 		mBoosting = false;
+		mWorld->getCamera()->SetFollowType(RunnerCamera::NORMAL);
+
+		// mPlayerObject->restoreOriginalMaterial();
+
 	}
 	else
 	{
 		mBoostTime -= time;
 	}
-	if (mShieldTime < time)
+	if (mShieldTime > 0 && mShieldTime <= time)
 	{
 		mShieldTime = 0;
 		mShielded = false;
+		mPlayerObject->setAlpha(1);
 	}
 	else 
 	{
@@ -321,7 +367,7 @@ void
 
 	Ogre::Degree angle2 = Ogre::Degree(0);
 
-	updateAnglesFromConrols(angle, angle2);
+	updateAnglesFromControls(angle, angle2);
 
 
 
@@ -329,28 +375,64 @@ void
 	float newPercent = mSegmentPercent;
 
 	mTimeSinceSpeedIncrease  += time;
-	if (mTimeSinceSpeedIncrease > 1)
+	if (mTimeSinceSpeedIncrease > 1 && mLeanEqualsDuck)
 	{
 		mTimeSinceSpeedIncrease = 0;
-		FORWARD_SPEED += mSpeedIncrease;
+		mCurrentSpeed += mAutoAccel;
+		mCurrentSpeed = std::min(mCurrentSpeed, mMaxSpeed);
 	}
 
-	if (mBoosting)
-	{
-		LATERAL_SPEED = FORWARD_SPEED *3;
 
+	if (mLeanEqualsDuck)
+	{
+		if (angle2 < Ogre::Degree(0))
+		{
+			float diff = (angle2.valueDegrees() / 10) + 6;
+			diff = std::max(diff, 0.5f);
+			mPlayerObject->setScale(Ogre::Vector3(5,diff,10));
+		}
+		else
+		{
+			mPlayerObject->setScale(Ogre::Vector3(5,6,10));
+		}
 	}
 	else
 	{
-		LATERAL_SPEED = FORWARD_SPEED / 2;
+		if (angle2 < Ogre::Degree(-10))
+		{
+			mCurrentSpeed += mManualAccel * time;
+			mCurrentSpeed = std::min(mCurrentSpeed, mMaxSpeed);
+
+			mWorld->getHUD()->setShowIncreaseSpeed(true);
+			mWorld->getHUD()->setShowDecreaseSpeed(false);
+		}
+		else if (angle2 > Ogre::Degree(10))
+		{
+			mCurrentSpeed -= mManualAccel * time;
+			mCurrentSpeed = std::max(mCurrentSpeed, 5.0f);
+			mWorld->getHUD()->setShowIncreaseSpeed(false);
+			mWorld->getHUD()->setShowDecreaseSpeed(true);
+		}
+		else
+		{
+			mWorld->getHUD()->setShowIncreaseSpeed(false);
+			mWorld->getHUD()->setShowDecreaseSpeed(false);
+		}
 
 	}
 
-	if (mAlive)
+	float lateralSpeed;
+	if (mBoosting)
 	{
+		lateralSpeed = mCurrentSpeed *3;
+	}
+	else 
+	{
+		lateralSpeed = mCurrentSpeed / 2;
+	}
 
 
-		float distance = time * FORWARD_SPEED * SPEED_MULTIPLYER;
+		float distance = time * mCurrentSpeed * SPEED_MULTIPLYER;
 		if (mBoosting)
 		{
 			distance *= 5;
@@ -358,7 +440,7 @@ void
 		mDistance += distance;
 		mTotalMeters += distance;
         mWorld->getHUD()->setDistance((int) mDistance / 200);
-
+		mWorld->getHUD()->setSpeed((int) mCurrentSpeed);
 		while (distance < 0 && -distance > mWorld->trackPath->pathLength(newSegment)*newPercent)
 		{
 			distance +=  mWorld->trackPath->pathLength(newSegment)*newPercent;
@@ -433,19 +515,8 @@ void
 		}
 
 
-		if (angle2 < Ogre::Degree(0))
-		{
-			float diff = (angle2.valueDegrees() / 10) + 6;
-			diff = std::max(diff, 0.5f);
-			mPlayerObject->setScale(Ogre::Vector3(5,diff,10));
-		}
-		else
-		{
-			mPlayerObject->setScale(Ogre::Vector3(5,6,10));
-		}
-
 		
-		float distanceX = time * LATERAL_SPEED * SPEED_MULTIPLYER;
+		float distanceX = time * lateralSpeed * SPEED_MULTIPLYER;
 		float newX;
 
 
@@ -499,7 +570,7 @@ void
 		mPlayerObject->setOrientation(q);
 		mPlayerObject->setPosition(pos);
 
-		if (angle2 > Ogre::Degree(0))
+		if (angle2 > Ogre::Degree(0) && mLeanEqualsDuck)
 		{
 			mPlayerObject->pitch(Ogre::Radian(-angle2));
 			mPlayerObject->setPosition(pos  + up *( - Ogre::Math::Sin(angle2) * mPlayerObject->minPointLocalScaled().z* 0.8f) + mDeltaY);
@@ -508,18 +579,17 @@ void
 
 		mPlayerObject->roll(Ogre::Radian(angle));
 
-
-
-		// Collision with walls & powerups
-
-		bool collide = detectCollision(newSegment, newPercent, newX);
-
 		// Collision with coins
 
 		mDistanceWithoutCoins += distance;
 		coinCollision(newSegment, newPercent, newX);
 
 		mDistSinceMissedCoin+= distance;
+
+
+		// Collision with walls & powerups (could kill player)
+
+		bool collide = detectCollision(newSegment, newPercent, newX);
 
 
 	}
@@ -667,4 +737,6 @@ void
 
 	 mWorld->trackObject(NULL);
 	 mWorld->getHUD()->stopAllArrows();
+	 mWorld->getHUD()->setShowDecreaseSpeed(false);
+	 mWorld->getHUD()->setShowIncreaseSpeed(false);
 }
