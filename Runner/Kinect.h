@@ -3,7 +3,10 @@
 #include <windows.h>
 #include <ole2.h>
 
+#ifdef KINECT_AVAIALBLE
+
 #include "NuiApi.h"
+#endif
 #include "OgreVector2.h"
 
 const float CALIBRATION_TIME = 4.0f;
@@ -37,7 +40,7 @@ public:
 protected:
 	void updateKinectSkeleton( );
 
-
+#ifdef KINECT_AVAILABLE
 	// Current kinect
 	INuiSensor *            m_pNuiSensor;
 	BSTR                    m_instanceId;
@@ -49,6 +52,7 @@ protected:
 
 	static DWORD WINAPI     Nui_ProcessThread(LPVOID pParam);
 	DWORD WINAPI            Nui_ProcessThread();
+#endif
 
 	bool   recenterNext;
 	bool   updateDelay; 

@@ -119,20 +119,24 @@ Runner::setupMenus()
     Menu *gameplayOptions = new Menu("Gameplay Options", "gameplayoptions", 0.1f, 0.1f, 0.07f);
     Menu *mainMenu = new Menu("Main Menu", "main", 0.1f, 0.1f);
     Menu *pauseMenu = new Menu("Pause Menu", "pause", 0.1f, 0.1f);
+    Menu *advancedOptions = new Menu("Advanced Options", "advancedOptions", 0.1f, 0.1f);
 
     pauseMenu->disable();
     options->disable();
 	controlOptions->disable();
 	gameplayOptions->disable();
+	advancedOptions->disable();
 
 	menus->addMenu(mainMenu);
     menus->addMenu(options);
     menus->addMenu(pauseMenu);
 	menus->addMenu(gameplayOptions);
 	menus->addMenu(controlOptions);
+	menus->addMenu(advancedOptions);
 
     options->AddSelectElement("Control Options", [options, controlOptions]() {options->disable(); controlOptions->enable();});
     options->AddSelectElement("Gameplay Options", [options, gameplayOptions]() {options->disable(); gameplayOptions->enable();});
+    options->AddSelectElement("Advanced Options", [options, advancedOptions]() {options->disable(); advancedOptions->enable();});
 	options->AddSelectElement("Return to Main Menu", [options, mainMenu]() {options->disable(); mainMenu->enable();});
 
     gameplayOptions->AddChooseBool("Arrow Indicators", [h](bool show) {h->showArrows(show);}, h->arrowsShown());
@@ -171,12 +175,41 @@ Runner::setupMenus()
 
 
     mainMenu->AddSelectElement("Start Game", [mainMenu, a, p, w]() {mainMenu->disable(); w->reset(); p->reset(); a->ResetActive(); p->startGame(); });
+
+    mainMenu->AddSelectElement("Show Goals", [mainMenu, a]() {a-> ShowAllAchievements(true); mainMenu->disable();});
+
     mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
     mainMenu->AddSelectElement("Quit", [l]() {l->quit();});
 
     pauseMenu->AddSelectElement("Continue", [pauseMenu, p]() {pauseMenu->disable(); p->setPaused(false); });
     pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w, h]() {h->showHUDElements(false); pauseMenu->disable();mainMenu->enable(); p->setPaused(true); });
     pauseMenu->AddSelectElement("Quit (Close Program)", [l]() {l->quit();});
+
+
+
+	std::vector<Ogre::String> names2;
+	std::vector<std::function<void()>> callbacks2;
+	names2.push_back("Very Low");
+	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.005f); });
+
+	names2.push_back("Low");
+	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.01f); });
+
+		names2.push_back("Medium");
+	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.05f); });
+
+
+			names2.push_back("High");
+	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.1f); });
+
+		advancedOptions->AddChooseEnum("Track Resolution",names2,callbacks2,3);	
+
+
+		advancedOptions->AddChooseInt("Track View Distance (segments)", [p](int x) {p->setTrackLookahed(x);}, 10, 200,  p->getTrackLookahead(), 5);
+	advancedOptions->AddSelectElement("Return to Options Menu", [advancedOptions, mainMenu]() {advancedOptions->disable(); mainMenu->enable();});
+
+
+
 }
 
 bool 

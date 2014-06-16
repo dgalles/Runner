@@ -75,7 +75,8 @@ public:
 	int getManualAccelerateRate() { return mManualAccel; }
 
 
-
+	void setTrackLookahed(int look) { mTrackLookahead = look; }
+	int getTrackLookahead() { return mTrackLookahead; }
 
     void reset();
 
@@ -105,6 +106,8 @@ protected:
 	// Ogre::SceneNode * mPlayerSceneNode;
 
 	Ogre::SceneNode *debris[4];
+
+	int mTrackLookahead;
 
 	float mCurrentSpeed;
 	float mInitialSpeed;
