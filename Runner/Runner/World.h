@@ -77,6 +77,7 @@ public:
 	HUD *getHUD() { return mHUD; }
 
 	void trackObject(TrackableObject *o);
+	void setUnitsPerPathLength(float uppl) { mUnitsPerPathLength = uppl; }
 
 
 protected:
@@ -93,6 +94,7 @@ protected:
 
 	void addTrackNodes(int segmentIndextToAdd, bool startCap = false, bool endCap = false);
 	void addPoints(float percent, int segmentIndexToAdd, std::vector<Ogre::Vector3> &points, std::vector<Ogre::Vector3> &normals);
+
 
 
 	int mUnitsPerSegment;

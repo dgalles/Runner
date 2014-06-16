@@ -42,7 +42,7 @@ void World::setup()
 
 	mLastCoinAddedSegment = 0;
 	mUnitsPerSegment = 10;
-	mUnitsPerPathLength = 0.1f;
+	mUnitsPerPathLength = 0.01f;
 	mCoins = new ItemQueue(500);
 	mSawPowerup = new ItemQueue(100);
 
@@ -61,7 +61,7 @@ void World::setup()
 	{
 		AddNormalSegment();
 	}
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		AddRandomSegment();
 		addCoins();

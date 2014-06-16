@@ -60,10 +60,10 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86;$(OGRE_HOME)/boost/lib;$(OGRE_HOME)/lib/$(configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OIS_d.lib;OgreMain_d.lib;OgreOverlay_d.lib;Kinect10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OIS_d.lib;OgreMain_d.lib;OgreOverlay_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(OGRE_HOME)bin\$(Configuration)\OgreMain_d.dll" "$(OutDir)"
+      <Command>copy "$(OGRE_HOME)\bin\$(Configuration)\OgreMain_d.dll" "$(OutDir)"
 copy "$(OGRE_HOME)\bin\$(Configuration)\OgreOverlay_d.dll" "$(OutDir)"
 copy "$(OGRE_HOME)\bin\$(Configuration)\OIS_d.dll" "$(OutDir)"
 copy "$(OGRE_HOME)\bin\$(Configuration)\RenderSystem_Direct3D9_d.dll" "$(OutDir)"

@@ -34,6 +34,7 @@ Kinect::~Kinect(void)
 HRESULT
 Kinect::initSensor()
 {
+#ifdef KINECT_AVAILABLE
 	HRESULT  hr;
 
 	if ( !m_pNuiSensor  || true)
@@ -73,6 +74,9 @@ Kinect::initSensor()
 	m_hEvNuiProcessStop = CreateEvent( NULL, FALSE, FALSE, NULL );
 	m_hThNuiProcess = CreateThread( NULL, 0, Nui_ProcessThread, this, 0, NULL );
 	return hr;
+#else
+	return 0;
+#endif
 
 }
 
@@ -158,7 +162,7 @@ Kinect::update(float time)
 void
 Kinect::updateKinectSkeleton()
 {
-
+#ifdef KINECT_AVAILABLE
 	NUI_SKELETON_FRAME SkeletonFrame = {0};
 
 	bool bFoundSkeleton = false;
@@ -263,19 +267,21 @@ Kinect::updateKinectSkeleton()
 
 	mToso2Overlay->setRotate(Ogre::Radian(-mFrontBackAngle));
 	mToso2Overlay->setScroll(0.65f, 0.8f);
+#endif
 }
 
-
+#ifdef KINECT_AVAILABLE
 DWORD WINAPI Kinect::Nui_ProcessThread(LPVOID pParam)
 {
 	Kinect *pthis = (Kinect *) pParam;
 	return pthis->Nui_ProcessThread();
 }
-
+#endif 
 
 void
 Kinect::shutdown()
 {
+#ifdef KINECT_AVAILABLE
 	    // Stop the Nui processing thread
     if ( NULL != m_hEvNuiProcessStop )
     {
@@ -306,10 +312,11 @@ Kinect::shutdown()
         m_pNuiSensor->Release();
         m_pNuiSensor = NULL;
     }
-
+#endif
 
 }
 
+#ifdef KINECT_AVAILABLE
 //-------------------------------------------------------------------
 // Nui_ProcessThread
 //
@@ -350,3 +357,4 @@ DWORD WINAPI Kinect::Nui_ProcessThread()
 
 	return 0;
 }
+#endif

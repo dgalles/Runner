@@ -5,6 +5,7 @@
  #include <OgreTextAreaOverlayElement.h>
 #include "OgreFontManager.h"
 #include "OgreOverlayElement.h"
+#include "InputHandler.h"
 
 Achievements::Achievements(void) : mAchievmentsLong(), mAchievmentsShort(), mAchievmentsCleared(),mAchievmentsActive(), mShortNameToIndex(), mShowActiveTimeRemaining(0)
 {
@@ -25,6 +26,8 @@ Achievements::Achievements(void) : mAchievmentsLong(), mAchievmentsShort(), mAch
 		mShowCompletedTimeRemaining[i] = 0;
 	}
 	mCompletedActive = 0;
+	mAllOverlay = 0;
+	mViewAllAchievements = false;
 }
 
 
@@ -40,6 +43,147 @@ void Achievements::clearUI()
 Achievements::~Achievements(void)
 {
 }
+
+void Achievements::ShowAllAchievements(bool show)
+{
+	mViewAllAchievements = show;
+	Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
+	if (show == false)
+	{
+		if (mAllOverlay != 0)
+		{
+			mAllOverlay->hide();
+			return;
+		}
+
+	}
+	if (mAllOverlay)
+	{
+		Ogre::Overlay::Overlay2DElementsIterator it =  mAllOverlay->get2DElementsIterator();
+
+		while (it.hasMoreElements())
+		{
+			Ogre::OverlayContainer *e = it.getNext();
+			Ogre::OverlayContainer::ChildIterator it2 = e->getChildIterator();
+			while (it.hasMoreElements())
+			{
+				Ogre::OverlayElement * elem = it.getNext();
+				overlayManager.destroyOverlayElement(elem);
+			}
+			overlayManager.destroyOverlayElement(e);
+		}
+		overlayManager.destroy("AchievementOverlay");
+	}
+	mAllOverlay = overlayManager.create("AchievementOverlay");
+
+ 
+	 // Create a panel
+	 Ogre::OverlayContainer *achievementPanel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "AchievementPanel" ) );
+	 achievementPanel->setPosition(0, 0 );
+	 achievementPanel->setDimensions( 0.8f, 0.8f );
+	 //mPanel->setMaterialName( "Kinect/Blue" );
+	 // Add the panel to the overlay
+	 mAllOverlay->add2D( achievementPanel );
+
+	 float currentY = 0.1f;
+	 float currentX = 0.1f;
+
+	 float 	itemHeight = 0.05f;
+	 float itemSpacing = 0.1f;
+	 Ogre::ColourValue color(0,1,0,1);
+
+	 Ogre::TextAreaOverlayElement* textArea = static_cast<Ogre::TextAreaOverlayElement*>(
+	 overlayManager.createOverlayElement("TextArea","CurrentAchievements"));
+	textArea->setPosition(currentX, currentY);
+	textArea->setCaption("Active Goals");
+	textArea->setCharHeight(itemHeight);
+	textArea->setFontName("Big");
+	textArea->setColour(color);
+	achievementPanel->addChild(textArea);
+
+	currentY += itemSpacing;
+
+	int acvCount = 1;
+
+	for (unsigned int i = 0; i < mAchievmentsLong.size(); i++)
+	{
+		if (mAchievmentsActive[i])
+		{
+			textArea = static_cast<Ogre::TextAreaOverlayElement*>(
+				overlayManager.createOverlayElement("TextArea","AllAchiev" + std::to_string(acvCount++)));
+			textArea->setPosition(currentX, currentY);
+			textArea->setCaption(mAchievmentsShort[i] + ": " + mAchievmentsLong[i]);
+			textArea->setCharHeight(itemHeight);
+			textArea->setFontName("Big");
+			textArea->setColour(color);
+			achievementPanel->addChild(textArea);
+			currentY += itemSpacing;
+		}
+
+	}
+
+	textArea = static_cast<Ogre::TextAreaOverlayElement*>(
+		overlayManager.createOverlayElement("TextArea","AllAchiev" + std::to_string(acvCount++)));
+	textArea->setPosition(currentX, currentY);
+	textArea->setCaption("Completed Goals");
+	textArea->setCharHeight(itemHeight);
+	textArea->setFontName("Big");
+	textArea->setColour(color);
+	achievementPanel->addChild(textArea);
+	currentY += itemSpacing;
+
+		for (unsigned int i = 0; i < mAchievmentsLong.size(); i++)
+	{
+		if (mAchievmentsCleared[i])
+		{
+			textArea = static_cast<Ogre::TextAreaOverlayElement*>(
+				overlayManager.createOverlayElement("TextArea","AllAchiev" + std::to_string(acvCount++)));
+			textArea->setPosition(currentX, currentY);
+			textArea->setCaption(mAchievmentsShort[i] + ": " + mAchievmentsLong[i]);
+			textArea->setCharHeight(itemHeight);
+			textArea->setFontName("Big");
+			textArea->setColour(color);
+			achievementPanel->addChild(textArea);
+			currentY += itemSpacing;
+		}
+
+	}
+
+		
+	textArea = static_cast<Ogre::TextAreaOverlayElement*>(
+		overlayManager.createOverlayElement("TextArea","AllAchiev" + std::to_string(acvCount++)));
+	textArea->setPosition(currentX, currentY);
+	textArea->setCaption("Future Goals");
+	textArea->setCharHeight(itemHeight);
+	textArea->setFontName("Big");
+	textArea->setColour(color);
+	achievementPanel->addChild(textArea);
+	currentY += itemSpacing;
+
+
+			for (unsigned int i = 0; i < mAchievmentsLong.size(); i++)
+	{
+		if (!mAchievmentsCleared[i] && !mAchievmentsActive[i])
+		{
+			textArea = static_cast<Ogre::TextAreaOverlayElement*>(
+				overlayManager.createOverlayElement("TextArea","AllAchiev" + std::to_string(acvCount++)));
+			textArea->setPosition(currentX, currentY);
+			textArea->setCaption(mAchievmentsShort[i] + ": " + mAchievmentsLong[i]);
+			textArea->setCharHeight(itemHeight);
+			textArea->setFontName("Big");
+			textArea->setColour(color);
+			achievementPanel->addChild(textArea);
+			currentY += itemSpacing;
+		}
+
+	}
+
+
+	mAllOverlay->show();
+
+
+}
+
 
 void Achievements::Think(float time)
 {
@@ -86,6 +230,34 @@ void Achievements::Think(float time)
 			mShowActiveTimeRemaining -= time;
 		}
 	}
+	if (mViewAllAchievements)
+	{
+		InputHandler *ih = InputHandler::getInstance();
+
+
+		if (ih->IsKeyDown(OIS::KC_DOWN))
+		{
+			float scrollY = mAllOverlay->getScrollY();
+			float scrollX =  mAllOverlay->getScrollX();
+			mAllOverlay->setScroll(scrollX, scrollY + time * 0.3);
+
+		} 
+		else if (ih->IsKeyDown(OIS::KC_UP))
+		{
+
+
+		}
+		else if (ih->IsKeyDown(OIS::KC_ESCAPE))
+		{
+
+
+		}
+
+
+
+
+	}
+
 
 
 }
@@ -98,23 +270,26 @@ void  Achievements::setupCompletedUI(Ogre::String message, float timeToDisplay)
 	mCompletedActive++;
 }
 
-void Achievements::AchievementCleared(int index, float timeToDisplay /* = 5 */)
+void Achievements::AchievementCleared(int index, bool force /* = false*/, float timeToDisplay /* = 5 */)
 {
-	if (mAchievmentsActive[index])
+	if (mAchievmentsActive[index] || force)
 	{
 		mAchievmentsCleared[index] = true;
 		mAchievmentsActive[index] = false;
-		setupCompletedUI(mAchievmentsShort[index] + ": " + mAchievmentsLong[index], timeToDisplay);
+		if (timeToDisplay > 0)
+		{
+			setupCompletedUI(mAchievmentsShort[index] + ": " + mAchievmentsLong[index], timeToDisplay);
+		}
 	}
 }
 
 void 
-	Achievements::AchievementCleared(Ogre::String achievement, float timeToDisplay /*  = 5 */)
+	Achievements::AchievementCleared(Ogre::String achievement, bool force, /* = false */ float timeToDisplay /*  = 5 */)
 {
 	std::map<Ogre::String, int>::iterator iter = mShortNameToIndex.find(achievement);
 	if (iter != mShortNameToIndex.end())
 	{
-		AchievementCleared(iter->second, timeToDisplay);
+		AchievementCleared(iter->second, force, timeToDisplay);
 	}
 	else
 	{
@@ -129,22 +304,22 @@ void
 {
 
 	AddAchievement("Getting Started", "Run 100 Meters in one run");
-	AddAchievement("Pennies From Hevean", "Collect 100 Coints in one run");
+	AddAchievement("Pennies From Heaven", "Collect 100 Coints in one run");
 	AddAchievement("Making Money", "Collect 200 Coints in one run");
 	AddAchievement("Looper", "Complete a Loop-de-loop");
-	AddAchievement("Greedy I", "Get all coints in a 20 meter segment");
+	AddAchievement("Greedy I", "Get all coins in a 20 meter segment");
 	AddAchievement("Buzzed", "Hit a Sawblade");
-		AddAchievement("Booster", "Use a Boost");
+	AddAchievement("Booster", "Use a Boost");
 	AddAchievement("Penniless I", "Run 10 Meters without picking up a coin");
 	AddAchievement("Marathon I", "Run 5000 Meters Lifetime");
 	AddAchievement("Snap", "Complete a Snap Turn");
-	AddAchievement("Greedy II", "Get all coints in a 50 meter segment");
+	AddAchievement("Greedy II", "Get all coins in a 50 meter segment");
 	AddAchievement("Need for Speed", "Use 2 Boosts on one run");
 	AddAchievement("Getting Bank", "Collect 500 Coints in one run");
 	AddAchievement("Penniless II", "Run 50 Meters without picking up a coin");
 	AddAchievement("Blazin'", "Use 3 Boosts on one run");
 	AddAchievement("Middle Distance", "Run 500 Meters in one run");
-	AddAchievement("Greedy III", "Get all coints in a 100 meter segment");
+	AddAchievement("Greedy III", "Get all coins in a 100 meter segment");
 	AddAchievement("Long Haul", "Run 1000 Meters in one run");
 	AddAchievement("Building Bling", "Collect 5000 Coins Lifetime");
 	AddAchievement("Penniless III", "Run 100 Meters without picking up a coin");
@@ -165,7 +340,7 @@ void Achievements::AddAchievement(Ogre::String shortName, Ogre::String longName)
 void Achievements::ResetActive()
 {
 	int numActive = 0;
-	for (int i = 0; i < mAchievmentsLong.size(); i++)
+	for (unsigned int i = 0; i < mAchievmentsLong.size(); i++)
 	{
 		if (!mAchievmentsCleared[i] && numActive < ACTIVE_ACHIEVEMENTS)
 		{
@@ -182,7 +357,7 @@ void Achievements::ResetActive()
 void Achievements::DisplayActiveAchievements(float time /* = -1*/)
 {
 	int activeIndex = 0;
-	for (int i = 0; i < mAchievmentsLong.size(); i++)
+	for (unsigned int i = 0; i < mAchievmentsLong.size(); i++)
 	{
 		if (mAchievmentsActive[i])
 		{

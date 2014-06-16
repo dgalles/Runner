@@ -25,6 +25,7 @@ const float Player::SPEED_MULTIPLYER = 20;
 	mEnableKeyboard = false;
 	mEnableKinect = true;
 	mInvertControls = false;
+	mTrackLookahead =100;
     setup();
 
 	int mTotalCoins = 0;
@@ -257,7 +258,7 @@ void Player::setLevel(int level)
 {
 
 
-    mCurrentSpeed = 300 + level*200;
+//    mCurrentSpeed = 300 + level*200;
     // Also do rate change?
 
 }
@@ -505,7 +506,7 @@ void
 			mDeltaY = std::max(mTargetDeltaY, mDeltaY);
 		}
 
-		if (newSegment > mWorld->trackPath->NumSegments() - 100)
+		if (newSegment > mWorld->trackPath->NumSegments() - mTrackLookahead)
 		{
 			mWorld->AddRandomSegment();
 		}

@@ -290,7 +290,7 @@ Menu::ChooseEnumMenuItem::ChooseEnumMenuItem(Ogre::String text, Ogre::String nam
 void Menu::ChooseEnumMenuItem::Increase() 
 { 
 	mCurrentValue++;
-	if (mCurrentValue >= mChoiceNames.size())
+	if (mCurrentValue >= (int) mChoiceNames.size())
 	{
 		mCurrentValue = 0;
 	}

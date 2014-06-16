@@ -4,7 +4,6 @@
 HUD/Score
 {
     zorder 200
-	metrics_mode pixels
 	
     container Panel(HUD/Score/Panel)
     {
