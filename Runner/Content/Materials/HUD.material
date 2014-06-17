@@ -1,3 +1,24 @@
+material ArmorMat
+{
+   technique
+   {
+     pass
+     {
+       scene_blend alpha_blend
+       depth_write off
+ 
+       texture_unit
+       {
+        texture Armor.png
+		alpha_op_ex source1 src_manual src_current 0.9
+
+      }
+     }
+   }
+
+}
+
+
 material LeftArrow 
 {
     receive_shadows on 

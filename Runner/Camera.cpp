@@ -20,6 +20,7 @@ mRenderCamera(renderCamera), mWorld(world), mCurrentTrackingObject(0)
 	mCurrentFollowDistance = mDesiredFollowDistance;
 	mCurrentFollowHeight = mDesiredFollowHeight;
 
+	mShakeTime = 0;
 	// Any other initialization that needs to happen
 }
 
@@ -64,6 +65,16 @@ RunnerCamera::TrackObject(TrackableObject *objectToTrack)
 	mCurrentTrackingObject = objectToTrack;
 
 }
+
+void RunnerCamera::Shake(float time)
+{
+	mShakeTime = time;
+	mShakeRoll = 0;
+	mShakePitch = 0;
+	mShakeOffset = Ogre::Vector3::ZERO;
+}
+
+
 void
 RunnerCamera::Think(float time)
 {
@@ -154,6 +165,25 @@ RunnerCamera::Think(float time)
 		
 		mRenderCamera->setPosition(cameraPos);
 		mRenderCamera->setOrientation(Ogre::Quaternion(cameraRight, cameraUp, -cameraForward ));
+
+		if (mShakeTime >= time)
+		{
+			mShakeTime -= time;
+			float RollDegreesPerSecond = 60;
+			float PitchDegreesPerSecond = 60;
+			float rTest1 = ((rand() / ((float) RAND_MAX / 2))  - 1);
+			float rTest2 = ((rand() / ((float) RAND_MAX / 2))  - 1);
+			mShakeRoll += rTest1 * time * RollDegreesPerSecond;
+			mShakePitch += rTest2 * time * PitchDegreesPerSecond;
+			mRenderCamera->roll(Ogre::Degree(mShakeRoll));
+			mRenderCamera->pitch(Ogre::Degree(mShakePitch));
+			mRenderCamera->moveRelative(mShakeOffset);
+		}
+		else
+		{
+			mShakeTime = 0;
+		}
+
 	}
 
 	// Any code needed here to move the camera about per frame

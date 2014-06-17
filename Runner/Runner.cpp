@@ -114,18 +114,19 @@ Runner::setupMenus()
     Kinect *k = mKinect;
 	Achievements *a = mAchievements;
 
-    Menu *options = new Menu("Options", "options", 0.1f, 0.1f, 0.07f);
-    Menu *controlOptions = new Menu("Control Options", "controloptions", 0.1f, 0.1f, 0.07f);
-    Menu *gameplayOptions = new Menu("Gameplay Options", "gameplayoptions", 0.1f, 0.1f, 0.07f);
     Menu *mainMenu = new Menu("Main Menu", "main", 0.1f, 0.1f);
+    Menu *options = new Menu("Options", "options", 0.1f, 0.1f, 0.1f, mainMenu);
+    Menu *controlOptions = new Menu("Control Options", "controloptions", 0.1f, 0.1f, 0.07f, options);
+    Menu *gameplayOptions = new Menu("Gameplay Options", "gameplayoptions", 0.1f, 0.05f, 0.07f, options);
+    Menu *advancedOptions = new Menu("Advanced Options", "advancedOptions", 0.1f, 0.1f,0.1f, options);
     Menu *pauseMenu = new Menu("Pause Menu", "pause", 0.1f, 0.1f);
-    Menu *advancedOptions = new Menu("Advanced Options", "advancedOptions", 0.1f, 0.1f);
 
     pauseMenu->disable();
     options->disable();
 	controlOptions->disable();
 	gameplayOptions->disable();
 	advancedOptions->disable();
+	mainMenu->enable();
 
 	menus->addMenu(mainMenu);
     menus->addMenu(options);
@@ -140,6 +141,7 @@ Runner::setupMenus()
 	options->AddSelectElement("Return to Main Menu", [options, mainMenu]() {options->disable(); mainMenu->enable();});
 
     gameplayOptions->AddChooseBool("Arrow Indicators", [h](bool show) {h->showArrows(show);}, h->arrowsShown());
+    gameplayOptions->AddChooseInt("Starting Armor", [p](int x) {p->setInitialArmor(x); }, 1, 8, p->getInitialArmor(), 1);
 	gameplayOptions->AddChooseBool("Use Forward / Backward Leaning", [w, p](bool use) {w->setUseFrontBack(use); p->setUseFrontBack(use);} , p->getUseFrontBack());
     gameplayOptions->AddChooseFloat("Obstacle Frequency", [w](float x) {w->setObstacleFrequency(x); }, 0.0f, 1.0f,w->getObstacleFrequency(), 0.1f);
     gameplayOptions->AddChooseInt("Minimum Obstacle Separation", [w](int x) {w->setObstacleSeparation(x); }, 0, 15, w->getObstacleSeparation(), 1);
@@ -246,6 +248,7 @@ Runner::setup(void)
     mSceneMgr = mRoot->createSceneManager(Ogre::ST_GENERIC, "RunnerSMInstance");
     createCamera();
     createViewports();
+
 
     // Set default mipmap level (NB some APIs ignore this)
     Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);

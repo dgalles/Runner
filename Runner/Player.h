@@ -74,6 +74,8 @@ public:
 		void setManualAceelerateRate(int rate) { mManualAccel = rate;} 
 	int getManualAccelerateRate() { return mManualAccel; }
 
+	void setInitialArmor(int initialArmor) { mInitialArmor = initialArmor; }
+	int getInitialArmor() { return mInitialArmor; }
 
 	void setTrackLookahed(int look) { mTrackLookahead = look; }
 	int getTrackLookahead() { return mTrackLookahead; }
@@ -135,6 +137,8 @@ protected:
 	bool mUseFrontBack;
 	bool mInvertControls;
 
+	int mArmor;
+	int mInitialArmor;
 
 	int mAutoAccel;
 	int mManualAccel;

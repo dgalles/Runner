@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 namespace Ogre
 {
 	class Overlay;
@@ -29,6 +31,8 @@ public:
 	void setShowIncreaseSpeed(bool show);
 	void setShowDecreaseSpeed(bool show);
 
+	void setArmorLevel(int level);
+
 	void showHUDElements(bool show);
 
 protected:
@@ -39,6 +43,12 @@ protected:
 	Ogre::OverlayElement *mSpeedText;
 	Ogre::Overlay *mSpeedUpOverlay;
 	Ogre::Overlay *mSlowDownOverlay;
+
+	//	std::vector<bool> mAchievmentsCleared;
+
+
+	std::vector<Ogre::OverlayElement *> mArmorIndicator;
+
 	float mArrowFlashTime[(int) HUD::last];
 	float mArrowFlashDelay[(int) HUD::last];
 	bool mArrowStatus[(int) HUD::last];

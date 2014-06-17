@@ -21,7 +21,7 @@ class Menu
 public:
 	Menu();
 
-	Menu(Ogre::String header, Ogre::String name, float xpos, float ypos, float ydelta = 0.1f);
+	Menu(Ogre::String header, Ogre::String name, float xpos, float ypos, float ydelta = 0.1f, Menu *parent = NULL, bool beginEnabled = false);
 
 	void enable();
 
@@ -66,6 +66,8 @@ protected:
 	int mNumMenuItems; 
 	Ogre::ColourValue mHighlightColor;
 	Ogre::ColourValue mUnHighlightColor;
+
+	Menu *mParent;
 
 	void AddMenuItem(MenuItem *item);
 

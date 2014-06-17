@@ -35,7 +35,7 @@ material AchievementBackground2
     }
 }
 
-material AchievementBackground3
+material Achievement/Background/All
  {
    technique
    {
@@ -46,7 +46,24 @@ material AchievementBackground3
  
        texture_unit
        {
-         colour_op_ex source1 src_manual src_current 0.5 0.7 0.5
+         colour_op_ex source1 src_manual src_current 0.64 0.96 0.61
+       }
+     }
+   }
+ }
+ 
+ material Achievement/Background/AllBorder
+ {
+   technique
+   {
+     pass
+     {
+       scene_blend alpha_blend
+       depth_write off
+ 
+       texture_unit
+       {
+         colour_op_ex source1 src_manual src_current 0.16 .39 0.13
       }
      }
    }

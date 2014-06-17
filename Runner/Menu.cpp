@@ -107,12 +107,20 @@ void Menu::think(float time)
 		{
 			mMenuItems[mCurrentMenuItem]->Decrease();
 		}
+		if (ih->KeyPressedThisFrame(OIS::KC_ESCAPE))
+		{
+			if (mParent != NULL)
+			{
+				disable();
+				mParent->enable();
 
+			}
+		}
 	}
 
 }
 
-Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float ydelta)
+Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float ydelta, Menu *parent, bool beginEnabled)
 	: mHighlightColor(1.0f,0.0f, 0.0f), mUnHighlightColor(1.0f, 1.0f, 1.0f)
 {
 	mItemHeight = 0.05f;
@@ -122,6 +130,7 @@ Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float
 	mStartingX = xPos;
 	mStartingY = yPos;
 	mName = name;
+	mParent = parent;
 
 
 
@@ -134,7 +143,7 @@ Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float
 	 mPanel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", name +"Panel" ) );
 	 mPanel->setPosition(xPos, yPos );
 	 mPanel->setDimensions( 0.8f, 0.8f );
-	 mPanel->setMaterialName( "Kinect/Blue" );
+	 mPanel->setMaterialName( "Menu/Background/Blue" );
 	 // Add the panel to the overlay
 	 mMenuOverlay->add2D( mPanel );
 
@@ -149,7 +158,11 @@ Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float
 	mPanel->addChild(textArea);
 
 	 // Show the overlay
-	 mMenuOverlay->show();
+	mEnabled = beginEnabled;
+	if (beginEnabled)
+	{
+		mMenuOverlay->show();
+	}
 
 }
 
@@ -181,12 +194,14 @@ void Menu::AddMenuItem(MenuItem *item)
 	{
 		item->Select();
 	}
+	float height = (mNumMenuItems + 1.5) * mItemSpacing + mItemHeight + mStartingY;
+	mPanel->setHeight(height);
 }
 
 void Menu::AddSelectElement(Ogre::String text,  std::function<void(void)> callback)
 {
 	float x = mStartingX;
-	float y = mStartingY + (mNumMenuItems + 1.5f) * mItemSpacing; 
+	float y = mStartingY + (mNumMenuItems + 1.5) * mItemSpacing; 
 
 	AddMenuItem(new Menu::SelectMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback));
 }
@@ -195,7 +210,7 @@ void Menu::AddChooseInt(Ogre::String text,  std::function<void(int)> callback,  
 {
 
 	float x = mStartingX;
-	float y = mStartingY + (mNumMenuItems + 1.5f) * mItemSpacing; 
+	float y = mStartingY + (mNumMenuItems+ 1.5) * mItemSpacing; 
 
 	AddMenuItem(new Menu::ChooseIntMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,  minValue, maxValue,initialValue, delta));
 }
@@ -205,7 +220,7 @@ void Menu::AddChooseFloat(Ogre::String text,  std::function<void(float)> callbac
 {
 
 	float x = mStartingX;
-	float y = mStartingY + (mNumMenuItems + 1.5f) * mItemSpacing; 
+	float y = mStartingY + (mNumMenuItems+ 1.5) * mItemSpacing; 
 
 	AddMenuItem(new Menu::ChooseFloatMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,  minValue, maxValue, initialValue, delta));
 }
@@ -215,7 +230,7 @@ void Menu::AddChooseFloat(Ogre::String text,  std::function<void(float)> callbac
 void Menu::AddChooseBool(Ogre::String text,  std::function<void(bool)> callback, bool initialValue /* = false */)
 {
 	float x = mStartingX;
-	float y = mStartingY + (mNumMenuItems + 1.5f) * mItemSpacing; 
+	float y = mStartingY + (mNumMenuItems+ 1.5) * mItemSpacing; 
 
 	AddMenuItem(new Menu::ChooseBoolMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback, initialValue));
 }
@@ -223,7 +238,7 @@ void Menu::AddChooseBool(Ogre::String text,  std::function<void(bool)> callback,
 void Menu::AddChooseEnum(Ogre::String name, std::vector<Ogre::String> enumNames, std::vector<std::function<void()>> callbacks, int initialVal /* = 0 */)
 {
 	float x = mStartingX;
-	float y = mStartingY + (mNumMenuItems + 1.5f) * mItemSpacing; 
+	float y = mStartingY + (mNumMenuItems+ 1.5) * mItemSpacing; 
 
 	AddMenuItem(new Menu::ChooseEnumMenuItem(name, mName + "_" + std::to_string(mNumMenuItems),this,x,y, enumNames, callbacks, initialVal));
 
