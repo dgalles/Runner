@@ -8,12 +8,14 @@ OBB::OBB(Ogre::AxisAlignedBox b) : mNormals(3), mPointsGlobal(8), mPointsLocal(8
 	mScale = Ogre::Vector3::UNIT_SCALE;
     mOrientation = Ogre::Quaternion::IDENTITY;
     mPosition = Ogre::Vector3::ZERO;
+	mGlobalPointsDirty = true;
     setPoints(b);
 }
 OBB::OBB(Ogre::AxisAlignedBox b, Ogre::Vector3 position, Ogre::Quaternion orientation) : mNormals(3), mPointsGlobal(8), mPointsLocal(8)
 {
     mPosition = position;
     mOrientation = orientation;
+	mGlobalPointsDirty = true;
     setPoints(b);
 }
 
@@ -21,12 +23,13 @@ OBB::OBB(Ogre::AxisAlignedBox b, Ogre::Vector3 position, Ogre::Quaternion orient
  OBB::~OBB(void)
  {
 
+	mGlobalPointsDirty = true;
 
  }
 
 
 void
-OBB::setPoints(Ogre::AxisAlignedBox b)
+OBB::setPoints(Ogre::AxisAlignedBox b) 
 {
     for (int i = 0; i < 8; i++)
     {
@@ -40,12 +43,12 @@ void
 OBB::setScale(Ogre::Vector3 scale)
 {
     mScale = scale;
-    resetAABBandPoints();
+	mGlobalPointsDirty = true;
 }
 
 
 void
-OBB::setNormals()
+OBB::setNormals() 
 {
     mNormals[0] = mOrientation * Ogre::Vector3::UNIT_X;
     mNormals[1] = mOrientation * Ogre::Vector3::UNIT_Y;
@@ -72,8 +75,7 @@ void OBB::translate(Ogre::Vector3 deltaPosition)
 void OBB::setOrientation(Ogre::Quaternion orentation)
 {
     mOrientation = orentation;
-    setNormals();
-    resetAABBandPoints();
+	mGlobalPointsDirty = true;
 
 }
 
@@ -130,15 +132,39 @@ bool testIntersect(Ogre::Vector3 normal, const std::vector<Ogre::Vector3> &point
 }
 
 
-bool OBB::collides(const OBB *other, Ogre::Vector3 &MTD) const
+bool OBB::collides(OBB *other, Ogre::Vector3 &MTD) 
 {
+	if (mGlobalPointsDirty)
+	{
+		setNormals();
+		resetAABBandPoints();
+		mGlobalPointsDirty = false;
+	}
+	if (other->mGlobalPointsDirty)
+	{
+		other->setNormals();
+		other->resetAABBandPoints();
+		other->mGlobalPointsDirty = false;
+	}
     return collides(*other, MTD);
 }
 
 
 
-bool OBB::collides(const OBB &other, Ogre::Vector3 &MTD) const
+bool OBB::collides(OBB &other, Ogre::Vector3 &MTD) 
 {
+	if (mGlobalPointsDirty)
+	{
+		setNormals();
+		resetAABBandPoints();
+		mGlobalPointsDirty = false;
+	}
+	if (other.mGlobalPointsDirty)
+	{
+		other.setNormals();
+		other.resetAABBandPoints();
+		other.mGlobalPointsDirty = false;
+	}
     if (!mAABB.intersects(other.mAABB))
     {
         return false;
@@ -191,5 +217,6 @@ void OBB::resetAABBandPoints()
        mPointsGlobal[i] = mOrientation * (mPointsLocal[i] * mScale) + mPosition;
        mAABB.merge(mPointsGlobal[i]);
    }
+   mGlobalPointsDirty = false;
 }
 

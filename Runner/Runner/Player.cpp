@@ -33,8 +33,12 @@ const float Player::SPEED_MULTIPLYER = 20;
 	int mLongestRun = 0;
 	int mMostCoins = 0;
 
+
+	mInitialArmor = 3;
+
 	mMaxSpeed = 80;
 
+	mUseFrontBack = true;
 	mLeanEqualsDuck = true;
 
 }
@@ -86,9 +90,11 @@ void Player::setup()
 	mPlayerObject->setPosition(pos);
 	mPlayerObject->setOrientation(q);
 
-    float mTimeSinceSpeedIncrease = 0;
+	float mTimeSinceSpeedIncrease = 0;
 	mAutoAccel = 0;
 	mManualAccel = 5;
+	mArmor = mInitialArmor;
+	mWorld->getHUD()->setArmorLevel(mArmor);
 }
 
 Ogre::Vector3 
@@ -465,7 +471,7 @@ void
 			if (mWorld->trackPath->kind(newSegment - 1) == BezierPath::Kind::GAP)
 			{
 				mWorld->getHUD()->stopArrow(HUD::Kind::up);
-				if (mTargetDeltaY < 0)
+				if (mTargetDeltaY < 0 &&  !mShielded)
 				{
 					kill();
 					return;
@@ -606,7 +612,7 @@ Player::updateAchievements()
 {
 	if (mCoinsCollected >= 100)
 	{
-		mAchievements->AchievementCleared("Pennies From Hevean");
+		mAchievements->AchievementCleared("Pennies From Heaven");
 	}
 	if (mCoinsCollected >= 200)
 	{
@@ -700,6 +706,11 @@ Player::moveExplosion(float time)
 void 
 	Player::kill()
 {
+	mArmor--;
+	mWorld->getHUD()->setArmorLevel(mArmor);
+
+	if (mArmor <= 0)
+	{
 	mAlive = false;
 	mExplodeTimer = 3.0;
 
@@ -740,4 +751,11 @@ void
 	 mWorld->getHUD()->stopAllArrows();
 	 mWorld->getHUD()->setShowDecreaseSpeed(false);
 	 mWorld->getHUD()->setShowIncreaseSpeed(false);
+	}
+	else
+	{
+		mShielded = true;
+		mShieldTime = 2;
+		mWorld->getCamera()->Shake();
+	}
 }

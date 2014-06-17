@@ -7,7 +7,7 @@
 #include "OgreOverlayElement.h"
 #include "OgreIteratorWrappers.h"
 
-HUD::HUD()
+HUD::HUD() : mArmorIndicator()
 {
 
 	Ogre::FontManager::getSingleton().getByName("Big")->load();
@@ -37,21 +37,31 @@ HUD::HUD()
 	mCoinsText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Coins");
 	mDistanceText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Distance");
 	mSpeedText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Speed");
+
+	int armorIndex =  1;
+	while (Ogre::OverlayManager::getSingleton().hasOverlayElement("HUD/Armor/" + std::to_string(armorIndex)))
+	{
+		Ogre::OverlayElement *armor  =Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Armor/" + std::to_string(armorIndex));
+		mArmorIndicator.push_back(armor);
+		armorIndex++;
+	}
+
+
 }
 
 
-	void HUD::showHUDElements(bool show)
+void HUD::showHUDElements(bool show)
+{
+	mShowHUDElems = show;
+	if (show)
 	{
-		mShowHUDElems = show;
-		if (show)
-		{
-				mScoreOverlay->show();
-		}
-		else
-		{
-				mScoreOverlay->hide();
-		}
+		mScoreOverlay->show();
 	}
+	else
+	{
+		mScoreOverlay->hide();
+	}
+}
 
 void 
 HUD::stopAllArrows()
@@ -106,6 +116,25 @@ void HUD::setSpeed(int speed)
 
 
 }
+
+
+void HUD::setArmorLevel(int level)
+{
+	for (unsigned int i = 0; i < mArmorIndicator.size(); i++)
+	{
+		if (level > i)
+		{
+			mArmorIndicator[i]->show();
+		}
+		else
+		{
+			mArmorIndicator[i]->hide();
+		}
+
+	}
+
+}
+
 
 void HUD::setDistance(int newScore)
 {

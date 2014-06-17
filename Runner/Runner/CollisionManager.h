@@ -13,12 +13,12 @@ public:
     void setPosition(Ogre::Vector3 newPosition);
     void translate(Ogre::Vector3 deltaPosition);
     void setOrientation(Ogre::Quaternion orentation);
-    bool collides(const OBB &other, Ogre::Vector3 &MTD) const;
-    bool collides(const OBB *other, Ogre::Vector3 &MTD) const;
+    bool collides(OBB &other, Ogre::Vector3 &MTD);
+    bool collides(OBB *other, Ogre::Vector3 &MTD);
     void setScale(Ogre::Vector3 scale);
 
 protected:
-    Ogre::AxisAlignedBox mAABB;
+    mutable Ogre::AxisAlignedBox mAABB;
     Ogre::Vector3 mPosition;
     Ogre::Quaternion mOrientation;
     Ogre::Vector3 mScale;
@@ -28,6 +28,7 @@ protected:
     std::vector<Ogre::Vector3> mNormals;
     void setPoints(Ogre::AxisAlignedBox b);
     void setNormals();
+	bool mGlobalPointsDirty;
 
 };
 

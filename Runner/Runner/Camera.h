@@ -22,6 +22,7 @@ public:
 
 	void TrackObject(TrackableObject *objectToTrack);
 	void SetFollowType(FollowType typ);
+	void Shake(float time = 1);
 	void Pause();
 	void UnPause();
 protected:
@@ -42,5 +43,8 @@ protected:
 
 	float mCurrentFollowDistance;
 	float mCurrentFollowHeight;
-
+	float mShakeTime;
+	float mShakeRoll;
+	float mShakePitch;
+	Ogre::Vector3 mShakeOffset;
 };

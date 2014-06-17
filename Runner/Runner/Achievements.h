@@ -6,6 +6,9 @@ namespace Ogre
 {
 	class Overlay;
 	class OverlayElement;
+	class TextAreaOverlayElement;
+	class OverlayContainer;
+
 }
 
 class Achievements
@@ -46,6 +49,8 @@ public:
 	// show the currntly active achievements.
 	void DisplayActiveAchievements(float time = 3);
 
+	// Are we currently showing achievements?  A bit of a hack to get menus &etc working properly
+	bool ShowingAllAchievements() { return mViewAllAchievements; }
 
 	~Achievements(void);
 
@@ -76,6 +81,11 @@ protected:
 	bool mViewAllAchievements;
 	int mCompletedActive;
 
+	std::vector< Ogre::TextAreaOverlayElement*> mAchievemntTextAreas;
+	std::vector< Ogre::TextAreaOverlayElement*> mTitles;
+	 Ogre::OverlayContainer *mAchievementPanel;
+
+	 float mMaxScroll;
 	Ogre::Overlay *mAllOverlay;
 };
 

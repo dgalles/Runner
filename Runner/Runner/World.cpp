@@ -42,7 +42,7 @@ void World::setup()
 
 	mLastCoinAddedSegment = 0;
 	mUnitsPerSegment = 10;
-	mUnitsPerPathLength = 0.01f;
+	mUnitsPerPathLength = 0.1f;
 	mCoins = new ItemQueue(500);
 	mSawPowerup = new ItemQueue(100);
 
@@ -85,6 +85,7 @@ void World::reset()
 	mSceneManager->clearScene();
 	delete trackPath;
 	trackPath = NULL;
+			  mSceneManager->setSkyBox(true, "Skybox/Cloudy");
 
 	setup();
 }

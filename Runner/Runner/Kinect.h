@@ -1,9 +1,9 @@
 #pragma once
-
+#define KINECT_AVAILABLE
 #include <windows.h>
 #include <ole2.h>
 
-#ifdef KINECT_AVAIALBLE
+#ifdef KINECT_AVAILABLE
 
 #include "NuiApi.h"
 #endif

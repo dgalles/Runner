@@ -1,0 +1,73 @@
+
+material Menu/Background/Blue
+ {
+   technique
+   {
+     pass
+     {
+       scene_blend alpha_blend
+       depth_write off
+ 
+       texture_unit
+       {
+         colour_op_ex source1 src_manual src_current 0 0 0.7
+         alpha_op_ex source1 src_manual src_current 0.7
+       }
+     }
+   }
+ }
+ 
+material Menu/Background/White
+ {
+   technique
+   {
+     pass
+     {
+       scene_blend alpha_blend
+       depth_write off
+ 
+       texture_unit
+       {
+         colour_op_ex source1 src_manual src_current 1 1 1
+         alpha_op_ex source1 src_manual src_current 0.9
+       }
+     }
+   }
+ }
+ 
+ material Menu/Background/Green
+ {
+   technique
+   {
+     pass
+     {
+       scene_blend alpha_blend
+       depth_write off
+ 
+       texture_unit
+       {
+         colour_op_ex source1 src_manual src_current 0 0.5 0
+         alpha_op_ex source1 src_manual src_current 0.9
+       }
+     }
+   }
+ }
+ 
+ 
+ material Menu/Background/Grey
+ {
+   technique
+   {
+     pass
+     {
+       scene_blend alpha_blend
+       depth_write off
+ 
+       texture_unit
+       {
+         colour_op_ex source1 src_manual src_current 0.5 0.5 0.5
+         alpha_op_ex source1 src_manual src_current 0.9
+       }
+     }
+   }
+ }

@@ -5,6 +5,94 @@ HUD/Score
 {
     zorder 200
 	
+	container Panel(HUD/Armor/Panel)
+    {
+      metrics_mode relative
+
+		left 0.01
+		top 0.8
+		element TextArea(HUD/Armor/Text)
+		{
+			font_name Big
+			char_height 0.04
+			colour 1 1 1
+			top 0.01
+			caption Armor 
+		}
+	
+		container Panel(HUD/Armor/1)
+		{
+			left 0.1
+			top 0
+			width 0.1
+			height 0.05
+			material ArmorMat	
+		}
+		
+		container Panel(HUD/Armor/2)
+		{
+			left 0.21
+			top 0
+			width 0.1
+			height 0.05
+			material ArmorMat	
+		}
+
+		container Panel(HUD/Armor/3)
+		{
+			left 0.32
+			top 0
+			width 0.1
+			height 0.05
+			material ArmorMat	
+		}
+
+		container Panel(HUD/Armor/4)
+		{
+			left 0.43
+			top 0
+			width 0.1
+			height 0.05
+			material ArmorMat	
+		}
+
+		container Panel(HUD/Armor/5)
+		{
+			left 0.54
+			top 0
+			width 0.1
+			height 0.05
+			material ArmorMat	
+		}
+
+		container Panel(HUD/Armor/6)
+		{
+			left 0.65
+			top 0
+			width 0.1
+			height 0.05
+			material ArmorMat	
+		}
+		
+		container Panel(HUD/Armor/7)
+		{
+			left 0.76
+			top 0
+			width 0.1
+			height 0.05
+			material ArmorMat	
+		}
+		container Panel(HUD/Armor/8)
+		{
+			left 0.87
+			top 0
+			width 0.1
+			height 0.05
+			material ArmorMat	
+		}
+
+	}
+	
     container Panel(HUD/Score/Panel)
     {
       metrics_mode relative
@@ -129,6 +217,11 @@ HUD/SpeedUp
          caption Increasing Speed
 		}
 	}
+}
+
+HUD/Armor
+{
+
 }
 
 

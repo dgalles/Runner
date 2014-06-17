@@ -66,8 +66,15 @@ bool
         {
             // do nothing
         }
-        else 
+        else if (mAchievements->ShowingAllAchievements())
+		{
+			mAchievements->ShowAllAchievements(false);
+            MenuManager::getInstance()->getMenu("main")->enable();
+
+		}
+		else
         {
+			mAchievements->clearUI();
             MenuManager::getInstance()->getMenu("pause")->enable();
             mPlayer->setPaused(true);
 			mWorld->getHUD()->setShowDecreaseSpeed(false);
