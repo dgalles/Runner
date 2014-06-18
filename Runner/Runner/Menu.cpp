@@ -194,14 +194,14 @@ void Menu::AddMenuItem(MenuItem *item)
 	{
 		item->Select();
 	}
-	float height = (mNumMenuItems + 1.5) * mItemSpacing + mItemHeight + mStartingY;
+	float height = (mNumMenuItems + 1.5f) * mItemSpacing + mItemHeight + mStartingY;
 	mPanel->setHeight(height);
 }
 
 void Menu::AddSelectElement(Ogre::String text,  std::function<void(void)> callback)
 {
 	float x = mStartingX;
-	float y = mStartingY + (mNumMenuItems + 1.5) * mItemSpacing; 
+	float y = mStartingY + (mNumMenuItems + 1.5f) * mItemSpacing; 
 
 	AddMenuItem(new Menu::SelectMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback));
 }
@@ -210,7 +210,7 @@ void Menu::AddChooseInt(Ogre::String text,  std::function<void(int)> callback,  
 {
 
 	float x = mStartingX;
-	float y = mStartingY + (mNumMenuItems+ 1.5) * mItemSpacing; 
+	float y = mStartingY + (mNumMenuItems+ 1.5f) * mItemSpacing; 
 
 	AddMenuItem(new Menu::ChooseIntMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,  minValue, maxValue,initialValue, delta));
 }
@@ -220,7 +220,7 @@ void Menu::AddChooseFloat(Ogre::String text,  std::function<void(float)> callbac
 {
 
 	float x = mStartingX;
-	float y = mStartingY + (mNumMenuItems+ 1.5) * mItemSpacing; 
+	float y = mStartingY + (mNumMenuItems+ 1.5f) * mItemSpacing; 
 
 	AddMenuItem(new Menu::ChooseFloatMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,  minValue, maxValue, initialValue, delta));
 }
@@ -230,7 +230,7 @@ void Menu::AddChooseFloat(Ogre::String text,  std::function<void(float)> callbac
 void Menu::AddChooseBool(Ogre::String text,  std::function<void(bool)> callback, bool initialValue /* = false */)
 {
 	float x = mStartingX;
-	float y = mStartingY + (mNumMenuItems+ 1.5) * mItemSpacing; 
+	float y = mStartingY + (mNumMenuItems+ 1.5f) * mItemSpacing; 
 
 	AddMenuItem(new Menu::ChooseBoolMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback, initialValue));
 }
@@ -238,7 +238,7 @@ void Menu::AddChooseBool(Ogre::String text,  std::function<void(bool)> callback,
 void Menu::AddChooseEnum(Ogre::String name, std::vector<Ogre::String> enumNames, std::vector<std::function<void()>> callbacks, int initialVal /* = 0 */)
 {
 	float x = mStartingX;
-	float y = mStartingY + (mNumMenuItems+ 1.5) * mItemSpacing; 
+	float y = mStartingY + (mNumMenuItems+ 1.5f) * mItemSpacing; 
 
 	AddMenuItem(new Menu::ChooseEnumMenuItem(name, mName + "_" + std::to_string(mNumMenuItems),this,x,y, enumNames, callbacks, initialVal));
 

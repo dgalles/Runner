@@ -8,7 +8,7 @@
 class BezierPath
 {
 public:
-	enum Kind {NORMAL, GAP, BLADES, LOOP, TWIST, BOOST};
+	enum Kind {NORMAL, GAP, BLADES, LOOP, TWIST, BOOST, SHIELD};
 
 
 	BezierPath(Ogre::Vector3 pt0, Ogre::Vector3 pt1, Ogre::Vector3 pt2, Ogre::Vector3 pt3);

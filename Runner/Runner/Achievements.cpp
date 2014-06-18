@@ -307,6 +307,8 @@ void
 	AddAchievement("Penniless III", "Run 100 Meters without picking up a coin");
 	AddAchievement("Marathon II", "Run 10000 Meters Lifetime");
 	AddAchievement("Marathon III", "Run 50000 Meters Lifetime");
+
+
 }
 
 void Achievements::AddAchievement(Ogre::String shortName, Ogre::String longName)
