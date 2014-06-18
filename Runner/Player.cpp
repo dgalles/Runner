@@ -63,6 +63,7 @@ void Player::setup()
 	mShieldTime = 0;
 
 	mBoostsHit = 0;
+	mSHieldsHit = 0;
 
 	mCurrentSpeed = mInitialSpeed;
 
@@ -251,6 +252,32 @@ bool
 					mShieldTime = 5;
 					mBoostTime = 3;
 					mWorld->getCamera()->SetFollowType(RunnerCamera::CLOSE);
+				}
+				else if (d.object->type() == RunnerObject::SHEILD)
+				{
+					mShieldsHit++;
+						if (mShieldsHit == 1)
+					{
+						mAchievements->AchievementCleared("Shielded");
+					}
+					if (mShieldsHit == 2)
+					{
+						mAchievements->AchievementCleared("Covered");
+					}
+					if (mShieldsHit == 3)
+					{
+						mAchievements->AchievementCleared("Invunerable");
+					}
+										mPlayerObject->setAlpha(0.4f);
+
+					mShielded = true;
+					mShieldTime = std::min(mShieldTime, 5.0f);;
+
+
+				}
+
+
+
 				}
 			}
 		}

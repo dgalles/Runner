@@ -26,7 +26,7 @@ HUD/Score
 			top 0
 			width 0.1
 			height 0.05
-			material ArmorMat	
+			material ArmorMat2	
 		}
 		
 		container Panel(HUD/Armor/2)
@@ -35,7 +35,7 @@ HUD/Score
 			top 0
 			width 0.1
 			height 0.05
-			material ArmorMat	
+			material ArmorMat2	
 		}
 
 		container Panel(HUD/Armor/3)
@@ -44,7 +44,7 @@ HUD/Score
 			top 0
 			width 0.1
 			height 0.05
-			material ArmorMat	
+			material ArmorMat2	
 		}
 
 		container Panel(HUD/Armor/4)
@@ -53,7 +53,7 @@ HUD/Score
 			top 0
 			width 0.1
 			height 0.05
-			material ArmorMat	
+			material ArmorMat2	
 		}
 
 		container Panel(HUD/Armor/5)
@@ -62,7 +62,7 @@ HUD/Score
 			top 0
 			width 0.1
 			height 0.05
-			material ArmorMat	
+			material ArmorMat2	
 		}
 
 		container Panel(HUD/Armor/6)
@@ -71,7 +71,7 @@ HUD/Score
 			top 0
 			width 0.1
 			height 0.05
-			material ArmorMat	
+			material ArmorMat2	
 		}
 		
 		container Panel(HUD/Armor/7)
@@ -80,7 +80,7 @@ HUD/Score
 			top 0
 			width 0.1
 			height 0.05
-			material ArmorMat	
+			material ArmorMat2	
 		}
 		container Panel(HUD/Armor/8)
 		{
@@ -88,7 +88,7 @@ HUD/Score
 			top 0
 			width 0.1
 			height 0.05
-			material ArmorMat	
+			material ArmorMat2	
 		}
 
 	}

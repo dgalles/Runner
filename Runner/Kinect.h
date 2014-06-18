@@ -1,13 +1,15 @@
 #pragma once
-#define KINECT_AVAILABLE
+//#define KINECT_AVAILABLE
 #include <windows.h>
 #include <ole2.h>
 
 #ifdef KINECT_AVAILABLE
 
 #include "NuiApi.h"
+#pragma comment(lib, "Kinect10.lib")
 #endif
 #include "OgreVector2.h"
+
 
 const float CALIBRATION_TIME = 4.0f;
 
