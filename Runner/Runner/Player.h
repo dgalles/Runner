@@ -159,7 +159,7 @@ protected:
 	float mBoostTime;
 	float mShieldTime;
 	int mBoostsHit;
-	int mSHieldsHit;
+	int mShieldsHit;
 	bool mLeanEqualsDuck;
 	float mMaxSpeed;
 };

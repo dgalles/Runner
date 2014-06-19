@@ -63,7 +63,7 @@ void Player::setup()
 	mShieldTime = 0;
 
 	mBoostsHit = 0;
-	mSHieldsHit = 0;
+	mShieldsHit = 0;
 
 	mCurrentSpeed = mInitialSpeed;
 
@@ -255,6 +255,8 @@ bool
 				}
 				else if (d.object->type() == RunnerObject::SHEILD)
 				{
+					d.object->setScale(Ogre::Vector3::ZERO);
+					d.object->setPosition(Ogre::Vector3(0,0,0));
 					mShieldsHit++;
 						if (mShieldsHit == 1)
 					{
@@ -268,14 +270,10 @@ bool
 					{
 						mAchievements->AchievementCleared("Invunerable");
 					}
-										mPlayerObject->setAlpha(0.4f);
+					mPlayerObject->setAlpha(0.4f);
 
 					mShielded = true;
-					mShieldTime = std::min(mShieldTime, 5.0f);;
-
-
-				}
-
+					mShieldTime = std::max(mShieldTime, 5.0f);;
 
 
 				}

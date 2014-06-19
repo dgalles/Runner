@@ -1,0 +1,33 @@
+Getting Started:Run 100 Meters in one run
+Pennies From Heaven:Collect 100 Coins in one run
+Making Money:Collect 200 Coins in one run
+Looper:Complete a Loop-de-loop
+Greedy I:Get all coins in a 20 meter segment
+Buzzed:Hit a Sawblade
+Booster:Use a Boost
+Penniless I:Run 10 Meters without picking up a coin
+Marathon I:Run 5000 Meters Lifetime
+Snap:Complete a Snap Turn
+Greedy II:Get all coins in a 50 meter segment
+Need for Speed:Use 2 Boosts on one run
+Getting Bank:Collect 500 Coins in one run
+Penniless II:Run 50 Meters without picking up a coin
+Blazin':Use 3 Boosts on one run
+Middle Distance:Run 500 Meters in one run
+Greedy III:Get all coins in a 100 meter segment
+Long Haul:Run 1000 Meters in one run
+Building Bling:Collect 5000 Coins Lifetime
+Penniless III:Run 100 Meters without picking up a coin
+Marathon II:Run 10000 Meters Lifetime
+Marathon III:Run 50000 Meters Lifetime
+
+Shielded:Use a shield
+Covered:Use two shields on one run
+Invunerable:Use three shields on one run
+
+Magnetic:Use a magnet
+Sticky:Use two magnets on one run
+Sticky:Use three magnets on one run
+
+
+Hat Trick:Use a Boost, Shield, and Magnet on one run	

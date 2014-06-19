@@ -60,7 +60,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86;$(OGRE_HOME)/boost/lib;$(OGRE_HOME)/lib/$(configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OIS_d.lib;OgreMain_d.lib;OgreOverlay_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OIS_d.lib;OgreMain_d.lib;OgreOverlay_d.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(OGRE_HOME)\bin\$(Configuration)\OgreMain_d.dll" "$(OutDir)"
@@ -126,6 +126,7 @@ copy resources.cfg "$(OutDir)"</Command>
     <ClInclude Include="Player.h" />
     <ClInclude Include="Runner.h" />
     <ClInclude Include="RunnerObject.h" />
+    <ClInclude Include="Sound.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="XInputManager.h" />
   </ItemGroup>
@@ -145,6 +146,7 @@ copy resources.cfg "$(OutDir)"</Command>
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Runner.cpp" />
     <ClCompile Include="RunnerObject.cpp" />
+    <ClCompile Include="Sound.cpp" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="XInputManager.cpp" />
   </ItemGroup>

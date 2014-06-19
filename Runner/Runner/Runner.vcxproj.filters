@@ -52,6 +52,7 @@
     <ClCompile Include="Achievements.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Sound.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIManager.h">
@@ -102,6 +103,7 @@
     <ClInclude Include="Achievements.h">
       <Filter>Header File</Filter>
     </ClInclude>
+    <ClInclude Include="Sound.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header File">

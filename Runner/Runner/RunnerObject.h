@@ -15,7 +15,7 @@ class RunnerObject
 {
 public:
 
-	enum ObjectType {PLAYER, COIN, BLADE, SPEED, SHEILD, REBUILD_ARMOR};
+	enum ObjectType {PLAYER, COIN, BLADE, SPEED, SHEILD, MAGNET, REBUILD_ARMOR};
 
     RunnerObject(ObjectType type);
     ~RunnerObject(void);

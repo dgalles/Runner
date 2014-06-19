@@ -6,6 +6,7 @@
 #include "OgreFontManager.h"
 #include "OgreOverlayElement.h"
 #include "OgreIteratorWrappers.h"
+#include "Sound.h"
 
 HUD::HUD() : mArmorIndicator()
 {
@@ -185,6 +186,7 @@ void HUD::stopArrow(Kind type)
     mArrowTimeRemaining[(int) type] = 0;
     mArrowOverlay[(int) type]->hide();
 	mArrowFlashTime[(int) type] = 0;
+	Sound::stopPlaying();
 }
 
 void HUD::startArrow(HUD::Kind type, float time /*= 5.0*/,  float flashDelay /* = 0.5 */)
@@ -200,4 +202,27 @@ void HUD::startArrow(HUD::Kind type, float time /*= 5.0*/,  float flashDelay /* 
     {
 	    mArrowOverlay[(int) type]->show();
     }
+	if (type == HUD::Kind::left)
+	{
+		Sound::play("BuzzsawRight1.wav");
+	}
+	else if (type == HUD::Kind::right)
+	{
+		Sound::play("BuzzsawLeft1.wav");
+
+	}
+	else if (type == HUD::Kind::center)
+	{
+		Sound::play("BuzzsawCenter1.wav");
+	}
+	else if(type == HUD::Kind::down)
+	{
+		Sound::play("BuzzsawCenterHigh1.wav");
+		
+	}
+		else if(type == HUD::Kind::up)
+	{
+
+	}
+
 }

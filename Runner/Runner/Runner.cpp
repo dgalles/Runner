@@ -86,7 +86,7 @@ Runner::createScene()
 	//f->load();
 
 	mHUD = new HUD();
-	mAchievements = new Achievements();
+	mAchievements = new Achievements("Achievements.txt");
 	mWorld = new World(mSceneMgr, mHUD);
 	mAIManager = new AIManager(mWorld);
 	mRunnerCamera = new RunnerCamera(mCamera, mWorld);
@@ -98,7 +98,7 @@ Runner::createScene()
 	mRunnerCamera->TrackObject(mPlayer);
 	mWorld->addCamera(mRunnerCamera);
 
-
+	
 
 }
 

@@ -6,8 +6,36 @@
 #include "OgreFontManager.h"
 #include "OgreOverlayElement.h"
 #include "InputHandler.h"
+#include "OgreResourceGroupManager.h"
 
-Achievements::Achievements(void) : mAchievmentsLong(), mAchievmentsShort(), mAchievmentsCleared(),mAchievmentsActive(), 
+#include <iostream>
+#include <fstream>
+#include <string>
+
+std::string findFilePath(const std::string& filename)
+{
+	std::string foundPath = filename;
+	Ogre::ResourceGroupManager* groupManager = Ogre::ResourceGroupManager::getSingletonPtr() ;
+	Ogre::String group = groupManager->findGroupContainingResource(filename) ;
+	Ogre::FileInfoListPtr fileInfos = groupManager->findResourceFileInfo(group,foundPath);
+	Ogre::FileInfoList::iterator it = fileInfos->begin();
+	if(it != fileInfos->end())
+	{
+		foundPath = it->archive->getName() + "/" + foundPath;
+	}
+	else
+	{
+		foundPath = "";
+	}
+	return foundPath;
+}
+
+
+
+
+
+
+Achievements::Achievements(Ogre::String achievmentFilename) : mAchievmentsLong(), mAchievmentsShort(), mAchievmentsCleared(),mAchievmentsActive(), 
 	                               mShortNameToIndex(), mShowActiveTimeRemaining(0), mAchievemntTextAreas(), mTitles()
 {
 	Ogre::OverlayManager& om = Ogre::OverlayManager::getSingleton();
@@ -20,8 +48,6 @@ Achievements::Achievements(void) : mAchievmentsLong(), mAchievmentsShort(), mAch
 		mCompletedAchievement[i-1]->hide();
 	}
 	mActiveAchievements->hide();
-	ReadAchievements("Dummy");
-	ResetActive();
 	for (int i = 0; i < ACTIVE_ACHIEVEMENTS; i ++)
 	{
 		mShowCompletedTimeRemaining[i] = 0;
@@ -29,6 +55,10 @@ Achievements::Achievements(void) : mAchievmentsLong(), mAchievmentsShort(), mAch
 	mCompletedActive = 0;
 	mAllOverlay = 0;
 	mViewAllAchievements = false;
+	if (achievmentFilename.length() > 0)
+	{
+		ReadAchievements(achievmentFilename);
+	}
 }
 
 
@@ -72,7 +102,7 @@ void Achievements::ShowAllAchievements(bool show)
 		// Create a panel
 
 		float panelHeight = 0.1f + titleSpacing * 3 + nonTitleSpacing * mAchievmentsLong.size();
-		mMaxScroll = panelHeight;
+		mMaxScroll = panelHeight + 0.5f;
 
 		Ogre::OverlayContainer* border =  static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "AchievementPanelBorder" ) );
 		border->setPosition(0.02f, 0.02f );
@@ -285,28 +315,61 @@ void
 void
 	Achievements::ReadAchievements(Ogre::String filename)
 {
-	AddAchievement("Getting Started", "Run 100 Meters in one run");
-	AddAchievement("Pennies From Heaven", "Collect 100 Coins in one run");
-	AddAchievement("Making Money", "Collect 200 Coins in one run");
-	AddAchievement("Looper", "Complete a Loop-de-loop");
-	AddAchievement("Greedy I", "Get all coins in a 20 meter segment");
-	AddAchievement("Buzzed", "Hit a Sawblade");
-	AddAchievement("Booster", "Use a Boost");
-	AddAchievement("Penniless I", "Run 10 Meters without picking up a coin");
-	AddAchievement("Marathon I", "Run 5000 Meters Lifetime");
-	AddAchievement("Snap", "Complete a Snap Turn");
-	AddAchievement("Greedy II", "Get all coins in a 50 meter segment");
-	AddAchievement("Need for Speed", "Use 2 Boosts on one run");
-	AddAchievement("Getting Bank", "Collect 500 Coins in one run");
-	AddAchievement("Penniless II", "Run 50 Meters without picking up a coin");
-	AddAchievement("Blazin'", "Use 3 Boosts on one run");
-	AddAchievement("Middle Distance", "Run 500 Meters in one run");
-	AddAchievement("Greedy III", "Get all coins in a 100 meter segment");
-	AddAchievement("Long Haul", "Run 1000 Meters in one run");
-	AddAchievement("Building Bling", "Collect 5000 Coins Lifetime");
-	AddAchievement("Penniless III", "Run 100 Meters without picking up a coin");
-	AddAchievement("Marathon II", "Run 10000 Meters Lifetime");
-	AddAchievement("Marathon III", "Run 50000 Meters Lifetime");
+
+	{
+		std::string nextAchievement;
+		std::ifstream infile;
+		infile.open (findFilePath(filename));
+		while(!infile.eof()) 
+		{
+			getline(infile,nextAchievement);
+			unsigned int colon = nextAchievement.find_first_of(":");
+			if (colon != std::string::npos)
+			{
+				AddAchievement(nextAchievement.substr(0,colon), nextAchievement.substr(colon+1));
+			}
+		}
+		infile.close();
+	}
+
+	ResetActive();
+
+
+
+
+	//AddAchievement("Getting Started", "Run 100 Meters in one run");
+	//AddAchievement("Pennies From Heaven", "Collect 100 Coins in one run");
+	//AddAchievement("Making Money", "Collect 200 Coins in one run");
+	//AddAchievement("Looper", "Complete a Loop-de-loop");
+	//AddAchievement("Greedy I", "Get all coins in a 20 meter segment");
+	//AddAchievement("Buzzed", "Hit a Sawblade");
+	//AddAchievement("Booster", "Use a Boost");
+	//AddAchievement("Penniless I", "Run 10 Meters without picking up a coin");
+	//AddAchievement("Marathon I", "Run 5000 Meters Lifetime");
+	//AddAchievement("Snap", "Complete a Snap Turn");
+	//AddAchievement("Greedy II", "Get all coins in a 50 meter segment");
+	//AddAchievement("Need for Speed", "Use 2 Boosts on one run");
+	//AddAchievement("Getting Bank", "Collect 500 Coins in one run");
+	//AddAchievement("Penniless II", "Run 50 Meters without picking up a coin");
+	//AddAchievement("Blazin'", "Use 3 Boosts on one run");
+	//AddAchievement("Middle Distance", "Run 500 Meters in one run");
+	//AddAchievement("Greedy III", "Get all coins in a 100 meter segment");
+	//AddAchievement("Long Haul", "Run 1000 Meters in one run");
+	//AddAchievement("Building Bling", "Collect 5000 Coins Lifetime");
+	//AddAchievement("Penniless III", "Run 100 Meters without picking up a coin");
+	//AddAchievement("Marathon II", "Run 10000 Meters Lifetime");
+	//AddAchievement("Marathon III", "Run 50000 Meters Lifetime");
+
+	//AddAchievement("Shielded", "Use a shield");
+	//AddAchievement("Covered", "Use two shields on one run");
+	//AddAchievement("Invunerable", "Use three shields on one run");
+
+	//AddAchievement("Magnetic", "Use a magnet");
+	//AddAchievement("Sticky", "Use two magnets on one run");
+	//AddAchievement("Sticky", "Use three magnets on one run");
+
+
+	//AddAchievement("Hat Trick", "Use a Boost, Shield, and Magnet on one run");
 
 
 }
