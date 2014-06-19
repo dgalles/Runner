@@ -14,7 +14,8 @@ namespace Ogre
 class Achievements
 {
 public:
-	Achievements(void);
+	// Achievements(void);
+	Achievements(Ogre::String achievmentFilename = "");
 
 	void Think(float time);
 

@@ -218,7 +218,7 @@ void
 		{
 
 			RunnerObject *coin = new RunnerObject(RunnerObject::COIN);
-			coin->loadModel("coins.mesh", SceneManager());
+			coin->loadModel("coin.mesh", SceneManager());
 			coin->setScale(Ogre::Vector3(5,5,5));
 
 			Ogre::Vector3 center;
@@ -484,25 +484,6 @@ void
 	trackPath->AddPathSegment(p1, p2, p3);
 	addTrackNodes(trackPath->NumSegments() - 1, true);
 
-	//  {
-	//      RunnerObject *saw = new RunnerObject();
-	//      saw->loadModel("sawblade.mesh", SceneManager());
-	//      saw->setScale(Ogre::Vector3(10,5,10));
-	//Ogre::Vector3 pos;
-	//Ogre::Vector3 forward;
-
-	//float diff = saw->minPointLocalScaled().y * 3;
-
-	//      getWorldPositionAndMatrix(trackPath->NumSegments()-2, .99, 0, diff, pos,forward, right, up);
-	//      Ogre::Quaternion q(-right,up,forward);
-
-	//      saw->setPosition(pos); ///5
-	//      saw->setOrientation(q);
-	//      ItemQueueData d(trackPath->NumSegments()-2,.99,0,diff, saw);
-	//      d.xtraData = HUD::Kind::up;
-	//      mSawPowerup->enqueue(d);
-	//  }
-
 
 }
 
@@ -554,7 +535,9 @@ void World::AddBarrierSegment(BezierPath::Kind type)
 void World::AddObjects(int segment)
 {
 
-	if (((trackPath->kind(segment) != BezierPath::Kind::BLADES) && trackPath->kind(segment) != BezierPath::Kind::BOOST) || trackPath->getObjectPlaced(segment))
+	if (((trackPath->kind(segment) != BezierPath::Kind::BLADES) && trackPath->kind(segment) != BezierPath::Kind::BOOST
+		  && trackPath->kind(segment) != BezierPath::Kind::SHIELD && trackPath->kind(segment) != BezierPath::Kind::MAGNET ) || 
+		  trackPath->getObjectPlaced(segment))
 	{
 		return;
 	}
@@ -703,14 +686,14 @@ void World::AddObjects(int segment)
 			mSawPowerup->enqueue(d);
 		}
 	}
-	else if (trackPath->kind(segment) == BezierPath::Kind::BOOST ||
-		trackPath->kind(segment) == BezierPath::Kind::SHIELD)
+	else if (trackPath->kind(segment) == BezierPath::Kind::BOOST || trackPath->kind(segment) == BezierPath::Kind::SHIELD ||
+		      trackPath->kind(segment) == BezierPath::Kind::MAGNET)
 	{
 
 		float barrierPercent = 0.9f;
 
 		float relX;
-		float relY = 5;
+		float relY = 7;
 
 		float b = (float) rand() /(float) RAND_MAX;
 		if (b < 0.33)
@@ -725,56 +708,63 @@ void World::AddObjects(int segment)
 		{
 			relX = width;
 		}
-		RunnerObject *boost;
-		if (trackPath->kind(segment) == BezierPath::Kind::BOOST)
+
+
+		Ogre::Vector3 pos;
+		Ogre::Vector3 forward;
+		Ogre::Vector3 right;
+		Ogre::Vector3 up;
+
+		getWorldPositionAndMatrix(segment, barrierPercent, relX, relY, pos,forward, right, up);
+		Ogre::Quaternion q(-right,up,forward);
+
+		RunnerObject *obj;
+		if  (trackPath->kind(segment) == BezierPath::Kind::BOOST)
 		{
-			boost = new RunnerObject(RunnerObject::SPEED);
-			boost->loadModel("Arrow.mesh", SceneManager());
-			boost->setScale(Ogre::Vector3(6,6,6));
-
-
-			Ogre::Vector3 pos;
-			Ogre::Vector3 forward;
-			Ogre::Vector3 right;
-			Ogre::Vector3 up;
-
-			getWorldPositionAndMatrix(segment, barrierPercent, relX, relY, pos,forward, right, up);
-			Ogre::Quaternion q(-right,up,forward);
-
-			boost->setPosition(pos); ///5
-			boost->setOrientation(q);
-			boost->pitch(Ogre::Degree(50));
-		} 
-		else
-		{
-			boost = new RunnerObject(RunnerObject::SHEILD);
-			boost->loadModel("Shield.mesh", SceneManager());
-			boost->setScale(Ogre::Vector3(6,6,6));
-
-
-			Ogre::Vector3 pos;
-			Ogre::Vector3 forward;
-			Ogre::Vector3 right;
-			Ogre::Vector3 up;
-
-			getWorldPositionAndMatrix(segment, barrierPercent, relX, relY, pos,forward, right, up);
-			Ogre::Quaternion q(-right,up,forward);
-
-			boost->setPosition(pos); ///5
-			boost->setOrientation(q);
-			boost->pitch(Ogre::Degree(90));
+			obj = new RunnerObject(RunnerObject::SPEED);
+			obj->loadModel("Arrow.mesh", SceneManager());
+			obj->setScale(Ogre::Vector3(6,6,6));
+			obj->setPosition(pos); ///5
+			obj->setOrientation(q);
+			obj->pitch(Ogre::Degree(50));
 
 		}
+		else if (trackPath->kind(segment) == BezierPath::Kind::SHIELD)
+		{
+			obj = new RunnerObject(RunnerObject::SHEILD);
+			obj->loadModel("Shield.mesh", SceneManager());
+			obj->setScale(Ogre::Vector3(6,6,6));
+			obj->setPosition(pos); ///5
+			obj->setOrientation(q);
+			obj->pitch(Ogre::Degree(90));
 
-		ItemQueueData d(segment,barrierPercent,relX, relY, boost);
+		}
+		else if (trackPath->kind(segment) == BezierPath::Kind::MAGNET)
+		{
+			obj = new RunnerObject(RunnerObject::MAGNET);
+			obj->loadModel("Magnet.mesh", SceneManager());
+			obj->setScale(Ogre::Vector3(5,5,5));
+			obj->setPosition(pos + up * 5); ///5
+			obj->setOrientation(q);
+			obj->pitch(Ogre::Degree(90));
+			obj->yaw(Ogre::Degree(180));
+
+		}
+		else
+		{
+			int x;
+			x++;
+		}
+
+
+
+		ItemQueueData d(segment,barrierPercent,relX, relY, obj);
 		// d.xtraData = type;
 		mSawPowerup->enqueue(d);
-
 
 	}
 	else
 	{
-		// ERROR!
 		int x = 3;
 		x++;
 
@@ -833,9 +823,21 @@ void
 	{
 		mLastObjSeg++;
 		r = (rand() / (float) RAND_MAX);
-		if (r > 0.97)
+		if (r > 0.80)
 		{
-			AddBarrierSegment(BezierPath::Kind::BOOST);
+			float r2 = (rand() / float (RAND_MAX));
+			if (r2 > 0.1)
+			{
+				AddBarrierSegment(BezierPath::Kind::MAGNET);
+			}
+			else if (r2 > 0.3)
+			{
+				AddBarrierSegment(BezierPath::Kind::BOOST);
+			}
+			else
+			{
+				AddBarrierSegment(BezierPath::Kind::SHIELD);
+			}
 		}
 		else if (r > 0.92)
 		{
@@ -878,6 +880,10 @@ void
 		else if (d.object->type() == RunnerObject::SPEED)
 		{
 			d.object->yaw(Ogre::Radian(radiansPerSecond * time));
+		}
+		else if (d.object->type() == RunnerObject::SHEILD)
+		{
+			d.object->roll(Ogre::Radian(radiansPerSecond * -1 * time));
 		}
 	}
 }
