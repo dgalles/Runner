@@ -133,7 +133,6 @@ Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float
 	mParent = parent;
 
 
-
 	mItemHeight = 0.05f;
 	Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
          // Create an overlay
@@ -142,17 +141,22 @@ Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float
 	 // Create a panel
 	 mPanel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", name +"Panel" ) );
 	 mPanel->setPosition(xPos, yPos );
-	 mPanel->setDimensions( 0.8f, 0.8f );
+	 mPanel->setDimensions( 0.9f, 0.9f );
 	 mPanel->setMaterialName( "Menu/Background/Blue" );
 	 // Add the panel to the overlay
 	 mMenuOverlay->add2D( mPanel );
+
+	mMenuHighlight = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", name +"HIghlightPanel" ) );
+	mMenuHighlight->setDimensions(0.9f, mItemHeight * 1.5f);
+	 mMenuHighlight->setMaterialName( "Menu/Highlight/Blue" );
+	 mPanel->addChild(mMenuHighlight);
 
 
 	 Ogre::TextAreaOverlayElement* textArea = static_cast<Ogre::TextAreaOverlayElement*>(
 		 overlayManager.createOverlayElement("TextArea", name + "Header"));
 	textArea->setPosition(mStartingX, mStartingY);
 	textArea->setCaption(header);
-	textArea->setCharHeight(mItemHeight);
+	textArea->setCharHeight(mItemHeight * 1.5f);
 	textArea->setFontName("Big");
 	textArea->setColour(mUnHighlightColor);
 	mPanel->addChild(textArea);
@@ -250,11 +254,17 @@ void Menu::AddChooseEnum(Ogre::String name, std::vector<Ogre::String> enumNames,
 void  Menu::MenuItem::Select() 
 {
 	mItemText->setColour(mParent->mHighlightColor);
+	mItemText->setPosition(mX, mY - mParent->mItemHeight * 0.5f / 2.0f);
+	mItemText->setCharHeight(mParent->mItemHeight * 1.5f);
+	mParent->mMenuHighlight->setPosition(0, mY - mParent->mItemHeight * 0.5f / 2.0f - 0.01);
 }
 
 void  Menu::MenuItem::Deselect() 
 {
 	mItemText->setColour(mParent->mUnHighlightColor);
+	mItemText->setHeight(mParent->mItemHeight);
+	mItemText->setPosition(mX, mY);
+	mItemText->setCharHeight(mParent->mItemHeight);
 }
 
 
@@ -265,6 +275,8 @@ Menu::MenuItem::MenuItem(Ogre::String text, Ogre::String name,  Menu *parent, fl
 	mItemText = static_cast<Ogre::TextAreaOverlayElement*>(
 	overlayManager.createOverlayElement("TextArea", name));
 	mItemText->setPosition(x, y);
+	mX = x;
+	mY  = y;
 	mItemText->setCaption(text);
 	mItemText->setCharHeight(parent->mItemHeight);
 	mItemText->setFontName("Big");

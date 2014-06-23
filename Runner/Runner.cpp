@@ -114,11 +114,11 @@ Runner::setupMenus()
     Kinect *k = mKinect;
 	Achievements *a = mAchievements;
 
-    Menu *mainMenu = new Menu("Main Menu", "main", 0.1f, 0.1f);
-    Menu *options = new Menu("Options", "options", 0.1f, 0.1f, 0.1f, mainMenu);
-    Menu *controlOptions = new Menu("Control Options", "controloptions", 0.1f, 0.1f, 0.07f, options);
-    Menu *gameplayOptions = new Menu("Gameplay Options", "gameplayoptions", 0.1f, 0.05f, 0.07f, options);
-    Menu *advancedOptions = new Menu("Advanced Options", "advancedOptions", 0.1f, 0.1f,0.1f, options);
+    Menu *mainMenu = new Menu("Main Menu", "main", 0.05f, 0.1f);
+    Menu *options = new Menu("Options", "options", 0.05f, 0.1f, 0.1f, mainMenu);
+    Menu *controlOptions = new Menu("Control Options", "controloptions", 0.05f, 0.1f, 0.07f, options);
+    Menu *gameplayOptions = new Menu("Gameplay Options", "gameplayoptions", 0.05f, 0.05f, 0.07f, options);
+    Menu *advancedOptions = new Menu("Advanced Options", "advancedOptions", 0.05f, 0.1f,0.1f, options);
     Menu *pauseMenu = new Menu("Pause Menu", "pause", 0.1f, 0.1f);
 
     pauseMenu->disable();
