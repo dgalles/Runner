@@ -55,6 +55,7 @@ protected:
 	float mItemSpacing;
 
 	Ogre::Overlay *mMenuOverlay;
+	Ogre::OverlayContainer *mMenuHighlight;
 	Ogre::OverlayElement* mMenuTitle;
 	Ogre::OverlayContainer *mPanel;
 
@@ -86,7 +87,8 @@ protected:
 	protected:
 		Ogre::TextAreaOverlayElement *mItemText;
 		Menu *mParent;
-
+		float mX;
+		float mY;
 	};
 
 	class SelectMenuItem : public MenuItem
