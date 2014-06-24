@@ -20,6 +20,28 @@ MenuManager* MenuManager::getInstance()
 }
 
 
+
+bool MenuManager::keyPressed(const OIS::KeyEvent &e)
+{
+		for (std::map<Ogre::String, Menu*>::iterator it = mMenus.begin();
+		 it != mMenus.end();
+		 it++)
+	{
+        if ((*it).second->enabled())
+        {
+		    (*it).second->handleKeypress(e);
+            break;
+        }
+	}
+		return true;
+}
+bool  MenuManager::keyReleased(const OIS::KeyEvent &e)
+{
+	return true;
+}
+
+
+
 void MenuManager::addMenu(Menu *menu) 
 {
 	mMenus[menu->name()] = menu;
@@ -71,43 +93,52 @@ Menu::Menu()
 
 }
 
-void Menu::think(float time)
+void Menu::moveSelectDown()
 {
-	if (mEnabled)
-
+	if (mCurrentMenuItem + 1 < mNumMenuItems)
 	{
-		InputHandler *ih = InputHandler::getInstance();
-		if (ih->KeyPressedThisFrame(OIS::KC_DOWN))
-		{
-			if (mCurrentMenuItem + 1 < mNumMenuItems)
-			{
-				mMenuItems[mCurrentMenuItem]->Deselect();
-				mCurrentMenuItem++;
-				mMenuItems[mCurrentMenuItem]->Select();
-			}
+		mMenuItems[mCurrentMenuItem]->Deselect();
+		mCurrentMenuItem++;
+		mMenuItems[mCurrentMenuItem]->Select();
+	}
+
+}
+
+void Menu::moveSelectUp()
+{
+
+	if (mCurrentMenuItem > 0)
+	{
+		mMenuItems[mCurrentMenuItem]->Deselect();
+		mCurrentMenuItem--;
+		mMenuItems[mCurrentMenuItem]->Select();
+	}
+}
+
+void Menu::handleKeypress(const OIS::KeyEvent &e)
+{
+	if (e.key == OIS::KC_DOWN)
+	{
+			moveSelectDown();
+
 		}
-		if (ih->KeyPressedThisFrame(OIS::KC_UP))
+		else if (e.key == OIS::KC_UP)
 		{
-			if (mCurrentMenuItem > 0)
-			{
-				mMenuItems[mCurrentMenuItem]->Deselect();
-				mCurrentMenuItem--;
-				mMenuItems[mCurrentMenuItem]->Select();
-			}
+			moveSelectUp();
 		}
-		if (ih->KeyPressedThisFrame(OIS::KC_RETURN))
+		else if (e.key == OIS::KC_RETURN)
 		{
 			mMenuItems[mCurrentMenuItem]->Enter();
 		}
-		if (ih->KeyPressedThisFrame(OIS::KC_RIGHT))
+		else if (e.key == OIS::KC_RIGHT)
 		{
 			mMenuItems[mCurrentMenuItem]->Increase();
 		}
-		if (ih->KeyPressedThisFrame(OIS::KC_LEFT))
+		else if (e.key == OIS::KC_LEFT)
 		{
 			mMenuItems[mCurrentMenuItem]->Decrease();
 		}
-		if (ih->KeyPressedThisFrame(OIS::KC_ESCAPE))
+		else if (e.key == OIS::KC_ESCAPE)
 		{
 			if (mParent != NULL)
 			{
@@ -116,6 +147,20 @@ void Menu::think(float time)
 
 			}
 		}
+		else 
+		{
+			mMenuItems[mCurrentMenuItem]->HandleKeypress(e);
+		}
+
+
+
+}
+
+void Menu::think(float time)
+{	
+	if (mEnabled)
+	{
+
 	}
 
 }
@@ -146,8 +191,12 @@ Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float
 	 // Add the panel to the overlay
 	 mMenuOverlay->add2D( mPanel );
 
-	mMenuHighlight = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", name +"HIghlightPanel" ) );
-	mMenuHighlight->setDimensions(0.9f, mItemHeight * 1.5f);
+	 mPanelText =  static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", name +"TextPanel" ) );
+	 mPanelText->setPosition(0,0);
+	 mPanel->addChild(mPanelText);
+
+	 mMenuHighlight = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", name +"HIghlightPanel" ) );
+	 mMenuHighlight->setDimensions(0.9f, mItemHeight * 1.5f);
 	 mMenuHighlight->setMaterialName( "Menu/Highlight/Blue" );
 	 mPanel->addChild(mMenuHighlight);
 
@@ -219,6 +268,17 @@ void Menu::AddChooseInt(Ogre::String text,  std::function<void(int)> callback,  
 	AddMenuItem(new Menu::ChooseIntMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,  minValue, maxValue,initialValue, delta));
 }
 
+void Menu::AddChooseString(Ogre::String name, std::function<void(Ogre::String)> callback, Ogre::String initialValue, int maxlength, bool isPassword /* = false */)
+{
+	float x = mStartingX;
+	float y = mStartingY + (mNumMenuItems+ 1.5f) * mItemSpacing; 
+
+	AddMenuItem(new Menu::ChooseStringMenuItem(name, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,initialValue,maxlength, isPassword));
+
+
+}
+
+
 
 void Menu::AddChooseFloat(Ogre::String text,  std::function<void(float)> callback,  float minValue, float maxValue, float initialValue, float delta)
 {
@@ -256,7 +316,7 @@ void  Menu::MenuItem::Select()
 	mItemText->setColour(mParent->mHighlightColor);
 	mItemText->setPosition(mX, mY - mParent->mItemHeight * 0.5f / 2.0f);
 	mItemText->setCharHeight(mParent->mItemHeight * 1.5f);
-	mParent->mMenuHighlight->setPosition(0, mY - mParent->mItemHeight * 0.5f / 2.0f - 0.01);
+	mParent->mMenuHighlight->setPosition(0, mY - mParent->mItemHeight * 0.5f / 2.0f - 0.01f);
 }
 
 void  Menu::MenuItem::Deselect() 
@@ -281,7 +341,7 @@ Menu::MenuItem::MenuItem(Ogre::String text, Ogre::String name,  Menu *parent, fl
 	mItemText->setCharHeight(parent->mItemHeight);
 	mItemText->setFontName("Big");
 	mItemText->setColour(Ogre::ColourValue(1,1,1));
-	mParent->mPanel->addChild(mItemText);
+	mParent->mPanelText->addChild(mItemText);
 }
 
 Menu::SelectMenuItem::SelectMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(void)> callback)
@@ -295,16 +355,6 @@ void  Menu::SelectMenuItem::Enter()
 	mCallback();
 }
 
-
-
-    //using namespace std::placeholders; // for `_1`
-
-    //private_x = 5;
-    //handler->addHandler(std::bind(&MyClass::Callback, this, _1));
-
-// or
-
-// handler->addHandler([](int x) { std::cout << "x is " << x << '\n'; });
 
 
 Menu::ChooseEnumMenuItem::ChooseEnumMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::vector<Ogre::String> choiceNames, std::vector<std::function<void()>> callbacks, int initialValue) 
@@ -334,6 +384,71 @@ void Menu::ChooseEnumMenuItem::Decrease()
 	mItemText->setCaption(mText + ":" + "  " +mChoiceNames[mCurrentValue]);
 	mCallbacks[mCurrentValue];
 }
+
+
+
+
+Menu::ChooseStringMenuItem::ChooseStringMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(Ogre::String)> callback,Ogre::String initial, int maxLength, bool password)
+	: Menu::MenuItem(text, name, parent, x, y), mCallback(callback), mMaxLength(maxLength), mPassword(password), mValue(initial), mVisual(), mText(text)
+
+{
+	if (!mPassword)
+	{
+		mVisual = mValue;
+	}
+	else
+	{
+		for (unsigned int i = 0; i < mValue.length(); i++)
+		{
+			mVisual.push_back('*');
+		}
+	}
+		mItemText->setCaption(mText + ":" + " " +mVisual);
+
+}
+void Menu::ChooseStringMenuItem::HandleKeypress(const OIS::KeyEvent &e)
+{
+	if ((int) mValue.length() < mMaxLength)
+	{
+		mValue.push_back((char) e.text);
+		if (mPassword)
+		{
+			mVisual.push_back('*');
+		}
+		else
+		{
+			mVisual.push_back((char) e.text);
+		}
+		mItemText->setCaption(mText + ":" + " " +mVisual);
+	}
+}
+void Menu::ChooseStringMenuItem::Enter()
+{
+	mParent->moveSelectDown();
+}
+void Menu::ChooseStringMenuItem:: Deselect()
+{
+	mCallback(mValue);
+	MenuItem::Deselect();
+}
+
+void Menu::ChooseStringMenuItem::Increase()
+{
+
+}
+void Menu::ChooseStringMenuItem::Decrease()
+{
+	if(mValue.length() > 0)
+	{
+		mValue.pop_back();
+		mVisual.pop_back();
+		mItemText->setCaption(mText + ":" + " " +mVisual);
+	}
+}
+
+
+
+
 
 Menu::ChooseIntMenuItem::ChooseIntMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(int)> callback,  int minValue, int maxValue, int initialValue, int delta)
 	: Menu::MenuItem(text, name, parent, x, y), mCallback(callback), mIntValue(initialValue), mText(text), mMinValue(minValue), mMaxValue(maxValue), mDelta(delta)

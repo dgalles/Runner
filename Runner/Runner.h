@@ -28,6 +28,8 @@ class Player;
 class HUD;
 class MenuManager;
 class Achievements;
+class LoginWrapper;
+class Logger;
 
 class Runner :  public Ogre::WindowEventListener
 {
@@ -40,6 +42,7 @@ public:
 
     // Start runn
     void go(void);
+		void endGame();
 
 protected:
 
@@ -74,6 +77,8 @@ protected:
     //  game logic
 	void createFrameListener(void);
 
+
+	void startGame();
     void setupMenus() ;
 
 	AIManager *mAIManager;
@@ -85,6 +90,10 @@ protected:
 	Player *mPlayer;
 	HUD *mHUD;
 	Achievements *mAchievements;
+	LoginWrapper *mLogin;
+	Logger *mLogger;
+	
+
 
     Ogre::Root *mRoot;
     Ogre::Camera* mCamera;

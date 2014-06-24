@@ -53,11 +53,25 @@ InputHandler::initialize(Ogre::RenderWindow* win)
 
 	mInputManager = OIS::InputManager::createInputSystem( pl );
 
-	mCurrentKeyboard = static_cast<OIS::Keyboard*>(mInputManager->createInputObject( OIS::OISKeyboard, false /* not buffered */ ));
+	mCurrentKeyboard = static_cast<OIS::Keyboard*>(mInputManager->createInputObject( OIS::OISKeyboard, true /* buffered */ ));
 	mInitialized = true;
 }
 
 
+
+void InputHandler::setEventCallback(OIS::KeyListener *keyListener)
+{
+	if (mInitialized)
+	{
+		mCurrentKeyboard->setEventCallback(keyListener);
+	}
+	else
+	{
+
+		// Throw?
+	}
+
+}
 
 
 bool

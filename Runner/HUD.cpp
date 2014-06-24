@@ -186,7 +186,28 @@ void HUD::stopArrow(Kind type)
     mArrowTimeRemaining[(int) type] = 0;
     mArrowOverlay[(int) type]->hide();
 	mArrowFlashTime[(int) type] = 0;
-	Sound::stopPlaying();
+
+	if (type == Kind::left)
+	{
+		SoundBank::getInstance()->fadeOut("BuzzsawRight1", 1000);
+
+	}
+	else if (type == Kind::right)
+	{
+		SoundBank::getInstance()->fadeOut("BuzzsawLeft1", 1000);
+
+	}
+	else if (type == Kind::down)
+	{
+		SoundBank::getInstance()->fadeOut("BuzzsawCenterHigh1", 1000);
+
+	}
+	else if (type == Kind::center)
+	{
+		SoundBank::getInstance()->fadeOut("BuzzsawCenter1", 1000);
+	}
+
+	//	Sound::stopPlaying();
 }
 
 void HUD::startArrow(HUD::Kind type, float time /*= 5.0*/,  float flashDelay /* = 0.5 */)
@@ -196,33 +217,36 @@ void HUD::startArrow(HUD::Kind type, float time /*= 5.0*/,  float flashDelay /* 
 		mArrowFlashTime[(int) type] = flashDelay;
 	}
 	mArrowFlashDelay[(int) type] = flashDelay;
-	mArrowStatus[(int) type] = true;
 	mArrowTimeRemaining[(int) type] = time;
-    if (mShowArrows && mShowHUDElems)
-    {
-	    mArrowOverlay[(int) type]->show();
-    }
-	if (type == HUD::Kind::left)
+	if (!mArrowStatus[(int) type])
 	{
-		Sound::play("BuzzsawRight1.wav");
-	}
-	else if (type == HUD::Kind::right)
-	{
-		Sound::play("BuzzsawLeft1.wav");
+		mArrowStatus[(int) type] = true;
+		if (mShowArrows && mShowHUDElems)
+		{
+			mArrowOverlay[(int) type]->show();
+		}
+		if (type == HUD::Kind::left)
+		{
+			SoundBank::getInstance()->fadeIn("BuzzsawRight1", 100, true);
+		}
+		else if (type == HUD::Kind::right)
+		{
+			SoundBank::getInstance()->fadeIn("BuzzsawLeft1", 100, true);
 
-	}
-	else if (type == HUD::Kind::center)
-	{
-		Sound::play("BuzzsawCenter1.wav");
-	}
-	else if(type == HUD::Kind::down)
-	{
-		Sound::play("BuzzsawCenterHigh1.wav");
-		
-	}
+		}
+		else if (type == HUD::Kind::center)
+		{
+			SoundBank::getInstance()->fadeIn("BuzzsawCenter1", 100, true);
+		}
+		else if(type == HUD::Kind::down)
+		{
+			SoundBank::getInstance()->fadeIn("BuzzsawCenterHigh1", 100, true);
+
+		}
 		else if(type == HUD::Kind::up)
-	{
+		{
 
+		}
 	}
 
 }

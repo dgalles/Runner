@@ -160,6 +160,9 @@ protected:
 	float mShieldTime;
 	int mBoostsHit;
 	int mShieldsHit;
+	int mMagnetsHit;
+	float mMagnetTime;
+	float mMagnetActive;
 	bool mLeanEqualsDuck;
 	float mMaxSpeed;
 };

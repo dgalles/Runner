@@ -53,6 +53,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sound.cpp" />
+    <ClCompile Include="LoginWrapper.cpp" />
+    <ClCompile Include="Logger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIManager.h">
@@ -104,6 +106,9 @@
       <Filter>Header File</Filter>
     </ClInclude>
     <ClInclude Include="Sound.h" />
+    <ClInclude Include="LoginWrapper.h" />
+    <ClInclude Include="Logger.h" />
+    <ClInclude Include="Receivers.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header File">

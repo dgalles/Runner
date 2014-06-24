@@ -5,6 +5,7 @@
 
 #ifdef KINECT_AVAILABLE
 
+#include "Receivers.h"
 #include "NuiApi.h"
 #pragma comment(lib, "Kinect10.lib")
 #endif
@@ -22,7 +23,7 @@ namespace Ogre
 
 
 
-class Kinect
+class Kinect : public SessionListener
 {
 public:
 	Kinect(void);
@@ -38,9 +39,13 @@ public:
 
     bool callibrating() { return mCallibrating; }
     void cancelCallibration();
+	void addSkelListener(KinectSkelMsgr *listener);
+	virtual void StartSession();
+	virtual void EndSession();
 
 protected:
 	void updateKinectSkeleton( );
+	std::vector<KinectSkelMsgr *> mSkelListeners;
 
 #ifdef KINECT_AVAILABLE
 	// Current kinect
@@ -58,12 +63,13 @@ protected:
 
 	bool   recenterNext;
 	bool   updateDelay; 
-
+	float  mTimeSinceLastLog;
 	Ogre::Vector2 baseVectorDelta;
 
 
 	Ogre::Degree mLeftRightAngle;
 	Ogre::Degree mFrontBackAngle;
+	Ogre::Degree mLeftRightTrue;
 
 	float mTimeSinceLastUpdate;
 	float mCalibrationClock;
@@ -74,6 +80,7 @@ protected:
 	bool mCallibrating;
 	Ogre::OverlayElement *mCallibrationText;
     std::function<void()>  mCallibrationFinishedCallback;
+
 
 };
 
