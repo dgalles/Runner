@@ -9,6 +9,7 @@
 #include "Camera.h"
 #include <stdlib.h>
 #include "RunnerObject.h"
+#include "Runner.h"
 
 
 //Ogre::SceneManager *
@@ -21,7 +22,7 @@
 
 
 
-World::World(Ogre::SceneManager *sceneManager, HUD *hud)   : mSceneManager(sceneManager), mTrackSceneNodes(), width(20.0f), mHUD(hud)
+World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base)   : mSceneManager(sceneManager), mTrackSceneNodes(), width(20.0f), mHUD(hud), mBase(base)
 {
 	mDrawTrack = true;
 	mMeshIDIndex = 0;
@@ -823,27 +824,27 @@ void
 	{
 		mLastObjSeg++;
 		r = (rand() / (float) RAND_MAX);
-		if (r > 0.80)
+		if (r > 0.93)
 		{
 			float r2 = (rand() / float (RAND_MAX));
-			if (r2 > 0.1)
+			if (r2 > 0.5)
 			{
-				AddBarrierSegment(BezierPath::Kind::MAGNET);
+				AddBarrierSegment(BezierPath::Kind::SHIELD);
 			}
-			else if (r2 > 0.3)
+			else if (r2 >= 0.0)
 			{
 				AddBarrierSegment(BezierPath::Kind::BOOST);
 			}
 			else
 			{
-				AddBarrierSegment(BezierPath::Kind::SHIELD);
+				AddBarrierSegment(BezierPath::Kind::MAGNET);
 			}
 		}
-		else if (r > 0.92)
+		else if (r > 0.88)
 		{
 			AddTwisty();
 		}
-		else if (r > 0.87)
+		else if (r > 0.84)
 		{
 			AddLoop();
 		}
@@ -852,6 +853,16 @@ void
 			AddNormalSegment();
 		}
 	}
+
+}
+
+
+void World::endGame()
+{
+	mBase->endGame();
+	// HACK!!! Change!!
+
+
 
 }
 

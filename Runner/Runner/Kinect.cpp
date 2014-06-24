@@ -27,6 +27,13 @@ Kinect::Kinect(void)
 }
 
 
+void
+Kinect::addSkelListener(KinectSkelMsgr *listener)
+{
+  mSkelListeners.push_back(listener);
+}
+
+
 Kinect::~Kinect(void)
 {
 }
@@ -77,6 +84,19 @@ Kinect::initSensor()
 #else
 	return 0;
 #endif
+
+}
+
+
+void Kinect::StartSession()
+{
+	mSessionStarted = true;
+	mTimeSinceLastLog = 0.0f;
+
+}
+void Kinect::EndSession()
+{
+	mSessionStarted = false;
 
 }
 
@@ -156,7 +176,26 @@ Kinect::update(float time)
 
 		}
 	}
+	else if(mSessionStarted)
+	{
+		mTimeSinceLastLog += time;
+		if(mTimeSinceLastLog >= 1.0)
+		{
+			float lr, fb, lrt;
+			for (std::vector<KinectSkelMsgr *>::iterator it = mSkelListeners.begin(); it != mSkelListeners.end(); it++)
+			{
+				lr = mLeftRightAngle.valueDegrees();
+				fb = mFrontBackAngle.valueDegrees();
+				lrt = mLeftRightTrue.valueDegrees();
+				(*it)->ReceiveSkelData(new SkelData(lr, fb, lrt));
+			} 
+			mTimeSinceLastLog = 0.0;
+		}
+	}
 }
+
+
+
 
 
 void
@@ -212,8 +251,6 @@ Kinect::updateKinectSkeleton()
 			// Here's our skeleton, let's update it.  Multiple tracked skeletons could be a problem,
 			// fix that later
 
-
-
 			NUI_SKELETON_DATA * pSkel =  &SkeletonFrame.SkeletonData[i];
 
 			// TODO:  Check for     pSkel->eSkeletonPositionTrackingState[ JOINT ];
@@ -245,8 +282,12 @@ Kinect::updateKinectSkeleton()
 			// Note:  headPos is a 3D point, baseVector is a 2D point, hence z/y confusion
 			float xDisplacement = (headPos.x - BaseVector.x - baseVectorDelta.x) * leftVector.x + (headPos.z - BaseVector.y-baseVectorDelta.y) * leftVector.y;
 
+			float xDisplacement2 = (headPos.x - BaseVector.x) * leftVector.x + (headPos.z - BaseVector.y) * leftVector.y;
+
 			Ogre::Radian leftRightAngle1 = Ogre::Math::ATan2(-xDisplacement, headPos.y - shoulderPos.y + 0.5f);
+			Ogre::Radian leftRightAngle2 = Ogre::Math::ATan2(-xDisplacement2, headPos.y - shoulderPos.y + 0.5f);
 			mLeftRightAngle = leftRightAngle1 * 4;
+			mLeftRightTrue = leftRightAngle2 * 4;
 
 			float ZDisplacement = (headPos.x - BaseVector.x-baseVectorDelta.x) * FrontVector.x + (headPos.z - BaseVector.y-baseVectorDelta.y) * FrontVector.y;
 

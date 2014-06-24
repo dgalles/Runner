@@ -12,7 +12,7 @@ class RunnerCamera;
 class InputHandler;
 
 
-class InputHandler // : public OIS::MouseListener, public OIS::KeyListener
+class InputHandler // : public OIS::KeyListener
 {
 public:
 	static InputHandler *getInstance();
@@ -24,6 +24,7 @@ public:
 	bool IsKeyDown(OIS::KeyCode key);
 	bool WasKeyDown(OIS::KeyCode key);
 	bool KeyPressedThisFrame(OIS::KeyCode key);
+	void setEventCallback(OIS::KeyListener *keyListener);
 
 protected:
 	

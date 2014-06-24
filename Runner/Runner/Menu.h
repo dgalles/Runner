@@ -3,6 +3,7 @@
 
 #include "OgrePrerequisites.h"
 #include "OgreColourValue.h"
+#include <OIS/OIS.h>
 
 namespace Ogre
 {
@@ -37,6 +38,8 @@ public:
 
 	void AddChooseEnum(Ogre::String name, std::vector<Ogre::String> enumNames, std::vector<std::function<void()>> callbacks, int initialVal = 0);
 
+	void AddChooseString(Ogre::String name, std::function<void(Ogre::String)> callback, Ogre::String initialValue, int maxlength, bool isPassword = false);
+
 	void think(float time);
 
 	void setItemHeight(float height);
@@ -44,6 +47,9 @@ public:
 
 	Ogre::String name() { return mName; }
 
+
+
+	void handleKeypress(const OIS::KeyEvent &e);
 
 protected:
 	class MenuItem;
@@ -58,6 +64,7 @@ protected:
 	Ogre::OverlayContainer *mMenuHighlight;
 	Ogre::OverlayElement* mMenuTitle;
 	Ogre::OverlayContainer *mPanel;
+	Ogre::OverlayContainer *mPanelText;
 
 	float mStartingX;
 	float mStartingY;
@@ -71,6 +78,9 @@ protected:
 	Menu *mParent;
 
 	void AddMenuItem(MenuItem *item);
+	void moveSelectUp();
+	void moveSelectDown();
+
 
 	class MenuItem 
 	{
@@ -83,6 +93,7 @@ protected:
 		virtual void Enter() { }
 		virtual void Increase() { }
 		virtual void Decrease() { }
+		virtual void HandleKeypress(const OIS::KeyEvent &e) { }
 
 	protected:
 		Ogre::TextAreaOverlayElement *mItemText;
@@ -140,7 +151,31 @@ protected:
 
 
 
-    	class ChooseFloatMenuItem : public MenuItem
+
+	class ChooseStringMenuItem : public MenuItem
+	{
+	public:
+		ChooseStringMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(Ogre::String)> callback, Ogre::String initial, int maxLength, bool password);
+		virtual void HandleKeypress(const OIS::KeyEvent &e);
+		virtual void Enter();
+		virtual void Deselect();
+
+		virtual void Increase();
+		virtual void Decrease();
+	protected:
+		Ogre::String mValue;
+		Ogre::String mVisual;
+		Ogre::String mText;
+		int mMaxLength;
+		std::function<void(Ogre::String)>  mCallback;
+		bool mPassword;
+
+	};
+
+
+
+
+    class ChooseFloatMenuItem : public MenuItem
 	{
 	public:
 		ChooseFloatMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(float)> callback, float minValue, float maxValue, float initialValue, float delta);
@@ -180,7 +215,7 @@ protected:
 
 };
 
-class MenuManager
+class MenuManager : public  OIS::KeyListener
 {
 
 public:
@@ -191,6 +226,10 @@ public:
 	void deactivateCurrentMenu();
 	void activateMeu(Ogre::String);
 	void think(float time);
+
+	bool keyPressed(const OIS::KeyEvent &e);
+    bool keyReleased(const OIS::KeyEvent &e);
+
 
 private:
 	MenuManager() { }

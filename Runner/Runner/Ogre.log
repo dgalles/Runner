@@ -1,367 +1,435 @@
-17:59:01: Creating resource group General
-17:59:01: Creating resource group Internal
-17:59:01: Creating resource group Autodetect
-17:59:01: SceneManagerFactory for type 'DefaultSceneManager' registered.
-17:59:01: Registering ResourceManager for type Material
-17:59:01: Registering ResourceManager for type Mesh
-17:59:01: Registering ResourceManager for type Skeleton
-17:59:01: MovableObjectFactory for type 'ParticleSystem' registered.
-17:59:01: ArchiveFactory for archive type FileSystem registered.
-17:59:01: ArchiveFactory for archive type Zip registered.
-17:59:01: ArchiveFactory for archive type EmbeddedZip registered.
-17:59:01: DDS codec registering
-17:59:01: FreeImage version: 3.15.3
-17:59:01: This program uses FreeImage, a free, open source image library supporting all common bitmap formats. See http://freeimage.sourceforge.net for details
-17:59:01: Supported formats: bmp,ico,jpg,jif,jpeg,jpe,jng,koa,iff,lbm,mng,pbm,pbm,pcd,pcx,pgm,pgm,png,ppm,ppm,ras,tga,targa,tif,tiff,wap,wbmp,wbm,psd,cut,xbm,xpm,gif,hdr,g3,sgi,exr,j2k,j2c,jp2,pfm,pct,pict,pic,3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,drf,dsc,dng,erf,fff,ia,iiq,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,ptx,pxn,qtk,raf,raw,rdc,rw2,rwl,rwz,sr2,srf,srw,sti
-17:59:01: Registering ResourceManager for type HighLevelGpuProgram
-17:59:01: Registering ResourceManager for type Compositor
-17:59:01: MovableObjectFactory for type 'Entity' registered.
-17:59:01: MovableObjectFactory for type 'Light' registered.
-17:59:01: MovableObjectFactory for type 'BillboardSet' registered.
-17:59:01: MovableObjectFactory for type 'ManualObject' registered.
-17:59:01: MovableObjectFactory for type 'BillboardChain' registered.
-17:59:01: MovableObjectFactory for type 'RibbonTrail' registered.
-17:59:01: Loading library .\RenderSystem_Direct3D9_d
-17:59:01: Installing plugin: D3D9 RenderSystem
-17:59:01: D3D9 : Direct3D9 Rendering Subsystem created.
-17:59:01: D3D9: Driver Detection Starts
-17:59:01: D3D9: Driver Detection Ends
-17:59:02: Plugin successfully installed
-17:59:02: Loading library .\RenderSystem_GL_d
-17:59:02: Installing plugin: GL RenderSystem
-17:59:02: OpenGL Rendering Subsystem created.
-17:59:10: Plugin successfully installed
-17:59:10: Loading library .\Plugin_PCZSceneManager_d
-17:59:10: Installing plugin: Portal Connected Zone Scene Manager
-17:59:10: PCZone Factory Type 'ZoneType_Default' registered
-17:59:10: Plugin successfully installed
-17:59:10: Loading library .\Plugin_OctreeZone_d
-17:59:10: Installing plugin: Octree Zone Factory
-17:59:10: Plugin successfully installed
-17:59:10: Loading library .\Plugin_OctreeSceneManager_d
-17:59:10: Installing plugin: Octree Scene Manager
-17:59:10: Plugin successfully installed
-17:59:10: *-*-* OGRE Initialising
-17:59:10: *-*-* Version 1.9.0 (Ghadamon)
-17:59:10: Creating resource group 
-17:59:10: Added resource location '../Runner/Content/' of type 'FileSystem' to resource group ''
-17:59:10: Added resource location '../Runner/Content/Models/' of type 'FileSystem' to resource group ''
-17:59:10: Added resource location '../Runner/Content/Materials/' of type 'FileSystem' to resource group ''
-17:59:10: Added resource location '../Runner/Content/Overlays/' of type 'FileSystem' to resource group ''
-17:59:10: Added resource location '../Runner/Content/Skybox/' of type 'FileSystem' to resource group ''
-17:59:10: Added resource location '../Runner/Content/Sounds/' of type 'FileSystem' to resource group ''
-17:59:10: D3D9 : RenderSystem Option: Allow DirectX9Ex = No
-17:59:10: D3D9 : RenderSystem Option: Allow NVPerfHUD = No
-17:59:10: D3D9 : RenderSystem Option: FSAA = 0
-17:59:10: D3D9 : RenderSystem Option: Fixed Pipeline Enabled = Yes
-17:59:10: D3D9 : RenderSystem Option: Floating-point mode = Fastest
-17:59:10: D3D9 : RenderSystem Option: Full Screen = No
-17:59:10: D3D9 : RenderSystem Option: Multi device memory hint = Use minimum system memory
-17:59:10: D3D9 : RenderSystem Option: Rendering Device = Monitor-1-ATI RADEON XPRESS 200 Series
-17:59:10: D3D9 : RenderSystem Option: Resource Creation Policy = Create on all devices
-17:59:10: D3D9 : RenderSystem Option: Use Multihead = Auto
-17:59:10: D3D9 : RenderSystem Option: VSync = No
-17:59:10: D3D9 : RenderSystem Option: VSync Interval = 1
-17:59:10: D3D9 : RenderSystem Option: Video Mode = 800 x 600 @ 32-bit colour
-17:59:10: D3D9 : RenderSystem Option: sRGB Gamma Conversion = No
-17:59:18: CPU Identifier & Features
-17:59:18: -------------------------
-17:59:18:  *   CPU ID: GenuineIntel: Genuine Intel(R) CPU            2140  @ 1.60GHz
-17:59:18:  *      SSE: yes
-17:59:18:  *     SSE2: yes
-17:59:18:  *     SSE3: yes
-17:59:18:  *      MMX: yes
-17:59:18:  *   MMXEXT: yes
-17:59:18:  *    3DNOW: no
-17:59:18:  * 3DNOWEXT: no
-17:59:18:  *     CMOV: yes
-17:59:18:  *      TSC: yes
-17:59:18:  *      FPU: yes
-17:59:18:  *      PRO: yes
-17:59:18:  *       HT: no
-17:59:18: -------------------------
-17:59:18: D3D9 : Subsystem Initialising
-17:59:18: Registering ResourceManager for type Texture
-17:59:18: Registering ResourceManager for type GpuProgram
-17:59:18: D3D9RenderSystem::_createRenderWindow "OGRE Render Window", 800x600 windowed  miscParams: FSAA=0 FSAAHint= colourDepth=32 gamma=false monitorIndex=0 useNVPerfHUD=false vsync=false vsyncInterval=1 
-17:59:18: D3D9 : Created D3D9 Rendering Window 'OGRE Render Window' : 800x600, 32bpp
-17:59:18: D3D9 : WARNING - disabling VSync in windowed mode can cause timing issues at lower frame rates, turn VSync on if you observe this problem.
-17:59:20: RenderSystem capabilities
-17:59:20: -------------------------
-17:59:20: RenderSystem Name: Direct3D9 Rendering Subsystem
-17:59:20: GPU Vendor: amd
-17:59:20: Device Name: Monitor-1-ATI RADEON XPRESS 200 Series
-17:59:20: Driver Version: 7.14.10.590
-17:59:20:  * Fixed function pipeline: yes
-17:59:20:  * Hardware generation of mipmaps: yes
-17:59:20:  * Texture blending: yes
-17:59:20:  * Anisotropic texture filtering: yes
-17:59:20:  * Dot product texture operation: yes
-17:59:20:  * Cube mapping: yes
-17:59:20:  * Hardware stencil buffer: yes
-17:59:20:    - Stencil depth: 8
-17:59:20:    - Two sided stencil support: yes
-17:59:20:    - Wrap stencil values: yes
-17:59:20:  * Hardware vertex / index buffers: yes
-17:59:20:  * Vertex programs: yes
-17:59:20:  * Number of floating-point constants for vertex programs: 256
-17:59:20:  * Number of integer constants for vertex programs: 16
-17:59:20:  * Number of boolean constants for vertex programs: 16
-17:59:20:  * Fragment programs: yes
-17:59:20:  * Number of floating-point constants for fragment programs: 32
-17:59:20:  * Number of integer constants for fragment programs: 16
-17:59:20:  * Number of boolean constants for fragment programs: 16
-17:59:20:  * Geometry programs: no
-17:59:20:  * Number of floating-point constants for geometry programs: 0
-17:59:20:  * Number of integer constants for geometry programs: 0
-17:59:20:  * Number of boolean constants for geometry programs: 0
-17:59:20:  * Tesselation Hull programs: no
-17:59:20:  * Number of floating-point constants for tesselation hull programs: 0
-17:59:20:  * Number of integer constants for tesselation hull programs: 0
-17:59:20:  * Number of boolean constants for tesselation hull programs: 0
-17:59:20:  * Tesselation Domain programs: no
-17:59:20:  * Number of floating-point constants for tesselation domain programs: 0
-17:59:20:  * Number of integer constants for tesselation domain programs: 0
-17:59:20:  * Number of boolean constants for tesselation domain programs: 0
-17:59:20:  * Compute programs: no
-17:59:20:  * Number of floating-point constants for compute programs: 0
-17:59:21:  * Number of integer constants for compute programs: 0
-17:59:21:  * Number of boolean constants for compute programs: 0
-17:59:21:  * Supported Shader Profiles: hlsl ps_1_1 ps_1_2 ps_1_3 ps_1_4 ps_2_0 vs_1_1 vs_2_0
-17:59:21:  * Texture Compression: yes
-17:59:21:    - DXT: yes
-17:59:21:    - VTC: no
-17:59:21:    - PVRTC: no
-17:59:21:    - ATC: no
-17:59:21:    - ETC1: no
-17:59:21:    - ETC2: no
-17:59:21:    - BC4/BC5: no
-17:59:21:    - BC6H/BC7: no
-17:59:21:  * Scissor Rectangle: yes
-17:59:21:  * Hardware Occlusion Query: yes
-17:59:21:  * User clip planes: yes
-17:59:21:  * VET_UBYTE4 vertex element type: yes
-17:59:21:  * Infinite far plane projection: yes
-17:59:21:  * Hardware render-to-texture: yes
-17:59:21:  * Floating point textures: yes
-17:59:21:  * Non-power-of-two textures: yes (limited)
-17:59:21:  * 1d textures: yes
-17:59:21:  * Volume textures: yes
-17:59:21:  * Multiple Render Targets: 4
-17:59:21:    - With different bit depths: no
-17:59:21:  * Point Sprites: yes
-17:59:21:  * Extended point parameters: yes
-17:59:21:  * Max Point Size: 256
-17:59:21:  * Vertex texture fetch: no
-17:59:21:  * Number of world matrices: 0
-17:59:21:  * Number of texture units: 8
-17:59:21:  * Stencil buffer depth: 8
-17:59:21:  * Number of vertex blend matrices: 0
-17:59:21:  * Render to Vertex Buffer : no
-17:59:21:  * Hardware Atomic Counters: no
-17:59:21:  * DirectX per stage constants: no
-17:59:21: ***************************************
-17:59:21: *** D3D9 : Subsystem Initialised OK ***
-17:59:21: ***************************************
-17:59:21: DefaultWorkQueue('Root') initialising on thread cd0.
-17:59:21: Particle Renderer Type 'billboard' registered
-17:59:21: DefaultWorkQueue('Root')::WorkerFunc - thread fa8 starting.
-17:59:21: SceneManagerFactory for type 'PCZSceneManager' registered.
-17:59:21: MovableObjectFactory for type 'PCZLight' registered.
-17:59:21: MovableObjectFactory for type 'Portal' registered.
-17:59:21: MovableObjectFactory for type 'AntiPortal' registered.
-17:59:21: PCZone Factory Type 'ZoneType_Octree' registered
-17:59:21: SceneManagerFactory for type 'OctreeSceneManager' registered.
-17:59:21: OverlayElementFactory for type Panel registered.
-17:59:21: OverlayElementFactory for type BorderPanel registered.
-17:59:21: OverlayElementFactory for type TextArea registered.
-17:59:21: Registering ResourceManager for type Font
-17:59:21: Parsing scripts for resource group 
-17:59:21: Parsing script GeneratedMesh.material
-17:59:21: Parsing script Achievement.material
-17:59:21: DefaultWorkQueue('Root')::WorkerFunc - thread 1250 starting.
-17:59:21: Parsing script ArmorMat.material
-17:59:21: Parsing script ArrowMat.material
-17:59:21: Parsing script CarMaterial.material
-17:59:21: Parsing script CoinMat.material
-17:59:21: Parsing script HUD.material
-17:59:21: Parsing script KinectLib.material
-17:59:21: Parsing script MagMat.material
-17:59:21: Parsing script Menu.material
-17:59:21: Parsing script sawMaterial.material
-17:59:21: Parsing script SideMat.material
-17:59:21: Parsing script TestMat.material
-17:59:21: Parsing script skybox.material
-17:59:21: Parsing script bhw.fontdef
-17:59:21: Parsing script bluehigh.fontdef
-17:59:21: Parsing script bhw.fontdef
-17:59:21: Parsing script bluehigh.fontdef
-17:59:21: Parsing script Achievement.overlay
-17:59:21: D3D9 : ***** Dimensions altered by the render system
-17:59:21: D3D9 : ***** Source image dimensions : 800x100
-17:59:21: D3D9 : ***** Texture dimensions : 1024x128
-17:59:21: Texture: AchievementBackground.png: Loading 1 faces(PF_R8G8B8,800x100x1) with 5 generated mipmaps from Image. Internal format is PF_X8R8G8B8,1024x128x1.
-17:59:22: Parsing script HUD.overlay
-17:59:22: D3D9 : ***** Dimensions altered by the render system
-17:59:22: D3D9 : ***** Source image dimensions : 200x100
-17:59:22: D3D9 : ***** Texture dimensions : 256x128
-17:59:22: Texture: Armor.png: Loading 1 faces(PF_A8R8G8B8,200x100x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,256x128x1.
-17:59:22: D3D9 : ***** Dimensions altered by the render system
-17:59:22: D3D9 : ***** Source image dimensions : 500x500
-17:59:22: D3D9 : ***** Texture dimensions : 512x512
-17:59:22: Texture: LeftArrow.png: Loading 1 faces(PF_A8R8G8B8,500x500x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,512x512x1.
-17:59:23: D3D9 : ***** Dimensions altered by the render system
-17:59:23: D3D9 : ***** Source image dimensions : 500x500
-17:59:23: D3D9 : ***** Texture dimensions : 512x512
-17:59:23: Texture: RightArrow.png: Loading 1 faces(PF_A8R8G8B8,500x500x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,512x512x1.
-17:59:23: D3D9 : ***** Dimensions altered by the render system
-17:59:23: D3D9 : ***** Source image dimensions : 500x500
-17:59:23: D3D9 : ***** Texture dimensions : 512x512
-17:59:23: Texture: CenterArrow.png: Loading 1 faces(PF_A8R8G8B8,500x500x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,512x512x1.
-17:59:23: D3D9 : ***** Dimensions altered by the render system
-17:59:23: D3D9 : ***** Source image dimensions : 500x500
-17:59:23: D3D9 : ***** Texture dimensions : 512x512
-17:59:23: Texture: UpArrow.png: Loading 1 faces(PF_A8R8G8B8,500x500x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,512x512x1.
-17:59:23: D3D9 : ***** Dimensions altered by the render system
-17:59:23: D3D9 : ***** Source image dimensions : 500x500
-17:59:24: D3D9 : ***** Texture dimensions : 512x512
-17:59:24: Texture: DownArrow.png: Loading 1 faces(PF_A8R8G8B8,500x500x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,512x512x1.
-17:59:24: Parsing script Kinect.overlay
-17:59:24: Bad overlay attribute line: 'metrics_mode relative' for overlay Kinect/Torso1
-17:59:24: D3D9 : ***** Dimensions altered by the render system
-17:59:24: D3D9 : ***** Source image dimensions : 50x100
-17:59:24: D3D9 : ***** Texture dimensions : 64x128
-17:59:24: Texture: torso.png: Loading 1 faces(PF_A8R8G8B8,50x100x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,64x128x1.
-17:59:24: D3D9 : ***** Dimensions altered by the render system
-17:59:24: D3D9 : ***** Source image dimensions : 50x100
-17:59:24: D3D9 : ***** Texture dimensions : 64x128
-17:59:24: Texture: torso2.png: Loading 1 faces(PF_A8R8G8B8,50x100x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,64x128x1.
-17:59:24: Finished parsing scripts for resource group 
-17:59:24: Creating resources for group 
-17:59:24: All done
-17:59:24: Parsing scripts for resource group Autodetect
-17:59:24: Finished parsing scripts for resource group Autodetect
-17:59:24: Creating resources for group Autodetect
-17:59:24: All done
-17:59:24: Parsing scripts for resource group General
-17:59:24: Finished parsing scripts for resource group General
-17:59:24: Creating resources for group General
-17:59:24: All done
-17:59:24: Parsing scripts for resource group Internal
-17:59:24: Finished parsing scripts for resource group Internal
-17:59:24: Creating resources for group Internal
-17:59:24: All done
-17:59:24: Font Big using texture size 1024x1024
-17:59:24: Info: Freetype returned null for character 127 in font Big
-17:59:24: Info: Freetype returned null for character 128 in font Big
-17:59:24: Info: Freetype returned null for character 129 in font Big
-17:59:24: Info: Freetype returned null for character 130 in font Big
-17:59:24: Info: Freetype returned null for character 131 in font Big
-17:59:24: Info: Freetype returned null for character 132 in font Big
-17:59:24: Info: Freetype returned null for character 133 in font Big
-17:59:24: Info: Freetype returned null for character 134 in font Big
-17:59:24: Info: Freetype returned null for character 135 in font Big
-17:59:24: Info: Freetype returned null for character 136 in font Big
-17:59:24: Info: Freetype returned null for character 137 in font Big
-17:59:24: Info: Freetype returned null for character 138 in font Big
-17:59:24: Info: Freetype returned null for character 139 in font Big
-17:59:24: Info: Freetype returned null for character 140 in font Big
-17:59:24: Info: Freetype returned null for character 141 in font Big
-17:59:24: Info: Freetype returned null for character 142 in font Big
-17:59:24: Info: Freetype returned null for character 143 in font Big
-17:59:24: Info: Freetype returned null for character 144 in font Big
-17:59:24: Info: Freetype returned null for character 145 in font Big
-17:59:24: Info: Freetype returned null for character 146 in font Big
-17:59:24: Info: Freetype returned null for character 147 in font Big
-17:59:24: Info: Freetype returned null for character 148 in font Big
-17:59:24: Info: Freetype returned null for character 149 in font Big
-17:59:24: Info: Freetype returned null for character 150 in font Big
-17:59:24: Info: Freetype returned null for character 151 in font Big
-17:59:24: Info: Freetype returned null for character 152 in font Big
-17:59:24: Info: Freetype returned null for character 153 in font Big
-17:59:24: Info: Freetype returned null for character 154 in font Big
-17:59:24: Info: Freetype returned null for character 155 in font Big
-17:59:24: Info: Freetype returned null for character 156 in font Big
-17:59:24: Info: Freetype returned null for character 157 in font Big
-17:59:24: Info: Freetype returned null for character 158 in font Big
-17:59:24: Info: Freetype returned null for character 159 in font Big
-17:59:24: Info: Freetype returned null for character 160 in font Big
-17:59:24: Texture: BigTexture: Loading 1 faces(PF_BYTE_LA,1024x1024x1) with 0 generated mipmaps from Image. Internal format is PF_BYTE_LA,1024x1024x1.
-17:59:24: Mesh: Loading coin.mesh.
-17:59:24: WARNING: coin.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
-17:59:25: Texture: coinGraphic2.png: Loading 1 faces(PF_A8R8G8B8,1024x1024x1) Internal format is PF_A8R8G8B8,1024x1024x1.
-17:59:25: Mesh: Loading car.mesh.
-17:59:25: WARNING: car.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
-17:59:26: Texture: carWrap.png: Loading 1 faces(PF_A8R8G8B8,1024x1024x1) Internal format is PF_A8R8G8B8,1024x1024x1.
-18:01:08: Texture: cloudy_noon_fr.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
-18:01:08: Texture: cloudy_noon_bk.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
-18:01:08: Texture: cloudy_noon_lf.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
-18:01:08: Texture: cloudy_noon_rt.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
-18:01:08: Texture: cloudy_noon_up.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
-18:01:08: Texture: cloudy_noon_dn.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
-18:01:09: Mesh: Loading Magnet.mesh.
-18:01:09: WARNING: Magnet.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
-18:01:09: Texture: magnet.png: Loading 1 faces(PF_A8R8G8B8,1024x1024x1) Internal format is PF_A8R8G8B8,1024x1024x1.
-18:01:24: Mesh: Loading sawblade.mesh.
-18:01:24: WARNING: sawblade.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
-18:01:24: D3D9 : ***** Dimensions altered by the render system
-18:01:24: D3D9 : ***** Source image dimensions : 575x426
-18:01:24: D3D9 : ***** Texture dimensions : 1024x512
-18:01:24: Texture: stainless-steel.jpg: Loading 1 faces(PF_R8G8B8,575x426x1) with 5 generated mipmaps from Image. Internal format is PF_X8R8G8B8,1024x512x1.
-18:01:38: Mesh: Loading Shield.mesh.
-18:01:38: WARNING: Shield.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
-18:01:38: Texture: sheild.png: Loading 1 faces(PF_A8R8G8B8,1024x1024x1) Internal format is PF_A8R8G8B8,1024x1024x1.
-18:01:47: D3D9 Device 0x[028B9C80] entered lost state
-18:01:47: D3D9 : WARNING - disabling VSync in windowed mode can cause timing issues at lower frame rates, turn VSync on if you observe this problem.
-18:01:47: !!! Direct3D Device successfully restored.
-18:01:47: D3D9 device: 0x[028B9C80] was reset
-18:02:56: DefaultWorkQueue('Root') shutting down on thread cd0.
-18:02:56: DefaultWorkQueue('Root')::WorkerFunc - thread 1250 stopped.
-18:02:56: DefaultWorkQueue('Root')::WorkerFunc - thread fa8 stopped.
-18:02:56: PCZone Factory Type 'ZoneType_Octree' unregistered
-18:02:56: *-*-* OGRE Shutdown
-18:02:56: Unregistering ResourceManager for type Compositor
-18:02:56: Unregistering ResourceManager for type Skeleton
-18:02:56: Unregistering ResourceManager for type Mesh
-18:02:56: Unregistering ResourceManager for type HighLevelGpuProgram
-18:02:56: Uninstalling plugin: Octree Scene Manager
-18:02:56: Plugin successfully uninstalled
-18:02:56: Unloading library .\Plugin_OctreeSceneManager_d
-18:02:56: Uninstalling plugin: Octree Zone Factory
-18:02:56: Plugin successfully uninstalled
-18:02:56: Unloading library .\Plugin_OctreeZone_d
-18:02:56: Uninstalling plugin: Portal Connected Zone Scene Manager
-18:02:56: Plugin successfully uninstalled
-18:02:56: Unloading library .\Plugin_PCZSceneManager_d
-18:02:56: Uninstalling plugin: GL RenderSystem
-18:02:56: *** Stopping Win32GL Subsystem ***
-18:02:56: Plugin successfully uninstalled
-18:02:56: Unloading library .\RenderSystem_GL_d
-18:02:56: Uninstalling plugin: D3D9 RenderSystem
-18:02:56: D3D9 device: 0x[028B9C80] destroy. Releasing D3D9 texture: BigTexture
-18:02:56: Released D3D9 texture: BigTexture
-18:02:56: D3D9 device: 0x[028B9C80] destroy. Releasing D3D9 texture: AchievementBackground.png
-18:02:56: Released D3D9 texture: AchievementBackground.png
-18:02:56: D3D9 device: 0x[028B9C80] destroy. Releasing D3D9 texture: Armor.png
-18:02:56: Released D3D9 texture: Armor.png
-18:02:56: D3D9 device: 0x[028B9C80] destroy. Releasing D3D9 texture: LeftArrow.png
-18:02:56: Released D3D9 texture: LeftArrow.png
-18:02:56: D3D9 device: 0x[028B9C80] destroy. Releasing D3D9 texture: RightArrow.png
-18:02:56: Released D3D9 texture: RightArrow.png
-18:02:56: D3D9 device: 0x[028B9C80] destroy. Releasing D3D9 texture: CenterArrow.png
-18:02:56: Released D3D9 texture: CenterArrow.png
-18:02:56: D3D9 device: 0x[028B9C80] destroy. Releasing D3D9 texture: UpArrow.png
-18:02:56: Released D3D9 texture: UpArrow.png
-18:02:56: D3D9 device: 0x[028B9C80] destroy. Releasing D3D9 texture: DownArrow.png
-18:02:56: Released D3D9 texture: DownArrow.png
-18:02:56: D3D9 device: 0x[028B9C80] destroy. Releasing D3D9 texture: torso.png
-18:02:56: Released D3D9 texture: torso.png
-18:02:56: D3D9 device: 0x[028B9C80] destroy. Releasing D3D9 texture: torso2.png
-18:02:56: Released D3D9 texture: torso2.png
-18:02:57: D3D9 : Shutting down cleanly.
-18:02:57: Unregistering ResourceManager for type Texture
-18:02:57: Unregistering ResourceManager for type GpuProgram
-18:02:57: D3D9 : Direct3D9 Rendering Subsystem destroyed.
-18:02:57: Plugin successfully uninstalled
-18:02:57: Unloading library .\RenderSystem_Direct3D9_d
-18:02:57: Unregistering ResourceManager for type Material
+15:46:34: Creating resource group General
+15:46:34: Creating resource group Internal
+15:46:34: Creating resource group Autodetect
+15:46:34: SceneManagerFactory for type 'DefaultSceneManager' registered.
+15:46:34: Registering ResourceManager for type Material
+15:46:34: Registering ResourceManager for type Mesh
+15:46:34: Registering ResourceManager for type Skeleton
+15:46:34: MovableObjectFactory for type 'ParticleSystem' registered.
+15:46:34: ArchiveFactory for archive type FileSystem registered.
+15:46:34: ArchiveFactory for archive type Zip registered.
+15:46:34: ArchiveFactory for archive type EmbeddedZip registered.
+15:46:34: DDS codec registering
+15:46:34: FreeImage version: 3.15.3
+15:46:34: This program uses FreeImage, a free, open source image library supporting all common bitmap formats. See http://freeimage.sourceforge.net for details
+15:46:34: Supported formats: bmp,ico,jpg,jif,jpeg,jpe,jng,koa,iff,lbm,mng,pbm,pbm,pcd,pcx,pgm,pgm,png,ppm,ppm,ras,tga,targa,tif,tiff,wap,wbmp,wbm,psd,cut,xbm,xpm,gif,hdr,g3,sgi,exr,j2k,j2c,jp2,pfm,pct,pict,pic,3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2,dcr,drf,dsc,dng,erf,fff,ia,iiq,k25,kc2,kdc,mdc,mef,mos,mrw,nef,nrw,orf,pef,ptx,pxn,qtk,raf,raw,rdc,rw2,rwl,rwz,sr2,srf,srw,sti
+15:46:34: Registering ResourceManager for type HighLevelGpuProgram
+15:46:34: Registering ResourceManager for type Compositor
+15:46:34: MovableObjectFactory for type 'Entity' registered.
+15:46:34: MovableObjectFactory for type 'Light' registered.
+15:46:34: MovableObjectFactory for type 'BillboardSet' registered.
+15:46:34: MovableObjectFactory for type 'ManualObject' registered.
+15:46:34: MovableObjectFactory for type 'BillboardChain' registered.
+15:46:34: MovableObjectFactory for type 'RibbonTrail' registered.
+15:46:34: Loading library .\RenderSystem_Direct3D9_d
+15:46:34: Installing plugin: D3D9 RenderSystem
+15:46:34: D3D9 : Direct3D9 Rendering Subsystem created.
+15:46:34: D3D9: Driver Detection Starts
+15:46:34: D3D9: Driver Detection Ends
+15:46:34: Plugin successfully installed
+15:46:34: Loading library .\RenderSystem_GL_d
+15:46:34: Installing plugin: GL RenderSystem
+15:46:34: OpenGL Rendering Subsystem created.
+15:46:34: Plugin successfully installed
+15:46:34: Loading library .\Plugin_PCZSceneManager_d
+15:46:34: Installing plugin: Portal Connected Zone Scene Manager
+15:46:34: PCZone Factory Type 'ZoneType_Default' registered
+15:46:34: Plugin successfully installed
+15:46:34: Loading library .\Plugin_OctreeZone_d
+15:46:34: Installing plugin: Octree Zone Factory
+15:46:34: Plugin successfully installed
+15:46:34: Loading library .\Plugin_OctreeSceneManager_d
+15:46:34: Installing plugin: Octree Scene Manager
+15:46:34: Plugin successfully installed
+15:46:34: *-*-* OGRE Initialising
+15:46:34: *-*-* Version 1.9.0 (Ghadamon)
+15:46:34: Creating resource group 
+15:46:34: Added resource location '../Runner/Content/' of type 'FileSystem' to resource group ''
+15:46:34: Added resource location '../Runner/Content/Models/' of type 'FileSystem' to resource group ''
+15:46:34: Added resource location '../Runner/Content/Materials/' of type 'FileSystem' to resource group ''
+15:46:34: Added resource location '../Runner/Content/Overlays/' of type 'FileSystem' to resource group ''
+15:46:34: Added resource location '../Runner/Content/Skybox/' of type 'FileSystem' to resource group ''
+15:46:34: Added resource location '../Runner/Content/Sounds/' of type 'FileSystem' to resource group ''
+15:46:34: D3D9 : RenderSystem Option: Allow DirectX9Ex = No
+15:46:34: D3D9 : RenderSystem Option: Allow NVPerfHUD = No
+15:46:34: D3D9 : RenderSystem Option: FSAA = 0
+15:46:34: D3D9 : RenderSystem Option: Fixed Pipeline Enabled = Yes
+15:46:34: D3D9 : RenderSystem Option: Floating-point mode = Fastest
+15:46:34: D3D9 : RenderSystem Option: Full Screen = No
+15:46:34: D3D9 : RenderSystem Option: Multi device memory hint = Use minimum system memory
+15:46:34: D3D9 : RenderSystem Option: Rendering Device = Monitor-1-Intel(R) HD Graphics
+15:46:34: D3D9 : RenderSystem Option: Resource Creation Policy = Create on all devices
+15:46:34: D3D9 : RenderSystem Option: Use Multihead = Auto
+15:46:34: D3D9 : RenderSystem Option: VSync = No
+15:46:34: D3D9 : RenderSystem Option: VSync Interval = 1
+15:46:34: D3D9 : RenderSystem Option: Video Mode = 800 x 600 @ 32-bit colour
+15:46:34: D3D9 : RenderSystem Option: sRGB Gamma Conversion = No
+15:46:36: CPU Identifier & Features
+15:46:36: -------------------------
+15:46:36:  *   CPU ID: GenuineIntel: Intel(R) Core(TM) i5-2400 CPU @ 3.10GHz
+15:46:36:  *      SSE: yes
+15:46:36:  *     SSE2: yes
+15:46:36:  *     SSE3: yes
+15:46:36:  *      MMX: yes
+15:46:36:  *   MMXEXT: yes
+15:46:36:  *    3DNOW: no
+15:46:36:  * 3DNOWEXT: no
+15:46:36:  *     CMOV: yes
+15:46:36:  *      TSC: yes
+15:46:36:  *      FPU: yes
+15:46:36:  *      PRO: yes
+15:46:36:  *       HT: no
+15:46:36: -------------------------
+15:46:36: D3D9 : Subsystem Initialising
+15:46:36: Registering ResourceManager for type Texture
+15:46:36: Registering ResourceManager for type GpuProgram
+15:46:36: D3D9RenderSystem::_createRenderWindow "OGRE Render Window", 800x600 windowed  miscParams: FSAA=0 FSAAHint= colourDepth=32 gamma=false monitorIndex=0 useNVPerfHUD=false vsync=false vsyncInterval=1 
+15:46:36: D3D9 : Created D3D9 Rendering Window 'OGRE Render Window' : 800x600, 32bpp
+15:46:36: D3D9 : WARNING - disabling VSync in windowed mode can cause timing issues at lower frame rates, turn VSync on if you observe this problem.
+15:46:36: D3D9: Vertex texture format supported - PF_L8
+15:46:36: D3D9: Vertex texture format supported - PF_L16
+15:46:36: D3D9: Vertex texture format supported - PF_A8
+15:46:36: D3D9: Vertex texture format supported - PF_A4L4
+15:46:36: D3D9: Vertex texture format supported - PF_BYTE_LA
+15:46:36: D3D9: Vertex texture format supported - PF_R5G6B5
+15:46:36: D3D9: Vertex texture format supported - PF_B5G6R5
+15:46:36: D3D9: Vertex texture format supported - PF_A4R4G4B4
+15:46:36: D3D9: Vertex texture format supported - PF_A1R5G5B5
+15:46:36: D3D9: Vertex texture format supported - PF_A8R8G8B8
+15:46:36: D3D9: Vertex texture format supported - PF_B8G8R8A8
+15:46:36: D3D9: Vertex texture format supported - PF_A2R10G10B10
+15:46:36: D3D9: Vertex texture format supported - PF_A2B10G10R10
+15:46:36: D3D9: Vertex texture format supported - PF_DXT1
+15:46:36: D3D9: Vertex texture format supported - PF_DXT2
+15:46:36: D3D9: Vertex texture format supported - PF_DXT3
+15:46:36: D3D9: Vertex texture format supported - PF_DXT4
+15:46:36: D3D9: Vertex texture format supported - PF_DXT5
+15:46:36: D3D9: Vertex texture format supported - PF_FLOAT16_RGB
+15:46:36: D3D9: Vertex texture format supported - PF_FLOAT16_RGBA
+15:46:36: D3D9: Vertex texture format supported - PF_FLOAT32_RGB
+15:46:36: D3D9: Vertex texture format supported - PF_FLOAT32_RGBA
+15:46:36: D3D9: Vertex texture format supported - PF_X8R8G8B8
+15:46:36: D3D9: Vertex texture format supported - PF_R8G8B8A8
+15:46:36: D3D9: Vertex texture format supported - PF_DEPTH
+15:46:36: D3D9: Vertex texture format supported - PF_SHORT_RGBA
+15:46:36: D3D9: Vertex texture format supported - PF_FLOAT16_R
+15:46:36: D3D9: Vertex texture format supported - PF_FLOAT32_R
+15:46:36: D3D9: Vertex texture format supported - PF_SHORT_GR
+15:46:36: D3D9: Vertex texture format supported - PF_FLOAT16_GR
+15:46:36: D3D9: Vertex texture format supported - PF_FLOAT32_GR
+15:46:36: D3D9: Vertex texture format supported - PF_SHORT_RGB
+15:46:36: D3D9: Vertex texture format supported - PF_PVRTC_RGB2
+15:46:36: D3D9: Vertex texture format supported - PF_PVRTC_RGBA2
+15:46:36: D3D9: Vertex texture format supported - PF_PVRTC_RGB4
+15:46:36: D3D9: Vertex texture format supported - PF_PVRTC_RGBA4
+15:46:36: D3D9: Vertex texture format supported - PF_PVRTC2_2BPP
+15:46:36: D3D9: Vertex texture format supported - PF_PVRTC2_4BPP
+15:46:36: D3D9: Vertex texture format supported - PF_R11G11B10_FLOAT
+15:46:36: D3D9: Vertex texture format supported - PF_R8_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R8G8_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R8G8B8_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R8G8B8A8_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R16_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R16G16_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R16G16B16_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R16G16B16A16_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R32_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R32G32_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R32G32B32_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R32G32B32A32_UINT
+15:46:36: D3D9: Vertex texture format supported - PF_R8_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R8G8_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R8G8B8_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R8G8B8A8_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R16_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R16G16_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R16G16B16_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R16G16B16A16_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R32_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R32G32_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R32G32B32_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R32G32B32A32_SINT
+15:46:36: D3D9: Vertex texture format supported - PF_R9G9B9E5_SHAREDEXP
+15:46:36: D3D9: Vertex texture format supported - PF_BC4_UNORM
+15:46:36: D3D9: Vertex texture format supported - PF_BC4_SNORM
+15:46:36: D3D9: Vertex texture format supported - PF_BC5_UNORM
+15:46:36: D3D9: Vertex texture format supported - PF_BC5_SNORM
+15:46:36: D3D9: Vertex texture format supported - PF_BC6H_UF16
+15:46:36: D3D9: Vertex texture format supported - PF_BC6H_SF16
+15:46:36: D3D9: Vertex texture format supported - PF_BC7_UNORM
+15:46:36: D3D9: Vertex texture format supported - PF_BC7_UNORM_SRGB
+15:46:36: D3D9: Vertex texture format supported - PF_R8
+15:46:36: D3D9: Vertex texture format supported - PF_RG8
+15:46:36: D3D9: Vertex texture format supported - PF_R8_SNORM
+15:46:36: D3D9: Vertex texture format supported - PF_R8G8_SNORM
+15:46:36: D3D9: Vertex texture format supported - PF_R8G8B8_SNORM
+15:46:36: D3D9: Vertex texture format supported - PF_R8G8B8A8_SNORM
+15:46:36: D3D9: Vertex texture format supported - PF_R16_SNORM
+15:46:36: D3D9: Vertex texture format supported - PF_R16G16_SNORM
+15:46:36: D3D9: Vertex texture format supported - PF_R16G16B16_SNORM
+15:46:36: D3D9: Vertex texture format supported - PF_R16G16B16A16_SNORM
+15:46:36: D3D9: Vertex texture format supported - PF_ETC1_RGB8
+15:46:36: D3D9: Vertex texture format supported - PF_ETC2_RGB8
+15:46:36: D3D9: Vertex texture format supported - PF_ETC2_RGBA8
+15:46:36: D3D9: Vertex texture format supported - PF_ETC2_RGB8A1
+15:46:36: D3D9: Vertex texture format supported - PF_ATC_RGB
+15:46:36: D3D9: Vertex texture format supported - PF_ATC_RGBA_EXPLICIT_ALPHA
+15:46:36: D3D9: Vertex texture format supported - PF_ATC_RGBA_INTERPOLATED_ALPHA
+15:46:36: RenderSystem capabilities
+15:46:36: -------------------------
+15:46:36: RenderSystem Name: Direct3D9 Rendering Subsystem
+15:46:36: GPU Vendor: intel
+15:46:36: Device Name: Monitor-1-Intel(R) HD Graphics
+15:46:36: Driver Version: 9.17.10.3347
+15:46:36:  * Fixed function pipeline: yes
+15:46:36:  * Hardware generation of mipmaps: yes
+15:46:36:  * Texture blending: yes
+15:46:36:  * Anisotropic texture filtering: yes
+15:46:36:  * Dot product texture operation: yes
+15:46:36:  * Cube mapping: yes
+15:46:36:  * Hardware stencil buffer: yes
+15:46:36:    - Stencil depth: 8
+15:46:36:    - Two sided stencil support: yes
+15:46:36:    - Wrap stencil values: yes
+15:46:36:  * Hardware vertex / index buffers: yes
+15:46:36:  * Vertex programs: yes
+15:46:36:  * Number of floating-point constants for vertex programs: 256
+15:46:36:  * Number of integer constants for vertex programs: 16
+15:46:36:  * Number of boolean constants for vertex programs: 16
+15:46:36:  * Fragment programs: yes
+15:46:36:  * Number of floating-point constants for fragment programs: 224
+15:46:36:  * Number of integer constants for fragment programs: 16
+15:46:36:  * Number of boolean constants for fragment programs: 16
+15:46:36:  * Geometry programs: no
+15:46:36:  * Number of floating-point constants for geometry programs: 52428
+15:46:36:  * Number of integer constants for geometry programs: 52428
+15:46:36:  * Number of boolean constants for geometry programs: 52428
+15:46:36:  * Tesselation Hull programs: no
+15:46:36:  * Number of floating-point constants for tesselation hull programs: 52428
+15:46:36:  * Number of integer constants for tesselation hull programs: 52428
+15:46:36:  * Number of boolean constants for tesselation hull programs: 52428
+15:46:36:  * Tesselation Domain programs: no
+15:46:36:  * Number of floating-point constants for tesselation domain programs: 52428
+15:46:36:  * Number of integer constants for tesselation domain programs: 52428
+15:46:36:  * Number of boolean constants for tesselation domain programs: 52428
+15:46:36:  * Compute programs: no
+15:46:36:  * Number of floating-point constants for compute programs: 52428
+15:46:36:  * Number of integer constants for compute programs: 52428
+15:46:36:  * Number of boolean constants for compute programs: 52428
+15:46:36:  * Supported Shader Profiles: hlsl ps_1_1 ps_1_2 ps_1_3 ps_1_4 ps_2_0 ps_2_a ps_2_b ps_2_x ps_3_0 vs_1_1 vs_2_0 vs_2_a vs_2_x vs_3_0
+15:46:36:  * Texture Compression: yes
+15:46:36:    - DXT: yes
+15:46:36:    - VTC: no
+15:46:36:    - PVRTC: no
+15:46:36:    - ATC: no
+15:46:36:    - ETC1: no
+15:46:36:    - ETC2: no
+15:46:36:    - BC4/BC5: no
+15:46:36:    - BC6H/BC7: no
+15:46:36:  * Scissor Rectangle: yes
+15:46:36:  * Hardware Occlusion Query: yes
+15:46:36:  * User clip planes: yes
+15:46:36:  * VET_UBYTE4 vertex element type: yes
+15:46:36:  * Infinite far plane projection: yes
+15:46:36:  * Hardware render-to-texture: yes
+15:46:36:  * Floating point textures: yes
+15:46:36:  * Non-power-of-two textures: yes
+15:46:36:  * 1d textures: yes
+15:46:36:  * Volume textures: yes
+15:46:36:  * Multiple Render Targets: 4
+15:46:36:    - With different bit depths: yes
+15:46:36:  * Point Sprites: yes
+15:46:36:  * Extended point parameters: yes
+15:46:36:  * Max Point Size: 256
+15:46:36:  * Vertex texture fetch: yes
+15:46:36:  * Number of world matrices: 0
+15:46:36:  * Number of texture units: 8
+15:46:36:  * Stencil buffer depth: 8
+15:46:36:  * Number of vertex blend matrices: 0
+15:46:36:    - Max vertex textures: 4
+15:46:36:    - Vertex textures shared: no
+15:46:36:  * Render to Vertex Buffer : no
+15:46:36:  * Hardware Atomic Counters: no
+15:46:36:  * DirectX per stage constants: yes
+15:46:36: ***************************************
+15:46:36: *** D3D9 : Subsystem Initialised OK ***
+15:46:36: ***************************************
+15:46:36: DefaultWorkQueue('Root') initialising on thread f7c.
+15:46:36: DefaultWorkQueue('Root')::WorkerFunc - thread 420 starting.
+15:46:36: DefaultWorkQueue('Root')::WorkerFunc - thread e98 starting.
+15:46:36: DefaultWorkQueue('Root')::WorkerFunc - thread cc8 starting.
+15:46:36: DefaultWorkQueue('Root')::WorkerFunc - thread f78 starting.
+15:46:36: Particle Renderer Type 'billboard' registered
+15:46:36: SceneManagerFactory for type 'PCZSceneManager' registered.
+15:46:36: MovableObjectFactory for type 'PCZLight' registered.
+15:46:36: MovableObjectFactory for type 'Portal' registered.
+15:46:36: MovableObjectFactory for type 'AntiPortal' registered.
+15:46:36: PCZone Factory Type 'ZoneType_Octree' registered
+15:46:36: SceneManagerFactory for type 'OctreeSceneManager' registered.
+15:46:36: OverlayElementFactory for type Panel registered.
+15:46:36: OverlayElementFactory for type BorderPanel registered.
+15:46:36: OverlayElementFactory for type TextArea registered.
+15:46:36: Registering ResourceManager for type Font
+15:46:36: Parsing scripts for resource group 
+15:46:36: Parsing script GeneratedMesh.material
+15:46:36: Parsing script Achievement.material
+15:46:36: Parsing script ArmorMat.material
+15:46:36: Parsing script ArrowMat.material
+15:46:36: Parsing script basic.material
+15:46:36: Parsing script CarMaterial.material
+15:46:36: Parsing script CoinMat.material
+15:46:36: Parsing script HUD.material
+15:46:36: Parsing script KinectLib.material
+15:46:36: Parsing script MagMat.material
+15:46:36: Parsing script Menu.material
+15:46:36: Parsing script sawMaterial.material
+15:46:36: Parsing script SideMat.material
+15:46:36: Parsing script TestMat.material
+15:46:36: Parsing script skybox.material
+15:46:36: Parsing script bhw.fontdef
+15:46:36: Parsing script bluehigh.fontdef
+15:46:36: Parsing script bhw.fontdef
+15:46:36: Parsing script bluehigh.fontdef
+15:46:36: Parsing script Achievement.overlay
+15:46:36: Texture: AchievementBackground.png: Loading 1 faces(PF_R8G8B8,800x100x1) with 5 generated mipmaps from Image. Internal format is PF_X8R8G8B8,800x100x1.
+15:46:36: Parsing script HUD.overlay
+15:46:36: Texture: Armor.png: Loading 1 faces(PF_A8R8G8B8,200x100x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,200x100x1.
+15:46:36: Texture: LeftArrow.png: Loading 1 faces(PF_A8R8G8B8,500x500x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,500x500x1.
+15:46:36: Texture: RightArrow.png: Loading 1 faces(PF_A8R8G8B8,500x500x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,500x500x1.
+15:46:36: Texture: CenterArrow.png: Loading 1 faces(PF_A8R8G8B8,500x500x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,500x500x1.
+15:46:36: Texture: UpArrow.png: Loading 1 faces(PF_A8R8G8B8,500x500x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,500x500x1.
+15:46:36: Texture: DownArrow.png: Loading 1 faces(PF_A8R8G8B8,500x500x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,500x500x1.
+15:46:36: Parsing script Kinect.overlay
+15:46:36: Bad overlay attribute line: 'metrics_mode relative' for overlay Kinect/Torso1
+15:46:36: Texture: torso.png: Loading 1 faces(PF_A8R8G8B8,50x100x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,50x100x1.
+15:46:36: Texture: torso2.png: Loading 1 faces(PF_A8R8G8B8,50x100x1) with 5 generated mipmaps from Image. Internal format is PF_A8R8G8B8,50x100x1.
+15:46:36: Parsing script login.overlay
+15:46:36: Finished parsing scripts for resource group 
+15:46:36: Creating resources for group 
+15:46:36: All done
+15:46:36: Parsing scripts for resource group Autodetect
+15:46:36: Finished parsing scripts for resource group Autodetect
+15:46:36: Creating resources for group Autodetect
+15:46:36: All done
+15:46:36: Parsing scripts for resource group General
+15:46:36: Finished parsing scripts for resource group General
+15:46:36: Creating resources for group General
+15:46:36: All done
+15:46:36: Parsing scripts for resource group Internal
+15:46:36: Finished parsing scripts for resource group Internal
+15:46:36: Creating resources for group Internal
+15:46:36: All done
+15:46:37: Font Big using texture size 1024x1024
+15:46:37: Info: Freetype returned null for character 127 in font Big
+15:46:37: Info: Freetype returned null for character 128 in font Big
+15:46:37: Info: Freetype returned null for character 129 in font Big
+15:46:37: Info: Freetype returned null for character 130 in font Big
+15:46:37: Info: Freetype returned null for character 131 in font Big
+15:46:37: Info: Freetype returned null for character 132 in font Big
+15:46:37: Info: Freetype returned null for character 133 in font Big
+15:46:37: Info: Freetype returned null for character 134 in font Big
+15:46:37: Info: Freetype returned null for character 135 in font Big
+15:46:37: Info: Freetype returned null for character 136 in font Big
+15:46:37: Info: Freetype returned null for character 137 in font Big
+15:46:37: Info: Freetype returned null for character 138 in font Big
+15:46:37: Info: Freetype returned null for character 139 in font Big
+15:46:37: Info: Freetype returned null for character 140 in font Big
+15:46:37: Info: Freetype returned null for character 141 in font Big
+15:46:37: Info: Freetype returned null for character 142 in font Big
+15:46:37: Info: Freetype returned null for character 143 in font Big
+15:46:37: Info: Freetype returned null for character 144 in font Big
+15:46:37: Info: Freetype returned null for character 145 in font Big
+15:46:37: Info: Freetype returned null for character 146 in font Big
+15:46:37: Info: Freetype returned null for character 147 in font Big
+15:46:37: Info: Freetype returned null for character 148 in font Big
+15:46:37: Info: Freetype returned null for character 149 in font Big
+15:46:37: Info: Freetype returned null for character 150 in font Big
+15:46:37: Info: Freetype returned null for character 151 in font Big
+15:46:37: Info: Freetype returned null for character 152 in font Big
+15:46:37: Info: Freetype returned null for character 153 in font Big
+15:46:37: Info: Freetype returned null for character 154 in font Big
+15:46:37: Info: Freetype returned null for character 155 in font Big
+15:46:37: Info: Freetype returned null for character 156 in font Big
+15:46:37: Info: Freetype returned null for character 157 in font Big
+15:46:37: Info: Freetype returned null for character 158 in font Big
+15:46:37: Info: Freetype returned null for character 159 in font Big
+15:46:37: Info: Freetype returned null for character 160 in font Big
+15:46:37: Texture: BigTexture: Loading 1 faces(PF_BYTE_LA,1024x1024x1) with 0 generated mipmaps from Image. Internal format is PF_BYTE_LA,1024x1024x1.
+15:46:37: Mesh: Loading coin.mesh.
+15:46:37: WARNING: coin.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
+15:46:37: Texture: coinGraphic2.png: Loading 1 faces(PF_A8R8G8B8,1024x1024x1) Internal format is PF_A8R8G8B8,1024x1024x1.
+15:46:38: Mesh: Loading car.mesh.
+15:46:38: WARNING: car.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
+15:46:38: Texture: carWrap.png: Loading 1 faces(PF_A8R8G8B8,1024x1024x1) Internal format is PF_A8R8G8B8,1024x1024x1.
+15:47:27: Texture: cloudy_noon_fr.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
+15:47:27: Texture: cloudy_noon_bk.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
+15:47:27: Texture: cloudy_noon_lf.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
+15:47:27: Texture: cloudy_noon_rt.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
+15:47:27: Texture: cloudy_noon_up.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
+15:47:27: Texture: cloudy_noon_dn.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) Internal format is PF_X8R8G8B8,512x512x1.
+15:48:41: Mesh: Loading sawblade.mesh.
+15:48:41: WARNING: sawblade.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
+15:48:41: Texture: stainless-steel.jpg: Loading 1 faces(PF_R8G8B8,575x426x1) with 5 generated mipmaps from Image. Internal format is PF_X8R8G8B8,575x426x1.
+15:49:38: Mesh: Loading Shield.mesh.
+15:49:38: WARNING: Shield.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
+15:49:38: Texture: sheild.png: Loading 1 faces(PF_A8R8G8B8,1024x1024x1) Internal format is PF_A8R8G8B8,1024x1024x1.
+15:49:44: Mesh: Loading car1.mesh.
+15:49:44: WARNING: car1.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
+15:49:44: Mesh: Loading car2.mesh.
+15:49:44: WARNING: car2.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
+15:49:44: Mesh: Loading car3.mesh.
+15:49:44: WARNING: car3.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
+15:49:44: Mesh: Loading car4.mesh.
+15:49:44: WARNING: car4.mesh is an older format ([MeshSerializer_v1.41]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
+15:51:11: DefaultWorkQueue('Root') shutting down on thread f7c.
+15:51:11: DefaultWorkQueue('Root')::WorkerFunc - thread cc8 stopped.
+15:51:11: DefaultWorkQueue('Root')::WorkerFunc - thread e98 stopped.
+15:51:11: DefaultWorkQueue('Root')::WorkerFunc - thread f78 stopped.
+15:51:11: DefaultWorkQueue('Root')::WorkerFunc - thread 420 stopped.
+15:51:11: PCZone Factory Type 'ZoneType_Octree' unregistered
+15:51:11: *-*-* OGRE Shutdown
+15:51:11: Unregistering ResourceManager for type Compositor
+15:51:11: Unregistering ResourceManager for type Skeleton
+15:51:11: Unregistering ResourceManager for type Mesh
+15:51:11: Unregistering ResourceManager for type HighLevelGpuProgram
+15:51:11: Uninstalling plugin: Octree Scene Manager
+15:51:11: Plugin successfully uninstalled
+15:51:11: Unloading library .\Plugin_OctreeSceneManager_d
+15:51:11: Uninstalling plugin: Octree Zone Factory
+15:51:11: Plugin successfully uninstalled
+15:51:11: Unloading library .\Plugin_OctreeZone_d
+15:51:11: Uninstalling plugin: Portal Connected Zone Scene Manager
+15:51:11: Plugin successfully uninstalled
+15:51:11: Unloading library .\Plugin_PCZSceneManager_d
+15:51:11: Uninstalling plugin: GL RenderSystem
+15:51:11: *** Stopping Win32GL Subsystem ***
+15:51:11: Plugin successfully uninstalled
+15:51:11: Unloading library .\RenderSystem_GL_d
+15:51:11: Uninstalling plugin: D3D9 RenderSystem
+15:51:11: D3D9 device: 0x[00E021E0] destroy. Releasing D3D9 texture: AchievementBackground.png
+15:51:11: Released D3D9 texture: AchievementBackground.png
+15:51:11: D3D9 device: 0x[00E021E0] destroy. Releasing D3D9 texture: Armor.png
+15:51:11: Released D3D9 texture: Armor.png
+15:51:11: D3D9 device: 0x[00E021E0] destroy. Releasing D3D9 texture: LeftArrow.png
+15:51:11: Released D3D9 texture: LeftArrow.png
+15:51:11: D3D9 device: 0x[00E021E0] destroy. Releasing D3D9 texture: RightArrow.png
+15:51:11: Released D3D9 texture: RightArrow.png
+15:51:11: D3D9 device: 0x[00E021E0] destroy. Releasing D3D9 texture: CenterArrow.png
+15:51:11: Released D3D9 texture: CenterArrow.png
+15:51:11: D3D9 device: 0x[00E021E0] destroy. Releasing D3D9 texture: UpArrow.png
+15:51:11: Released D3D9 texture: UpArrow.png
+15:51:11: D3D9 device: 0x[00E021E0] destroy. Releasing D3D9 texture: DownArrow.png
+15:51:11: Released D3D9 texture: DownArrow.png
+15:51:11: D3D9 device: 0x[00E021E0] destroy. Releasing D3D9 texture: torso.png
+15:51:11: Released D3D9 texture: torso.png
+15:51:11: D3D9 device: 0x[00E021E0] destroy. Releasing D3D9 texture: torso2.png
+15:51:11: Released D3D9 texture: torso2.png
+15:51:11: D3D9 device: 0x[00E021E0] destroy. Releasing D3D9 texture: BigTexture
+15:51:11: Released D3D9 texture: BigTexture
+15:51:11: D3D9 : Shutting down cleanly.
+15:51:11: Unregistering ResourceManager for type Texture
+15:51:11: Unregistering ResourceManager for type GpuProgram
+15:51:11: D3D9 : Direct3D9 Rendering Subsystem destroyed.
+15:51:11: Plugin successfully uninstalled
+15:51:11: Unloading library .\RenderSystem_Direct3D9_d
+15:51:11: Unregistering ResourceManager for type Material

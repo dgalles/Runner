@@ -1,0 +1,56 @@
+ 	
+
+// The name of the overlay comes first
+Login/Failure
+{
+    zorder 400
+	
+	container Panel(Login/Failure/Panel)
+    {
+
+		left 0
+		top 0
+		width 1
+		height 0.005
+		material simpleRed
+		
+		element TextArea(Login/Failure/Text)
+		{
+		metrics_mode relative
+		
+         left 0.05
+		 top 0.01
+         font_name Big
+         char_height 0.02
+         colour 1 0 0 
+         caption Not Logged in
+		}
+	}
+}
+
+Login/Success
+{
+    zorder 400
+	
+	container Panel(Login/Success/Panel)
+    {
+
+		left 0
+		top 0
+		width 1
+		height 0.005
+		material simpleGreen
+		
+		element TextArea(Login/Success/Text)
+		{
+		metrics_mode relative
+		
+         left 0.05
+		 top 0.01
+         font_name Big
+         char_height 0.02
+         colour 0 1 0 
+         caption Logged in as:
+		}
+	}
+}

@@ -11,6 +11,7 @@
 #include "InputHandler.h"
 #include "Achievements.h"
 #include "Camera.h"
+#include "Sound.h"
 
 const float Player::SPEED_MULTIPLYER = 20;
 
@@ -41,6 +42,8 @@ const float Player::SPEED_MULTIPLYER = 20;
 	mUseFrontBack = true;
 	mLeanEqualsDuck = true;
 
+
+
 }
 
  void Player::reset()
@@ -61,6 +64,11 @@ void Player::setup()
 	mBoosting = false;
 	mBoostTime = 0;
 	mShieldTime = 0;
+
+	mMagnetsHit = 0;
+	mMagnetTime = 0;
+	mMagnetActive = false;
+
 
 	mBoostsHit = 0;
 	mShieldsHit = 0;
@@ -187,6 +195,7 @@ void
 				d.object->setPosition(Ogre::Vector3(0,0,0));
                 mCoinsCollected++;
 				mTotalCoins++;
+				SoundBank::getInstance()->play("coin");
 				mMaxDistWithoutCoins = std::max(mMaxDistWithoutCoins, mDistanceWithoutCoins);
 				mDistanceWithoutCoins = 0.0f;
                 mWorld->getHUD()->setCoins(mCoinsCollected);
@@ -274,6 +283,10 @@ bool
 
 					mShielded = true;
 					mShieldTime = std::max(mShieldTime, 5.0f);;
+				}
+				else if (d.object->type() == RunnerObject::MAGNET)
+				{
+					
 
 
 				}
@@ -736,46 +749,48 @@ void
 
 	if (mArmor <= 0)
 	{
-	mAlive = false;
-	mExplodeTimer = 3.0;
+		mAlive = false;
+		mExplodeTimer = 3.0;
 
-	
-	mLongestRun = std::max(mLongestRun, (int) mDistance);
-	mMostCoins = std::max(mMostCoins, mCoinsCollected);
+		SoundBank::getInstance()->play("crash");
 
-	Ogre::Entity *debrisEntity[4];
+		mLongestRun = std::max(mLongestRun, (int) mDistance);
+		mMostCoins = std::max(mMostCoins, mCoinsCollected);
 
-	debrisEntity[0] = mWorld->SceneManager()->createEntity("car1.mesh");
-	debrisEntity[1] = mWorld->SceneManager()->createEntity("car2.mesh");
-	debrisEntity[2] = mWorld->SceneManager()->createEntity("car3.mesh");
-	debrisEntity[3] = mWorld->SceneManager()->createEntity("car4.mesh");
+		Ogre::Entity *debrisEntity[4];
 
-	for (int i = 0; i < 4; i++)
-	{
-		debris[i] = mWorld->SceneManager()->getRootSceneNode()->createChildSceneNode();
-		debris[i]->attachObject(debrisEntity[i]);
-		debris[i]->scale(mPlayerObject->getScale());
-	}
+		debrisEntity[0] = mWorld->SceneManager()->createEntity("car1.mesh");
+		debrisEntity[1] = mWorld->SceneManager()->createEntity("car2.mesh");
+		debrisEntity[2] = mWorld->SceneManager()->createEntity("car3.mesh");
+		debrisEntity[3] = mWorld->SceneManager()->createEntity("car4.mesh");
 
-    delete mPlayerObject;
+		for (int i = 0; i < 4; i++)
+		{
+			debris[i] = mWorld->SceneManager()->getRootSceneNode()->createChildSceneNode();
+			debris[i]->attachObject(debrisEntity[i]);
+			debris[i]->scale(mPlayerObject->getScale());
+		}
 
-
-	Ogre::Vector3 pos;
-
-	mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,mExplosionforward, mExplosionright, mExplosionup);
-	Ogre::Quaternion q(-mExplosionright,mExplosionup,mExplosionforward);
+		delete mPlayerObject;
 
 
-	for (int i = 0; i < 4; i++)
-	{
-		debris[i]->setPosition(pos);
-		debris[i]->setOrientation(q);
-	}
+		Ogre::Vector3 pos;
 
-	 mWorld->trackObject(NULL);
-	 mWorld->getHUD()->stopAllArrows();
-	 mWorld->getHUD()->setShowDecreaseSpeed(false);
-	 mWorld->getHUD()->setShowIncreaseSpeed(false);
+		mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,mExplosionforward, mExplosionright, mExplosionup);
+		Ogre::Quaternion q(-mExplosionright,mExplosionup,mExplosionforward);
+
+
+		for (int i = 0; i < 4; i++)
+		{
+			debris[i]->setPosition(pos);
+			debris[i]->setOrientation(q);
+		}
+
+		mWorld->trackObject(NULL);
+		mWorld->getHUD()->stopAllArrows();
+		mWorld->getHUD()->setShowDecreaseSpeed(false);
+		mWorld->getHUD()->setShowIncreaseSpeed(false);
+		mWorld->endGame();
 	}
 	else
 	{

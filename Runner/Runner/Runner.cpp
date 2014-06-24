@@ -9,6 +9,7 @@
 #include "HUD.h"
 #include "Menu.h"
 #include "Achievements.h"
+#include <OIS/OIS.h>
 
 #include "Ogre.h"
 #include "OgreConfigFile.h"
@@ -16,6 +17,11 @@
 #include "Menu.h"
 #include "OgreOverlaySystem.h"
 #include "OgreFontManager.h"
+#include "SDL.h"
+#include "SDL_mixer.h"
+#include "Sound.h"
+#include "LoginWrapper.h"
+#include "Logger.h"
 
 Runner::Runner()
 {
@@ -38,6 +44,7 @@ Runner::~Runner()
         delete mFrameListener;
     if (mRoot)
         delete mRoot;
+
 }
 
 
@@ -85,12 +92,15 @@ Runner::createScene()
 	//Ogre::FontPtr f = Ogre::FontManager::getSingleton().getByName("Big");
 	//f->load();
 
+	SoundBank::getInstance()->setup();
 	mHUD = new HUD();
 	mAchievements = new Achievements("Achievements.txt");
-	mWorld = new World(mSceneMgr, mHUD);
+	mWorld = new World(mSceneMgr, mHUD, this);
 	mAIManager = new AIManager(mWorld);
 	mRunnerCamera = new RunnerCamera(mCamera, mWorld);
 	InputHandler::getInstance()->initialize(mWindow);
+	InputHandler::getInstance()->setEventCallback(MenuManager::getInstance());
+
 	mKinect = new Kinect();
 	mKinect->initSensor();
 	mGamepad = new XInputManager();
@@ -98,8 +108,29 @@ Runner::createScene()
 	mRunnerCamera->TrackObject(mPlayer);
 	mWorld->addCamera(mRunnerCamera);
 
+	mLogin = new LoginWrapper();
+	mLogger = new Logger(mLogin);
+	mLogger->Connect();
 	
+	mKinect->addSkelListener(mLogger);
 
+}
+void
+	Runner::startGame()
+{
+	mWorld->reset(); 
+	mPlayer->reset(); 
+	mAchievements->ResetActive(); 
+	mPlayer->startGame();
+	mLogger->StartSession();
+	mKinect->StartSession();
+}
+
+
+void Runner::endGame()
+{
+	mLogger->EndSession();
+	mKinect->EndSession();
 }
 
 void
@@ -113,19 +144,25 @@ Runner::setupMenus()
     World *w = mWorld;
     Kinect *k = mKinect;
 	Achievements *a = mAchievements;
+	SoundBank *sb = SoundBank::getInstance();
+	LoginWrapper *lm = mLogin;
 
     Menu *mainMenu = new Menu("Main Menu", "main", 0.05f, 0.1f);
     Menu *options = new Menu("Options", "options", 0.05f, 0.1f, 0.1f, mainMenu);
     Menu *controlOptions = new Menu("Control Options", "controloptions", 0.05f, 0.1f, 0.07f, options);
     Menu *gameplayOptions = new Menu("Gameplay Options", "gameplayoptions", 0.05f, 0.05f, 0.07f, options);
+    Menu *soundOptions = new Menu("Sound Options", "soundOptions", 0.05f, 0.1f,0.1f, options);
     Menu *advancedOptions = new Menu("Advanced Options", "advancedOptions", 0.05f, 0.1f,0.1f, options);
-    Menu *pauseMenu = new Menu("Pause Menu", "pause", 0.1f, 0.1f);
+    Menu *login = new Menu("Login", "login", 0.05f, 0.1f,0.1f, mainMenu);
+    Menu *pauseMenu = new Menu("Pause Menu", "pause", 0.05f, 0.1f);
 
     pauseMenu->disable();
     options->disable();
 	controlOptions->disable();
 	gameplayOptions->disable();
 	advancedOptions->disable();
+	soundOptions->disable();
+	login->disable();
 	mainMenu->enable();
 
 	menus->addMenu(mainMenu);
@@ -133,10 +170,19 @@ Runner::setupMenus()
     menus->addMenu(pauseMenu);
 	menus->addMenu(gameplayOptions);
 	menus->addMenu(controlOptions);
+	menus->addMenu(soundOptions);
 	menus->addMenu(advancedOptions);
+	menus->addMenu(login);
+
+
+	login->AddChooseString("Username",[lm](Ogre::String s) {lm->changeUsername(s); },"",15,false);
+	login->AddChooseString("Password",[lm](Ogre::String s) {lm->changePassword(s); },"",15,true);
+	login->AddSelectElement("Return to Main Menu", [login, mainMenu]() {login->disable(); mainMenu->enable();});
+	
 
     options->AddSelectElement("Control Options", [options, controlOptions]() {options->disable(); controlOptions->enable();});
     options->AddSelectElement("Gameplay Options", [options, gameplayOptions]() {options->disable(); gameplayOptions->enable();});
+    options->AddSelectElement("Sound Options", [options, soundOptions]() {options->disable(); soundOptions->enable();});
     options->AddSelectElement("Advanced Options", [options, advancedOptions]() {options->disable(); advancedOptions->enable();});
 	options->AddSelectElement("Return to Main Menu", [options, mainMenu]() {options->disable(); mainMenu->enable();});
 
@@ -153,7 +199,7 @@ Runner::setupMenus()
 	std::vector<std::function<void()>> callbacks;
 	names.push_back("Duck / Lean");
 	callbacks.push_back([p, w]() { p->setLeanEqualsDuck(true); w->setUseFrontBack(p->getUseFrontBack()); });
-
+	
 	names.push_back("Change Speed");
 	callbacks.push_back([p,w]() {  p->setLeanEqualsDuck(false); w->setUseFrontBack(false); });
 
@@ -174,10 +220,14 @@ Runner::setupMenus()
     controlOptions->AddSelectElement("Return to Options Menu", [controlOptions,options]() {controlOptions->disable(); options->enable();});
 
 
+    soundOptions->AddChooseBool("Enalbe Sound", [sb](bool x) {sb->setEnableSound(x); }, sb->getEnableSound());
+	soundOptions->AddChooseInt("Volume", [sb](int x) {sb->setVolume(x); }, 0, 128, sb->getVolume(), 5);
+    soundOptions->AddSelectElement("Return to Options Menu", [soundOptions,options]() {soundOptions->disable(); options->enable();});
 
 
-    mainMenu->AddSelectElement("Start Game", [mainMenu, a, p, w]() {mainMenu->disable(); w->reset(); p->reset(); a->ResetActive(); p->startGame(); });
+    mainMenu->AddSelectElement("Start Game", [mainMenu,this]() {mainMenu->disable(); this->startGame(); });
 
+    mainMenu->AddSelectElement("Login", [mainMenu, login]() {mainMenu->disable(); login->enable();});
     mainMenu->AddSelectElement("Show Goals", [mainMenu, a]() {a-> ShowAllAchievements(true); mainMenu->disable();});
 
     mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
@@ -347,6 +397,7 @@ Runner::go(void)
 
     // clean up
     destroyScene();
+	SoundBank::shutdown();
 }
 
 
