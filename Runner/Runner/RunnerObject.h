@@ -50,7 +50,7 @@ public:
 
 	void setMaterial(Ogre::String materialName);
 	void restoreOriginalMaterial();
-
+	Ogre::SceneNode *getSceneNode() { return mSceneNode; }
 
 protected:
 	ObjectType mType;

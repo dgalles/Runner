@@ -824,14 +824,14 @@ void
 	{
 		mLastObjSeg++;
 		r = (rand() / (float) RAND_MAX);
-		if (r > 0.93)
+		if (r > 0.6)
 		{
 			float r2 = (rand() / float (RAND_MAX));
-			if (r2 > 0.5)
+			if (r2 > 0.99)
 			{
 				AddBarrierSegment(BezierPath::Kind::SHIELD);
 			}
-			else if (r2 >= 0.0)
+			else if (r2 >= 0.98)
 			{
 				AddBarrierSegment(BezierPath::Kind::BOOST);
 			}

@@ -286,8 +286,20 @@ bool
 				}
 				else if (d.object->type() == RunnerObject::MAGNET)
 				{
-					
+					d.object->setScale(Ogre::Vector3::ZERO);
+					d.object->setPosition(Ogre::Vector3(0,0,0));
+					if (!mMagnetActive)
+					{
+						mMagnetActive = true;
+						Ogre::SceneManager * sm= mWorld->SceneManager();
+						Ogre::Entity *e = sm->createEntity("Magnet.mesh");
 
+						mMagnetNode = mPlayerObject->getSceneNode()->createChildSceneNode();
+						mMagnetNode->attachObject(e);
+
+						mMagnetNode->setPosition(0,3,0);
+					}
+					mMagnetTime = std::max(mMagnetTime, 5.0f);
 
 				}
 			}
@@ -383,7 +395,7 @@ void
 	if (mAlive)
 	{
 
-			if (mBoostTime  > 0 && mBoostTime <= time)
+	if (mBoostTime  > 0 && mBoostTime <= time)
 	{
 		mBoostTime = 0;
 		mBoosting = false;
@@ -406,7 +418,16 @@ void
 	{
 		mShieldTime -= time;
 	}
-
+		if (mMagnetTime  > 0 && mMagnetTime <= time)
+	{
+		mMagnetTime = 0;
+		mMagnetActive = false;
+		mPlayerObject->getSceneNode()->removeChild(mMagnetNode);
+	}
+	else
+	{
+		mMagnetTime -= time;
+	}
 
 	Ogre::Degree angle = Ogre::Degree(0);
 
