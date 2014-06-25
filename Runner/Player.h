@@ -102,6 +102,8 @@ protected:
 	bool mPaused;
     bool mAutoCallibrate;
 
+	Ogre::SceneNode *mMagnetNode;
+
 	float mVelocity;
     RunnerObject *mPlayerObject;
 

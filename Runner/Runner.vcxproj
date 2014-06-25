@@ -131,6 +131,7 @@ copy resources.cfg "$(OutDir)"</Command>
     <ClInclude Include="HUD.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="ItemQueue.h" />
+    <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="Kinect.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="LoginWrapper.h" />
@@ -153,6 +154,7 @@ copy resources.cfg "$(OutDir)"</Command>
     <ClCompile Include="HUD.cpp" />
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="ItemQueue.cpp" />
+    <ClCompile Include="JsonUtils.cpp" />
     <ClCompile Include="Kinect.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="LoginWrapper.cpp" />

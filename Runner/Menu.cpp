@@ -6,8 +6,12 @@
 #include "OgreOverlayContainer.h"
 #include "OgreTextAreaOverlayElement.h"
 #include "InputHandler.h"
+#include <sstream>
+#include "JsonUtils.h"
 
 MenuManager* MenuManager::mInstance = 0;
+
+
 
 
 MenuManager* MenuManager::getInstance()
@@ -26,13 +30,13 @@ bool MenuManager::keyPressed(const OIS::KeyEvent &e)
 		for (std::map<Ogre::String, Menu*>::iterator it = mMenus.begin();
 		 it != mMenus.end();
 		 it++)
-	{
-        if ((*it).second->enabled())
-        {
-		    (*it).second->handleKeypress(e);
-            break;
-        }
-	}
+		{
+			if ((*it).second->enabled())
+			{
+				(*it).second->handleKeypress(e);
+				break;
+			}
+		}
 		return true;
 }
 bool  MenuManager::keyReleased(const OIS::KeyEvent &e)
@@ -40,6 +44,126 @@ bool  MenuManager::keyReleased(const OIS::KeyEvent &e)
 	return true;
 }
 
+
+
+std::string  MenuManager::getMenuConfig()
+{
+	bool first = true;
+	std::string result = "{";
+	std::map<Ogre::String, Menu*>::iterator it = mMenus.begin();
+	while (it != mMenus.end())
+	{
+		std::string key = (*it).first;
+		Menu* menu = (*it).second;
+		if (first)
+		{
+			first = false;
+		}
+		else
+		{
+			result = result + ",";
+		}
+
+		result = result + "\"" + key + "\" : " + menu->getMenuConfig();
+		it++;
+
+	}
+	result = result + "}";
+	return result;
+
+}
+void MenuManager::setMenuConfig(std::string configString)
+{
+	std::size_t braceIndex = configString.find_first_of('{');
+
+	std::string remainder = configString.substr(braceIndex+1);
+
+	std::size_t nextIndex = remainder.find_first_not_of("\t \n");
+	while (nextIndex != std::string::npos && remainder[nextIndex] != '}')
+	{
+		std::string nextKey = JSON_UTIL::firstItem(remainder);
+		nextKey = JSON_UTIL::stripQuotes(nextKey);
+		remainder = JSON_UTIL::removeFirstitem(remainder);
+	
+		size_t colonIndex = remainder.find_first_of(":");
+		if (colonIndex == std::string::npos)
+		{
+			// ERROR!
+			nextIndex = std::string::npos;
+			break;
+		}
+		remainder = remainder.substr(colonIndex+1);
+		std::string value = JSON_UTIL::firstItem(remainder);
+		remainder = JSON_UTIL::removeFirstitem(remainder);
+		if (mMenus.find(nextKey) != mMenus.end())
+		{
+			mMenus[nextKey]->setMenuConfig(value);
+		}
+		nextIndex = remainder.find_first_not_of("\t \n");
+		if (nextIndex != std::string::npos && remainder[nextIndex] == ',')
+			nextIndex++;
+	}
+
+}
+
+
+
+std::string Menu::getMenuConfig()
+{
+	bool first = true;
+	std::string result = "{";
+	for (unsigned int i = 0; i < mMenuItems.size(); i++)
+	{
+		if (mMenuItems[i]->isSaved())
+		{
+			if (first)
+			{
+				first = false;
+			}
+			else
+			{
+				result = result + ",";
+			}
+			result = result + "\"" + mMenuItems[i]->name() + "\" : " + mMenuItems[i]->getValueAsString();
+		}
+	}
+	result = result + "}";
+	return result;
+}
+
+void Menu::setMenuConfig(std::string configString)
+{
+	std::size_t braceIndex = configString.find_first_of('{');
+
+	std::string remainder = configString.substr(braceIndex+1);
+
+	std::size_t nextIndex = remainder.find_first_not_of("\t \n");
+	while (nextIndex != std::string::npos && remainder[nextIndex] != '}')
+	{
+		std::string nextKey = JSON_UTIL::stripQuotes(JSON_UTIL::firstItem(remainder));
+
+		remainder = JSON_UTIL::removeFirstitem(remainder);
+	
+		size_t colonIndex = remainder.find_first_of(":");
+		if (colonIndex == std::string::npos)
+		{
+			// ERROR!
+			nextIndex = std::string::npos;
+			break;
+		}
+		remainder = remainder.substr(colonIndex+1);
+		std::string value = JSON_UTIL::firstItem(remainder);
+		remainder = JSON_UTIL::removeFirstitem(remainder);
+		if (mNameToIndexMap.find(nextKey) != mNameToIndexMap.end())
+		{
+			mMenuItems[mNameToIndexMap[nextKey]]->setValueFromString(value);
+		}
+		nextIndex = remainder.find_first_not_of("\t \n");
+		if (nextIndex != std::string::npos && remainder[nextIndex] == ',')
+			nextIndex++;
+
+	}
+}
 
 
 void MenuManager::addMenu(Menu *menu) 
@@ -240,8 +364,10 @@ void Menu::disable()
 
 void Menu::AddMenuItem(MenuItem *item)
 {
+	mNameToIndexMap[item->name()] = mNumMenuItems;
 	mNumMenuItems++;
 	mMenuItems.push_back(item);
+
 
 	if (mNumMenuItems == 1)
 	{
@@ -251,60 +377,60 @@ void Menu::AddMenuItem(MenuItem *item)
 	mPanel->setHeight(height);
 }
 
-void Menu::AddSelectElement(Ogre::String text,  std::function<void(void)> callback)
+void Menu::AddSelectElement(Ogre::String text,  std::function<void(void)> callback, bool save /* = false */)
 {
 	float x = mStartingX;
 	float y = mStartingY + (mNumMenuItems + 1.5f) * mItemSpacing; 
 
-	AddMenuItem(new Menu::SelectMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback));
+	AddMenuItem(new Menu::SelectMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback, save));
 }
 
-void Menu::AddChooseInt(Ogre::String text,  std::function<void(int)> callback,  int minValue, int maxValue, int initialValue, int delta)
+void Menu::AddChooseInt(Ogre::String text,  std::function<void(int)> callback,  int minValue, int maxValue, int initialValue, int delta, bool save /* = false */)
 {
 
 	float x = mStartingX;
 	float y = mStartingY + (mNumMenuItems+ 1.5f) * mItemSpacing; 
 
-	AddMenuItem(new Menu::ChooseIntMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,  minValue, maxValue,initialValue, delta));
+	AddMenuItem(new Menu::ChooseIntMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,  minValue, maxValue,initialValue, delta, save));
 }
 
-void Menu::AddChooseString(Ogre::String name, std::function<void(Ogre::String)> callback, Ogre::String initialValue, int maxlength, bool isPassword /* = false */)
+void Menu::AddChooseString(Ogre::String name, std::function<void(Ogre::String)> callback, Ogre::String initialValue, int maxlength, bool isPassword /* = false */, bool save /* = false */)
 {
 	float x = mStartingX;
 	float y = mStartingY + (mNumMenuItems+ 1.5f) * mItemSpacing; 
 
-	AddMenuItem(new Menu::ChooseStringMenuItem(name, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,initialValue,maxlength, isPassword));
+	AddMenuItem(new Menu::ChooseStringMenuItem(name, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,initialValue,maxlength, isPassword, save));
 
 
 }
 
 
 
-void Menu::AddChooseFloat(Ogre::String text,  std::function<void(float)> callback,  float minValue, float maxValue, float initialValue, float delta)
+void Menu::AddChooseFloat(Ogre::String text,  std::function<void(float)> callback,  float minValue, float maxValue, float initialValue, float delta, bool save /* = false */)
 {
 
 	float x = mStartingX;
 	float y = mStartingY + (mNumMenuItems+ 1.5f) * mItemSpacing; 
 
-	AddMenuItem(new Menu::ChooseFloatMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,  minValue, maxValue, initialValue, delta));
+	AddMenuItem(new Menu::ChooseFloatMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback,  minValue, maxValue, initialValue, delta, save));
 }
 
 
 
-void Menu::AddChooseBool(Ogre::String text,  std::function<void(bool)> callback, bool initialValue /* = false */)
+void Menu::AddChooseBool(Ogre::String text,  std::function<void(bool)> callback, bool initialValue /* = false */, bool save /* = false */)
 {
 	float x = mStartingX;
 	float y = mStartingY + (mNumMenuItems+ 1.5f) * mItemSpacing; 
 
-	AddMenuItem(new Menu::ChooseBoolMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback, initialValue));
+	AddMenuItem(new Menu::ChooseBoolMenuItem(text, mName + "_" + std::to_string(mNumMenuItems),this,x,y,callback, initialValue, save));
 }
 
-void Menu::AddChooseEnum(Ogre::String name, std::vector<Ogre::String> enumNames, std::vector<std::function<void()>> callbacks, int initialVal /* = 0 */)
+void Menu::AddChooseEnum(Ogre::String name, std::vector<Ogre::String> enumNames, std::vector<std::function<void()>> callbacks, int initialVal /* = 0 */, bool save /* = false */)
 {
 	float x = mStartingX;
 	float y = mStartingY + (mNumMenuItems+ 1.5f) * mItemSpacing; 
 
-	AddMenuItem(new Menu::ChooseEnumMenuItem(name, mName + "_" + std::to_string(mNumMenuItems),this,x,y, enumNames, callbacks, initialVal));
+	AddMenuItem(new Menu::ChooseEnumMenuItem(name, mName + "_" + std::to_string(mNumMenuItems),this,x,y, enumNames, callbacks, initialVal, save));
 
 }
 
@@ -328,8 +454,8 @@ void  Menu::MenuItem::Deselect()
 }
 
 
-Menu::MenuItem::MenuItem(Ogre::String text, Ogre::String name,  Menu *parent, float x, float y)
-	: mParent(parent)
+Menu::MenuItem::MenuItem(Ogre::String text, Ogre::String name,  Menu *parent, float x, float y, bool saved)
+	: mParent(parent), mText(text)
 {
 	Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
 	mItemText = static_cast<Ogre::TextAreaOverlayElement*>(
@@ -342,10 +468,12 @@ Menu::MenuItem::MenuItem(Ogre::String text, Ogre::String name,  Menu *parent, fl
 	mItemText->setFontName("Big");
 	mItemText->setColour(Ogre::ColourValue(1,1,1));
 	mParent->mPanelText->addChild(mItemText);
+	mSaved = saved;
 }
 
-Menu::SelectMenuItem::SelectMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(void)> callback)
-	: Menu::MenuItem(text, name, parent, x , y), mCallback(callback)
+
+Menu::SelectMenuItem::SelectMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(void)> callback, bool saved)
+	: Menu::MenuItem(text, name, parent, x , y, saved), mCallback(callback)
 {
 
 }
@@ -357,10 +485,32 @@ void  Menu::SelectMenuItem::Enter()
 
 
 
-Menu::ChooseEnumMenuItem::ChooseEnumMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::vector<Ogre::String> choiceNames, std::vector<std::function<void()>> callbacks, int initialValue) 
-	: Menu::MenuItem(text, name, parent, x, y),mCallbacks(callbacks), mChoiceNames(choiceNames), mCurrentValue(initialValue), mText(text)
+Menu::ChooseEnumMenuItem::ChooseEnumMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::vector<Ogre::String> choiceNames, std::vector<std::function<void()>> callbacks, int initialValue, bool saved) 
+	: Menu::MenuItem(text, name, parent, x, y, saved),mCallbacks(callbacks), mChoiceNames(choiceNames), mCurrentValue(initialValue)
 {
 	mItemText->setCaption(mText + ":" + "  " +mChoiceNames[mCurrentValue]);
+}
+
+
+
+void  Menu::ChooseEnumMenuItem::setValueFromString(std::string valueString)
+{
+	std::string val = JSON_UTIL::stripQuotes(valueString);
+	for (unsigned int i = 0; i < mChoiceNames.size(); i++)
+	{
+		if (mChoiceNames[i] == val)
+		{
+			mCurrentValue = i;
+			mItemText->setCaption(mText + ":" + "  " +mChoiceNames[mCurrentValue]);
+			mCallbacks[mCurrentValue]();
+			return;
+		}
+	}
+	// TODO:  Log Failure
+}
+std::string  Menu::ChooseEnumMenuItem::getValueAsString()
+{
+	return "\"" + mChoiceNames[mCurrentValue] + "\"";
 }
 
 
@@ -388,8 +538,8 @@ void Menu::ChooseEnumMenuItem::Decrease()
 
 
 
-Menu::ChooseStringMenuItem::ChooseStringMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(Ogre::String)> callback,Ogre::String initial, int maxLength, bool password)
-	: Menu::MenuItem(text, name, parent, x, y), mCallback(callback), mMaxLength(maxLength), mPassword(password), mValue(initial), mVisual(), mText(text)
+Menu::ChooseStringMenuItem::ChooseStringMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(Ogre::String)> callback,Ogre::String initial, int maxLength, bool password, bool saved)
+	: Menu::MenuItem(text, name, parent, x, y, saved), mCallback(callback), mMaxLength(maxLength), mPassword(password), mValue(initial), mVisual()
 
 {
 	if (!mPassword)
@@ -403,33 +553,92 @@ Menu::ChooseStringMenuItem::ChooseStringMenuItem(Ogre::String text, Ogre::String
 			mVisual.push_back('*');
 		}
 	}
-		mItemText->setCaption(mText + ":" + " " +mVisual);
-
+	mItemText->setCaption(mText + ":" + " " +mVisual);
 }
-void Menu::ChooseStringMenuItem::HandleKeypress(const OIS::KeyEvent &e)
+
+void Menu::ChooseStringMenuItem::setValueFromString(std::string valueString)
 {
-	if ((int) mValue.length() < mMaxLength)
+	mValue = JSON_UTIL::stripQuotes(valueString);
+	if (!mPassword)
 	{
-		mValue.push_back((char) e.text);
-		if (mPassword)
+		mVisual = mValue;
+	}
+	else
+	{
+		for (unsigned int i = 0; i < mValue.length(); i++)
 		{
 			mVisual.push_back('*');
 		}
+	}
+	mItemText->setCaption(mText + ":" + " " +mVisual);
+	mCallback(mValue);
+
+}
+std::string Menu::ChooseStringMenuItem::getValueAsString()
+{
+	return "\"" + mValue + "\"";
+}
+
+
+
+void Menu::ChooseStringMenuItem::HandleKeypress(const OIS::KeyEvent &e)
+{
+
+	if (e.key == OIS::KC_BACK || e.key == OIS::KC_DELETE)
+	{
+		if (mValue.length() > 0)
+	
+		{
+			mChanged = true;
+			mVisual.pop_back();
+			mVisual.pop_back();
+			mVisual.push_back('|');
+			mValue.pop_back();
+			mItemText->setCaption(mText + ":" + " " +mVisual);
+		}
+	}
+	else if ((int) mValue.length() < mMaxLength && isprint(e.text))
+	{
+		mValue.push_back((char) e.text);
+		mChanged = true;
+		if (mPassword)
+		{
+			mVisual.pop_back();
+			mVisual.push_back('*');
+			mVisual.push_back('|');
+		}
 		else
 		{
+			mVisual.pop_back();
 			mVisual.push_back((char) e.text);
+			mVisual.push_back('|');
 		}
 		mItemText->setCaption(mText + ":" + " " +mVisual);
 	}
 }
+
+void Menu::ChooseStringMenuItem::Select()
+{
+	MenuItem::Select();
+	mChanged = false;
+	mVisual.push_back('|');
+	mItemText->setCaption(mText + ":" + " " +mVisual);
+}
+
 void Menu::ChooseStringMenuItem::Enter()
 {
 	mParent->moveSelectDown();
 }
 void Menu::ChooseStringMenuItem:: Deselect()
 {
-	mCallback(mValue);
-	MenuItem::Deselect();
+		mVisual.pop_back();
+		mItemText->setCaption(mText + ":" + " " +mVisual);
+
+		if (mChanged)
+		{
+			mCallback(mValue);
+		}
+		MenuItem::Deselect();
 }
 
 void Menu::ChooseStringMenuItem::Increase()
@@ -440,8 +649,10 @@ void Menu::ChooseStringMenuItem::Decrease()
 {
 	if(mValue.length() > 0)
 	{
-		mValue.pop_back();
 		mVisual.pop_back();
+		mVisual.pop_back();
+		mVisual.push_back('|');
+		mValue.pop_back();
 		mItemText->setCaption(mText + ":" + " " +mVisual);
 	}
 }
@@ -450,8 +661,8 @@ void Menu::ChooseStringMenuItem::Decrease()
 
 
 
-Menu::ChooseIntMenuItem::ChooseIntMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(int)> callback,  int minValue, int maxValue, int initialValue, int delta)
-	: Menu::MenuItem(text, name, parent, x, y), mCallback(callback), mIntValue(initialValue), mText(text), mMinValue(minValue), mMaxValue(maxValue), mDelta(delta)
+Menu::ChooseIntMenuItem::ChooseIntMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(int)> callback,  int minValue, int maxValue, int initialValue, int delta, bool saved)
+	: Menu::MenuItem(text, name, parent, x, y, saved), mCallback(callback), mIntValue(initialValue), mMinValue(minValue), mMaxValue(maxValue), mDelta(delta)
 {
 	mItemText->setCaption(mText + ":" + "  " + std::to_string(mIntValue));
 }
@@ -478,10 +689,23 @@ void Menu::ChooseIntMenuItem::Decrease()
 }
 
 
+void Menu::ChooseIntMenuItem::setValueFromString(std::string valueString)
+{
+	mIntValue = atoi(JSON_UTIL::stripQuotes(valueString).c_str());
+	mItemText->setCaption(mText + ":" + "  " + std::to_string(mIntValue));
+	mCallback(mIntValue);
+
+}
+std::string Menu::ChooseIntMenuItem::getValueAsString()
+{
+	return "\"" + std::to_string(mIntValue) + "\"";
+}
+
+
 
 Menu::ChooseFloatMenuItem::ChooseFloatMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(float)> callback, 
-                                               float minValue, float maxValue, float initialValue, float delta)
-	: Menu::MenuItem(text, name, parent, x, y), mCallback(callback), mFloatValue(initialValue), mText(text), mMinValue(minValue), mMaxValue(maxValue),mDelta(delta)
+                                               float minValue, float maxValue, float initialValue, float delta, bool saved)
+	: Menu::MenuItem(text, name, parent, x, y, saved), mCallback(callback), mFloatValue(initialValue), mMinValue(minValue), mMaxValue(maxValue),mDelta(delta)
 {
 
     updateOverlayFromValue();
@@ -515,10 +739,20 @@ void Menu::ChooseFloatMenuItem::Decrease()
     }
 }
 
+void  Menu::ChooseFloatMenuItem::setValueFromString(std::string valueString)
+{
+	mFloatValue = std::stof(JSON_UTIL::stripQuotes(valueString).c_str());
+	updateOverlayFromValue();
+	mCallback(mFloatValue);
+}
+std::string  Menu::ChooseFloatMenuItem::getValueAsString()
+{
+	return "\"" + std::to_string(mFloatValue) + "\"";
+}
 
 
-Menu::ChooseBoolMenuItem::ChooseBoolMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(bool)> callback, bool initialValue)
-	: Menu::MenuItem(text, name, parent,  x, y), mCallback(callback), mBoolValue(initialValue), mText(text)
+Menu::ChooseBoolMenuItem::ChooseBoolMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(bool)> callback, bool initialValue, bool saved)
+	: Menu::MenuItem(text, name, parent,  x, y, saved), mCallback(callback), mBoolValue(initialValue)
 {
 	if (mBoolValue)
 	{
@@ -531,6 +765,47 @@ Menu::ChooseBoolMenuItem::ChooseBoolMenuItem(Ogre::String text, Ogre::String nam
 
 	}
 }
+
+
+void Menu::ChooseBoolMenuItem::setValueFromString(std::string valueString)
+{
+	std::string val = JSON_UTIL::stripQuotes(valueString);
+	if (val == "true")
+	{
+		mBoolValue = true;
+	}
+	else if (val == "false")
+	{
+		mBoolValue = false;
+	}
+	else
+	{
+		// Error case?
+	}
+	if (mBoolValue)
+	{
+		mItemText->setCaption(mText + ": True");
+	}
+	else
+	{
+		mItemText->setCaption(mText + ": False");
+	}
+	mCallback(mBoolValue);
+
+}
+std::string Menu::ChooseBoolMenuItem::getValueAsString()
+{
+	if (mBoolValue)
+	{
+		return "\"true\"";
+	}
+	else
+	{
+		return "\"false\"";
+	}
+
+}
+
 void Menu::ChooseBoolMenuItem::Increase() 
 { 
 	Enter();

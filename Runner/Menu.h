@@ -29,16 +29,16 @@ public:
 	void disable();
 
     bool enabled() { return mEnabled; }
-	void AddSelectElement(Ogre::String name, std::function<void(void)> callback);
+	void AddSelectElement(Ogre::String name, std::function<void(void)> callback, bool save = false);
 
-	void AddChooseInt(Ogre::String name,  std::function<void(int)> callback,  int minValue, int maxValue, int initialValue,  int delta = 1);
-	void AddChooseFloat(Ogre::String name,  std::function<void(float)> callback, float minValue, float maxValue, float initialValue,  float delta);
+	void AddChooseInt(Ogre::String name,  std::function<void(int)> callback,  int minValue, int maxValue, int initialValue,  int delta = 1, bool save = false);
+	void AddChooseFloat(Ogre::String name,  std::function<void(float)> callback, float minValue, float maxValue, float initialValue,  float delta, bool save = false);
 
-	void AddChooseBool(Ogre::String name,  std::function<void(bool)> callback, bool intialValue = false);
+	void AddChooseBool(Ogre::String name,  std::function<void(bool)> callback, bool intialValue = false, bool save = false);
 
-	void AddChooseEnum(Ogre::String name, std::vector<Ogre::String> enumNames, std::vector<std::function<void()>> callbacks, int initialVal = 0);
+	void AddChooseEnum(Ogre::String name, std::vector<Ogre::String> enumNames, std::vector<std::function<void()>> callbacks, int initialVal = 0, bool save = false);
 
-	void AddChooseString(Ogre::String name, std::function<void(Ogre::String)> callback, Ogre::String initialValue, int maxlength, bool isPassword = false);
+	void AddChooseString(Ogre::String name, std::function<void(Ogre::String)> callback, Ogre::String initialValue, int maxlength, bool isPassword = false, bool save = false);
 
 	void think(float time);
 
@@ -47,10 +47,10 @@ public:
 
 	Ogre::String name() { return mName; }
 
-
+	std::string getMenuConfig();
+	void setMenuConfig(std::string configString);
 
 	void handleKeypress(const OIS::KeyEvent &e);
-
 protected:
 	class MenuItem;
 
@@ -80,13 +80,14 @@ protected:
 	void AddMenuItem(MenuItem *item);
 	void moveSelectUp();
 	void moveSelectDown();
+	std::map<std::string, int> mNameToIndexMap;
 
 
 	class MenuItem 
 	{
 	public:
 
-		MenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y);
+		MenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, bool saved);
 
 		virtual void Select();
 		virtual void Deselect();
@@ -95,17 +96,28 @@ protected:
 		virtual void Decrease() { }
 		virtual void HandleKeypress(const OIS::KeyEvent &e) { }
 
+		virtual void setValueFromString(std::string valueString) { }
+		virtual std::string getValueAsString() { return ""; }
+		std::string name() { return mText; }
+
+
+		bool isSaved() { return mSaved;}
+
 	protected:
 		Ogre::TextAreaOverlayElement *mItemText;
 		Menu *mParent;
 		float mX;
 		float mY;
+		bool mSaved;
+		bool mChanged;
+		Ogre::String mText;
+
 	};
 
 	class SelectMenuItem : public MenuItem
 	{
 	public:
-		SelectMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(void)> callback);
+		SelectMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(void)> callback, bool save);
 		virtual void Enter();
 
 	protected:
@@ -116,16 +128,18 @@ protected:
 	class ChooseIntMenuItem : public MenuItem
 	{
 	public:
-		ChooseIntMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(int)> callback, int minValue, int maxValue, int initialValue, int delta);
+		ChooseIntMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(int)> callback, int minValue, int maxValue, int initialValue, int delta, bool save);
 		virtual void Increase();
 		virtual void Decrease();
+		virtual void setValueFromString(std::string valueString);
+		virtual std::string getValueAsString();
+
 
 	protected:
 		int mIntValue;
 		int mMinValue;
 		int mMaxValue;
         int mDelta;
-		Ogre::String mText;
 		std::function<void(int)>  mCallback;
 
 	};
@@ -135,17 +149,20 @@ protected:
 	class ChooseEnumMenuItem : public MenuItem
 	{
 	public:
-		ChooseEnumMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::vector<Ogre::String> choiceNames, std::vector<std::function<void()>> callbacks, int initialValue);
+		ChooseEnumMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::vector<Ogre::String> choiceNames, std::vector<std::function<void()>> callbacks, int initialValue, bool save);
 		virtual void Increase();
 		virtual void Decrease();
+		virtual void setValueFromString(std::string valueString);
+		virtual std::string getValueAsString();
+
 		virtual void Enter() { Increase(); }
 
 	protected:
 		std::vector<Ogre::String> mChoiceNames;
 		std::vector<std::function<void()>> mCallbacks;
 		int mCurrentValue;
-		Ogre::String mText;
 		std::function<void(int)>  mCallback;
+
 
 	};
 
@@ -155,17 +172,20 @@ protected:
 	class ChooseStringMenuItem : public MenuItem
 	{
 	public:
-		ChooseStringMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(Ogre::String)> callback, Ogre::String initial, int maxLength, bool password);
+		ChooseStringMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(Ogre::String)> callback, Ogre::String initial, int maxLength, bool password, bool save);
 		virtual void HandleKeypress(const OIS::KeyEvent &e);
 		virtual void Enter();
 		virtual void Deselect();
-
+		virtual void Select();
 		virtual void Increase();
 		virtual void Decrease();
+
+		virtual void setValueFromString(std::string valueString);
+		virtual std::string getValueAsString();
+
 	protected:
 		Ogre::String mValue;
 		Ogre::String mVisual;
-		Ogre::String mText;
 		int mMaxLength;
 		std::function<void(Ogre::String)>  mCallback;
 		bool mPassword;
@@ -175,19 +195,21 @@ protected:
 
 
 
-    class ChooseFloatMenuItem : public MenuItem
+	class ChooseFloatMenuItem : public MenuItem
 	{
 	public:
-		ChooseFloatMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(float)> callback, float minValue, float maxValue, float initialValue, float delta);
+		ChooseFloatMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, std::function<void(float)> callback, float minValue, float maxValue, float initialValue, float delta, bool save);
 		virtual void Increase();
 		virtual void Decrease();
+		virtual void setValueFromString(std::string valueString);
+		virtual std::string getValueAsString();
+
 	protected:
 		float mFloatValue;
 		float mMinValue;
 		float mMaxValue;
-        float mDelta;
-        void updateOverlayFromValue();
-		Ogre::String mText;
+		float mDelta;
+		void updateOverlayFromValue();
 		std::function<void(float)>  mCallback;
 
 	};
@@ -196,17 +218,19 @@ protected:
 	class ChooseBoolMenuItem : public MenuItem
 	{
 	public:
-		ChooseBoolMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(bool)> callback, bool initialValue);
+		ChooseBoolMenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y,  std::function<void(bool)> callback, bool initialValue, bool save);
 
 		virtual void Increase();
 		virtual void Decrease();
 		virtual void Enter();
 
+				virtual void setValueFromString(std::string valueString);
+		virtual std::string getValueAsString();
+
+
 
 	protected:
 		bool mBoolValue;
-		Ogre::String mText;
-
 		std::function<void(bool)> mCallback;
 
 	};
@@ -229,12 +253,14 @@ public:
 
 	bool keyPressed(const OIS::KeyEvent &e);
     bool keyReleased(const OIS::KeyEvent &e);
+	std::string getMenuConfig();
+	void setMenuConfig(std::string configString);
 
 
 private:
 	MenuManager() { }
 	static MenuManager *mInstance;
-	std::map<Ogre::String, Menu*> mMenus;
+	std::map<std::string, Menu*> mMenus;
 };
 
 #endif

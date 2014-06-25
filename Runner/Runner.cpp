@@ -23,6 +23,12 @@
 #include "LoginWrapper.h"
 #include "Logger.h"
 
+
+
+#include <iostream>
+#include <fstream>
+#include <iostream>
+
 Runner::Runner()
 {
     mFrameListener = 0;
@@ -133,6 +139,32 @@ void Runner::endGame()
 	mKinect->EndSession();
 }
 
+
+void writeConfigStr()
+{
+	MenuManager *menus = MenuManager::getInstance();
+
+	std::string result = menus->getMenuConfig();
+	std::ofstream configFile;
+	configFile.open ("menuConfig.txt", std::ios::out);
+	configFile << result;
+	configFile.close();
+
+}
+
+void readConfigStr()
+{
+	MenuManager *menus = MenuManager::getInstance();
+
+	
+    std::ifstream in;
+    in.open("menuConfig.txt");
+    std::string config;
+	std::getline(in, config);
+
+	menus->setMenuConfig(config);
+}
+
 void
 Runner::setupMenus()
 {
@@ -186,14 +218,14 @@ Runner::setupMenus()
     options->AddSelectElement("Advanced Options", [options, advancedOptions]() {options->disable(); advancedOptions->enable();});
 	options->AddSelectElement("Return to Main Menu", [options, mainMenu]() {options->disable(); mainMenu->enable();});
 
-    gameplayOptions->AddChooseBool("Arrow Indicators", [h](bool show) {h->showArrows(show);}, h->arrowsShown());
-    gameplayOptions->AddChooseInt("Starting Armor", [p](int x) {p->setInitialArmor(x); }, 1, 8, p->getInitialArmor(), 1);
-	gameplayOptions->AddChooseBool("Use Forward / Backward Leaning", [w, p](bool use) {w->setUseFrontBack(use); p->setUseFrontBack(use);} , p->getUseFrontBack());
-    gameplayOptions->AddChooseFloat("Obstacle Frequency", [w](float x) {w->setObstacleFrequency(x); }, 0.0f, 1.0f,w->getObstacleFrequency(), 0.1f);
-    gameplayOptions->AddChooseInt("Minimum Obstacle Separation", [w](int x) {w->setObstacleSeparation(x); }, 0, 15, w->getObstacleSeparation(), 1);
-    gameplayOptions->AddChooseInt("Initial Speed", [p](int x) {p->setInitialSpeed(x); }, 5, 100, p->getInitialSpeed(), 5);
-    gameplayOptions->AddChooseInt("Max Speed", [p](int x) {p->setMaxSpeed(x); }, 30, 100, p->getMaxSpeed(), 5);
-    gameplayOptions->AddChooseInt("Auto Speed Increase Rate", [p](int x) {p->setAutoAceelerateRate(x); }, 0, 20, p->getAutoAccelerateRate(), 1);
+    gameplayOptions->AddChooseBool("Arrow Indicators", [h](bool show) {h->showArrows(show);}, h->arrowsShown(), true);
+    gameplayOptions->AddChooseInt("Starting Armor", [p](int x) {p->setInitialArmor(x); }, 1, 8, p->getInitialArmor(), 1, true);
+	gameplayOptions->AddChooseBool("Use Forward / Backward Leaning", [w, p](bool use) {w->setUseFrontBack(use); p->setUseFrontBack(use);} , p->getUseFrontBack(), true);
+    gameplayOptions->AddChooseFloat("Obstacle Frequency", [w](float x) {w->setObstacleFrequency(x); }, 0.0f, 1.0f,w->getObstacleFrequency(), 0.1f, true);
+    gameplayOptions->AddChooseInt("Minimum Obstacle Separation", [w](int x) {w->setObstacleSeparation(x); }, 0, 15, w->getObstacleSeparation(), 1, true);
+    gameplayOptions->AddChooseInt("Initial Speed", [p](int x) {p->setInitialSpeed(x); }, 5, 100, p->getInitialSpeed(), 5, true);
+    gameplayOptions->AddChooseInt("Max Speed", [p](int x) {p->setMaxSpeed(x); }, 30, 100, p->getMaxSpeed(), 5, true);
+    gameplayOptions->AddChooseInt("Auto Speed Increase Rate", [p](int x) {p->setAutoAceelerateRate(x); }, 0, 20, p->getAutoAccelerateRate(), 1, true);
 
 	std::vector<Ogre::String> names;
 	std::vector<std::function<void()>> callbacks;
@@ -203,25 +235,25 @@ Runner::setupMenus()
 	names.push_back("Change Speed");
 	callbacks.push_back([p,w]() {  p->setLeanEqualsDuck(false); w->setUseFrontBack(false); });
 
-	gameplayOptions->AddChooseEnum("Forward / Back Controls",names,callbacks,0);	
-    gameplayOptions->AddChooseInt("Manual Speed Change Rate", [p](int x) {p->setManualAceelerateRate(x); }, 0, 20, p->getManualAccelerateRate(), 1);
+	gameplayOptions->AddChooseEnum("Forward / Back Controls",names,callbacks,0, true);	
+    gameplayOptions->AddChooseInt("Manual Speed Change Rate", [p](int x) {p->setManualAceelerateRate(x); }, 0, 20, p->getManualAccelerateRate(), 1, true);
     gameplayOptions->AddSelectElement("Return to Options Menu", [gameplayOptions,options]() {gameplayOptions->disable(); options->enable();});
 
-    controlOptions->AddChooseBool("Callibrate Kinect Every Game", [p](bool x) {p->setAutoCallibrate(x); }, p->getAutoCallibrate());
-    controlOptions->AddChooseFloat("Kinect Sensitivity Left / Right", [p](float x) {p->setKinectSentitivityLR(x); }, 0.7f, 1.5f, 1.f, 0.1f);
-    controlOptions->AddChooseFloat("Kinect Sensitivity Front / Back", [p](float x) {p->setKinectSentitivityFB(x); }, 0.7f, 1.5f, 1.f, 0.1f);
+    controlOptions->AddChooseBool("Callibrate Kinect Every Game", [p](bool x) {p->setAutoCallibrate(x); }, p->getAutoCallibrate(), true);
+    controlOptions->AddChooseFloat("Kinect Sensitivity Left / Right", [p](float x) {p->setKinectSentitivityLR(x); }, 0.7f, 1.5f, 1.f, 0.1f, true);
+    controlOptions->AddChooseFloat("Kinect Sensitivity Front / Back", [p](float x) {p->setKinectSentitivityFB(x); }, 0.7f, 1.5f, 1.f, 0.1f, true);
     controlOptions->AddSelectElement("Callibrate Kinect Now", [controlOptions, k]() {controlOptions->disable(); k->callibrate(4.0f, [controlOptions]() {controlOptions->enable();});});
-    controlOptions->AddChooseBool("Invert Front/Back Controls", [p](bool x) {p->setInvertControls(x); }, p->getInvertControls());
-	controlOptions->AddChooseBool("Enable Kinect", [p](bool x) { p->setEnableKinect(x);  if (!x) p->setAutoCallibrate(false); }, p->getEnableKinect());
-	controlOptions->AddChooseBool("Enable Keyboard", [p](bool x) { p->setEnableKeyboard(x);}, p->getEnableKeyboard());
+    controlOptions->AddChooseBool("Invert Front/Back Controls", [p](bool x) {p->setInvertControls(x); }, p->getInvertControls(), true);
+	controlOptions->AddChooseBool("Enable Kinect", [p](bool x) { p->setEnableKinect(x);  if (!x) p->setAutoCallibrate(false); }, p->getEnableKinect(), true);
+	controlOptions->AddChooseBool("Enable Keyboard", [p](bool x) { p->setEnableKeyboard(x);}, p->getEnableKeyboard(), true);
 	// controlOptions->AddChooseBool("Enable Gamepad", [p](bool x) { p->setEnableGamepad(x);}, p->getEnableGamepad());
 
 
     controlOptions->AddSelectElement("Return to Options Menu", [controlOptions,options]() {controlOptions->disable(); options->enable();});
 
 
-    soundOptions->AddChooseBool("Enalbe Sound", [sb](bool x) {sb->setEnableSound(x); }, sb->getEnableSound());
-	soundOptions->AddChooseInt("Volume", [sb](int x) {sb->setVolume(x); }, 0, 128, sb->getVolume(), 5);
+    soundOptions->AddChooseBool("Enalbe Sound", [sb](bool x) {sb->setEnableSound(x); }, sb->getEnableSound(), true);
+	soundOptions->AddChooseInt("Volume", [sb](int x) {sb->setVolume(x); }, 0, 128, sb->getVolume(), 5, true);
     soundOptions->AddSelectElement("Return to Options Menu", [soundOptions,options]() {soundOptions->disable(); options->enable();});
 
 
@@ -231,6 +263,8 @@ Runner::setupMenus()
     mainMenu->AddSelectElement("Show Goals", [mainMenu, a]() {a-> ShowAllAchievements(true); mainMenu->disable();});
 
     mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
+    mainMenu->AddSelectElement("WriteMenuStr", []() {writeConfigStr();});
+    mainMenu->AddSelectElement("ReadMenuStr", []() {readConfigStr();});
     mainMenu->AddSelectElement("Quit", [l]() {l->quit();});
 
     pauseMenu->AddSelectElement("Continue", [pauseMenu, p]() {pauseMenu->disable(); p->setPaused(false); });
@@ -247,17 +281,17 @@ Runner::setupMenus()
 	names2.push_back("Low");
 	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.01f); });
 
-		names2.push_back("Medium");
+	names2.push_back("Medium");
 	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.05f); });
 
 
-			names2.push_back("High");
+	names2.push_back("High");
 	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.1f); });
 
-		advancedOptions->AddChooseEnum("Track Resolution",names2,callbacks2,3);	
+	advancedOptions->AddChooseEnum("Track Resolution",names2,callbacks2,3, true);	
 
 
-		advancedOptions->AddChooseInt("Track View Distance (segments)", [p](int x) {p->setTrackLookahed(x);}, 10, 200,  p->getTrackLookahead(), 5);
+	advancedOptions->AddChooseInt("Track View Distance (segments)", [p](int x) {p->setTrackLookahed(x);}, 10, 200,  p->getTrackLookahead(), 5, true);
 	advancedOptions->AddSelectElement("Return to Options Menu", [advancedOptions, mainMenu]() {advancedOptions->disable(); mainMenu->enable();});
 
 
