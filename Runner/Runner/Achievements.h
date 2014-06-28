@@ -53,6 +53,10 @@ public:
 	// Are we currently showing achievements?  A bit of a hack to get menus &etc working properly
 	bool ShowingAllAchievements() { return mViewAllAchievements; }
 
+	std::string getCompletedAchievements();
+	void setCompletedAchievements(std::string json);
+
+
 	~Achievements(void);
 
 

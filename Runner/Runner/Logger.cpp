@@ -39,6 +39,8 @@ Logger::Logger(LoginWrapper *login) : mPlyrData(), mSkelLock(), mPlyrLock(), mDb
   mHost = DEFAULT_HOST;
   mPort = DEFAULT_PORT;
   mLogin = login;
+  mSessionStarted = false;
+  mSessionEnded = false;
 }
 
 Logger::~Logger()
@@ -88,14 +90,17 @@ Logger::StartSession()
 void
 Logger::EndSession()
 {
-  mSessionEnded = true;
-  time(&mTimeStampEnd);
-  mDaemon.join();
-  memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-  sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "In EndSession, daemon has joined.\n");
-  WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
+	if (mSessionStarted && !mSessionEnded)
+	{
+		mSessionEnded = true;
+		time(&mTimeStampEnd);
+		mDaemon.join();
+		memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
+		sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "In EndSession, daemon has joined.\n");
+		WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
 
-  Disconnect();
+		Disconnect();
+	}
 }
 
 void

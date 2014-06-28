@@ -92,7 +92,14 @@ protected:
 	Achievements *mAchievements;
 	LoginWrapper *mLogin;
 	Logger *mLogger;
-	
+
+
+	void writeConfigStr();
+	void setFromConfigString(std::string);
+
+	std::string getConfigString();
+	void readConfigStr();
+	void setSingleConfig(std::string key, std::string value);
 
 
     Ogre::Root *mRoot;

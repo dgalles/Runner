@@ -102,6 +102,8 @@ void MenuManager::setMenuConfig(std::string configString)
 		nextIndex = remainder.find_first_not_of("\t \n");
 		if (nextIndex != std::string::npos && remainder[nextIndex] == ',')
 			nextIndex++;
+		remainder = remainder.substr(nextIndex);
+		nextIndex = remainder.find_first_not_of("\t \n");
 	}
 
 }
@@ -161,6 +163,8 @@ void Menu::setMenuConfig(std::string configString)
 		nextIndex = remainder.find_first_not_of("\t \n");
 		if (nextIndex != std::string::npos && remainder[nextIndex] == ',')
 			nextIndex++;
+		remainder = remainder.substr(nextIndex);
+		nextIndex = remainder.find_first_not_of("\t \n");
 
 	}
 }

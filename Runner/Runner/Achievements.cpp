@@ -7,6 +7,7 @@
 #include "OgreOverlayElement.h"
 #include "InputHandler.h"
 #include "OgreResourceGroupManager.h"
+#include "JsonUtils.h"
 
 #include <iostream>
 #include <fstream>
@@ -311,7 +312,51 @@ void
 }
 
 
-// TODO:  Make this a file!!
+std::string Achievements::getCompletedAchievements()
+{
+	bool first = true;
+
+	std::string achievementString = "[";
+	for (unsigned int i = 0; i < mAchievmentsShort.size(); i++)
+	{
+		if (mAchievmentsCleared[i])
+		{
+			if (!first)
+			{
+				achievementString += ",";
+			}
+			first = false;
+			achievementString += "\"" +  mAchievmentsShort[i] + "\"";
+		}
+	}
+	achievementString += "]";
+	return achievementString;
+}
+void Achievements::setCompletedAchievements(std::string json)
+{
+	std::size_t braceIndex = json.find_first_of('[');
+
+	std::string remainder = json.substr(braceIndex+1);
+
+	std::size_t nextIndex = remainder.find_first_not_of("\t \n");
+	while (nextIndex != std::string::npos && remainder[nextIndex] != ']')
+	{
+		std::string nextAchievement = JSON_UTIL::stripQuotes(JSON_UTIL::firstItem(remainder));
+
+		remainder = JSON_UTIL::removeFirstitem(remainder);
+		
+		AchievementCleared(nextAchievement,true,0);
+
+		nextIndex = remainder.find_first_not_of("\t \n");
+		if (nextIndex != std::string::npos && remainder[nextIndex] == ',')
+			nextIndex++;
+		remainder = remainder.substr(nextIndex);
+		nextIndex = remainder.find_first_not_of("\t \n");
+	}
+}
+
+
+
 void
 	Achievements::ReadAchievements(Ogre::String filename)
 {

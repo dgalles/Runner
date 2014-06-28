@@ -55,6 +55,7 @@
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="LoginWrapper.cpp" />
     <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="JsonUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIManager.h">
@@ -109,6 +110,7 @@
     <ClInclude Include="LoginWrapper.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Receivers.h" />
+    <ClInclude Include="JsonUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header File">

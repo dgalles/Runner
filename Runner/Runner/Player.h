@@ -46,7 +46,15 @@ public:
 
 	void setLeanEqualsDuck(bool val);
 
-    void startGame();
+
+	int getTotalCoins() { return mTotalCoins; }
+	void setTotalCoins(int totalCoins) { mTotalCoins = totalCoins; }
+
+	int getLifetimeCoins() { return mLifetimeCoins; }
+	void setLifetimeCoins(int livetimeCoins) { mLifetimeCoins = livetimeCoins; }
+
+	
+	void startGame();
     void setAutoCallibrate(bool autoCal) { mAutoCallibrate = autoCal; }
     bool getAutoCallibrate() { return mAutoCallibrate; }
 
@@ -79,6 +87,9 @@ public:
 
 	void setTrackLookahed(int look) { mTrackLookahead = look; }
 	int getTrackLookahead() { return mTrackLookahead; }
+
+	float getTotalMeters() { return mTotalMeters; }
+	void  setTotalMeters(float meters) {  mTotalMeters = meters; }
 
     void reset();
 
@@ -149,6 +160,7 @@ protected:
 	static const float SPEED_MULTIPLYER;
 
 
+	int mLifetimeCoins;
 	int mTotalCoins;
 	float mTotalMeters;
 	int mLongestRun;
