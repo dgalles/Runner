@@ -23,7 +23,7 @@
 #include "LoginWrapper.h"
 #include "Logger.h"
 
-
+#include "JsonUtils.h"
 
 #include <iostream>
 #include <fstream>
@@ -140,29 +140,115 @@ void Runner::endGame()
 }
 
 
-void writeConfigStr()
+void Runner::writeConfigStr()
 {
 	MenuManager *menus = MenuManager::getInstance();
 
-	std::string result = menus->getMenuConfig();
+	std::string result = getConfigString();
 	std::ofstream configFile;
-	configFile.open ("menuConfig.txt", std::ios::out);
+	configFile.open ("config.txt", std::ios::out);
+
 	configFile << result;
 	configFile.close();
 
 }
 
-void readConfigStr()
+
+void Runner::setSingleConfig(std::string key, std::string value)
+{
+	key = JSON_UTIL::stripQuotes(key);
+	if (key == "menus")
+	{
+		MenuManager::getInstance()->setMenuConfig(value);
+	}
+	else if (key == "achievements")
+	{
+		mAchievements->setCompletedAchievements(value);
+	}
+	else if (key == "coins")
+	{
+		mPlayer->setTotalCoins(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+	}
+	else if (key == "lifetimeCoins")
+	{
+		mPlayer->setLifetimeCoins(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+	}
+	else if (key == "totalMeters")
+	{
+		mPlayer->setTotalMeters(atof(JSON_UTIL::stripQuotes(value).c_str()));
+
+	}
+	else if (key == "armor")
+	{
+		mPlayer->setInitialArmor(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+
+	}
+}
+
+void Runner::setFromConfigString(std::string configString)
+{
+
+	///TODO:  This parsing of JSON dictionaries really needs to be refactored ..
+
+	std::size_t braceIndex = configString.find_first_of('{');
+
+	std::string remainder = configString.substr(braceIndex+1);
+
+	std::size_t nextIndex = remainder.find_first_not_of("\t \n");
+	while (nextIndex != std::string::npos && remainder[nextIndex] != '}')
+	{
+		std::string nextKey = JSON_UTIL::stripQuotes(JSON_UTIL::firstItem(remainder));
+
+		remainder = JSON_UTIL::removeFirstitem(remainder);
+	
+		size_t colonIndex = remainder.find_first_of(":");
+		if (colonIndex == std::string::npos)
+		{
+			// ERROR!
+			nextIndex = std::string::npos;
+			break;
+		}
+		remainder = remainder.substr(colonIndex+1);
+		std::string value = JSON_UTIL::firstItem(remainder);
+		remainder = JSON_UTIL::removeFirstitem(remainder);
+		setSingleConfig(nextKey, value);
+
+		nextIndex = remainder.find_first_not_of("\t \n");
+		if (nextIndex != std::string::npos && remainder[nextIndex] == ',')
+			nextIndex++;
+		remainder = remainder.substr(nextIndex);
+		nextIndex = remainder.find_first_not_of("\t \n");
+
+	}
+
+
+
+}
+
+std::string Runner::getConfigString()
+{
+	std::string configStr = "{ \"menus\" : " + MenuManager::getInstance()->getMenuConfig(); 
+	configStr += ", \"achievements\" : " + mAchievements->getCompletedAchievements();
+	configStr += ", \"coins\" : \"" + std::to_string(mPlayer->getTotalCoins()) +"\"";
+	configStr += ", \"lifetimeCoins\" : \"" + std::to_string(mPlayer->getLifetimeCoins())+"\"";
+	configStr += ", \"totalMeters\" : \"" + std::to_string(mPlayer->getTotalMeters())+"\"";
+	configStr += ", \"armor\" : \"" + std::to_string(mPlayer->getInitialArmor())+"\"";
+	configStr += "}";
+
+	return configStr;
+}
+
+void Runner::readConfigStr()
 {
 	MenuManager *menus = MenuManager::getInstance();
 
 	
     std::ifstream in;
-    in.open("menuConfig.txt");
+    in.open("config.txt");
     std::string config;
 	std::getline(in, config);
 
-	menus->setMenuConfig(config);
+	setFromConfigString(config);
 }
 
 void
@@ -263,12 +349,12 @@ Runner::setupMenus()
     mainMenu->AddSelectElement("Show Goals", [mainMenu, a]() {a-> ShowAllAchievements(true); mainMenu->disable();});
 
     mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
-    mainMenu->AddSelectElement("WriteMenuStr", []() {writeConfigStr();});
-    mainMenu->AddSelectElement("ReadMenuStr", []() {readConfigStr();});
+    mainMenu->AddSelectElement("WriteMenuStr", [this]() {this->writeConfigStr();});
+    mainMenu->AddSelectElement("ReadMenuStr", [this]() {this->readConfigStr();});
     mainMenu->AddSelectElement("Quit", [l]() {l->quit();});
 
     pauseMenu->AddSelectElement("Continue", [pauseMenu, p]() {pauseMenu->disable(); p->setPaused(false); });
-    pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w, h]() {h->showHUDElements(false); pauseMenu->disable();mainMenu->enable(); p->setPaused(true); });
+    pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w, h, this]() {this->endGame(), h->showHUDElements(false); pauseMenu->disable();mainMenu->enable(); p->setPaused(true); });
     pauseMenu->AddSelectElement("Quit (Close Program)", [l]() {l->quit();});
 
 

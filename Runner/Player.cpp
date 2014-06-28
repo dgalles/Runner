@@ -29,10 +29,11 @@ const float Player::SPEED_MULTIPLYER = 20;
 	mTrackLookahead =100;
     setup();
 
-	int mTotalCoins = 0;
-	int mTotalMeters = 0;
-	int mLongestRun = 0;
-	int mMostCoins = 0;
+	 mTotalCoins = 0;
+	 mTotalMeters = 0;
+	 mLongestRun = 0;
+	 mMostCoins = 0;
+	 mLifetimeCoins = 0;
 
 
 	mInitialArmor = 3;
@@ -195,6 +196,7 @@ void
 				d.object->setPosition(Ogre::Vector3(0,0,0));
                 mCoinsCollected++;
 				mTotalCoins++;
+				mLifetimeCoins++;
 				SoundBank::getInstance()->play("coin");
 				mMaxDistWithoutCoins = std::max(mMaxDistWithoutCoins, mDistanceWithoutCoins);
 				mDistanceWithoutCoins = 0.0f;
