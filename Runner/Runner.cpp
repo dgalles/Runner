@@ -145,11 +145,12 @@ void Runner::writeConfigStr()
 	MenuManager *menus = MenuManager::getInstance();
 
 	std::string result = getConfigString();
-	std::ofstream configFile;
-	configFile.open ("config.txt", std::ios::out);
+	//std::ofstream configFile;
+	//configFile.open ("config.txt", std::ios::out);
 
-	configFile << result;
-	configFile.close();
+//	configFile << result;
+//	configFile.close();
+	mLogin->sendProfileData(result);
 
 }
 
@@ -175,7 +176,7 @@ void Runner::setSingleConfig(std::string key, std::string value)
 	}
 	else if (key == "totalMeters")
 	{
-		mPlayer->setTotalMeters(atof(JSON_UTIL::stripQuotes(value).c_str()));
+		mPlayer->setTotalMeters((float)atof(JSON_UTIL::stripQuotes(value).c_str()));
 
 	}
 	else if (key == "armor")
@@ -191,6 +192,10 @@ void Runner::setFromConfigString(std::string configString)
 	///TODO:  This parsing of JSON dictionaries really needs to be refactored ..
 
 	std::size_t braceIndex = configString.find_first_of('{');
+	if (braceIndex == std::string::npos)
+	{
+		return;
+	}
 
 	std::string remainder = configString.substr(braceIndex+1);
 
@@ -242,13 +247,13 @@ void Runner::readConfigStr()
 {
 	MenuManager *menus = MenuManager::getInstance();
 
+	std::string config = mLogin->getProfileData();
 	
-    std::ifstream in;
-    in.open("config.txt");
-    std::string config;
-	std::getline(in, config);
+	if (config.size() > 0)
+	{
 
-	setFromConfigString(config);
+		setFromConfigString(config);
+	}
 }
 
 void
@@ -280,8 +285,8 @@ Runner::setupMenus()
 	gameplayOptions->disable();
 	advancedOptions->disable();
 	soundOptions->disable();
-	login->disable();
-	mainMenu->enable();
+	mainMenu->disable();
+	login->enable();
 
 	menus->addMenu(mainMenu);
     menus->addMenu(options);
@@ -294,7 +299,7 @@ Runner::setupMenus()
 
 
 	login->AddChooseString("Username",[lm](Ogre::String s) {lm->changeUsername(s); },"",15,false);
-	login->AddChooseString("Password",[lm](Ogre::String s) {lm->changePassword(s); },"",15,true);
+	login->AddChooseString("Password",[lm, this](Ogre::String s) {this->setFromConfigString(lm->changePassword(s));},"",15,true);
 	login->AddSelectElement("Return to Main Menu", [login, mainMenu]() {login->disable(); mainMenu->enable();});
 	
 
@@ -343,15 +348,13 @@ Runner::setupMenus()
     soundOptions->AddSelectElement("Return to Options Menu", [soundOptions,options]() {soundOptions->disable(); options->enable();});
 
 
-    mainMenu->AddSelectElement("Start Game", [mainMenu,this]() {mainMenu->disable(); this->startGame(); });
+    mainMenu->AddSelectElement("Start Game", [mainMenu,this]() {this->writeConfigStr(); mainMenu->disable(); this->startGame(); });
 
     mainMenu->AddSelectElement("Login", [mainMenu, login]() {mainMenu->disable(); login->enable();});
     mainMenu->AddSelectElement("Show Goals", [mainMenu, a]() {a-> ShowAllAchievements(true); mainMenu->disable();});
 
     mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
-    mainMenu->AddSelectElement("WriteMenuStr", [this]() {this->writeConfigStr();});
-    mainMenu->AddSelectElement("ReadMenuStr", [this]() {this->readConfigStr();});
-    mainMenu->AddSelectElement("Quit", [l]() {l->quit();});
+    mainMenu->AddSelectElement("Quit", [l, this]() {this->writeConfigStr(); l->quit();});
 
     pauseMenu->AddSelectElement("Continue", [pauseMenu, p]() {pauseMenu->disable(); p->setPaused(false); });
     pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w, h, this]() {this->endGame(), h->showHUDElements(false); pauseMenu->disable();mainMenu->enable(); p->setPaused(true); });
@@ -378,7 +381,10 @@ Runner::setupMenus()
 
 
 	advancedOptions->AddChooseInt("Track View Distance (segments)", [p](int x) {p->setTrackLookahed(x);}, 10, 200,  p->getTrackLookahead(), 5, true);
-	advancedOptions->AddSelectElement("Return to Options Menu", [advancedOptions, mainMenu]() {advancedOptions->disable(); mainMenu->enable();});
+	    advancedOptions->AddSelectElement("Send Profile to Server", [this]() {this->writeConfigStr();});
+    advancedOptions->AddSelectElement("Get Profile from Server", [this]() {this->readConfigStr();});
+
+	advancedOptions->AddSelectElement("Return to Options Menu", [advancedOptions, options]() {advancedOptions->disable(); options->enable();});
 
 
 

@@ -34,7 +34,7 @@ int indexOfEndOfNextItem(std::string json)
 		std::size_t endQuote = json.find_first_of("\"",firstNonSpacePos+1);
 		return endQuote;
 	} 
-	else if (json[firstNonSpacePos] == '{' || json[firstNonSpacePos] == '(')
+	else if (json[firstNonSpacePos] == '{' || json[firstNonSpacePos] == '[')
 	{
 		int nesting = 1;
 		for (unsigned int i = firstNonSpacePos + 1; i < json.length(); i++)
