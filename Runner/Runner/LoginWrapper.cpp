@@ -172,7 +172,11 @@ size_t get_profile_callback(char *ptr, size_t size, size_t nmemb, void *userdata
 }
 
 
-
+size_t send_profile_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
+{
+	std::string retval(ptr);
+	return nmemb * size;
+}
 
 
 
@@ -230,8 +234,7 @@ std::string LoginWrapper::getProfileData()
 std::string LoginWrapper::changePassword(Ogre::String password)
 {
 	mCurrentPassword = password;
-	//  Actually login here
-	//   If login is successfull, then:
+
 	if (Login())
 	{
 		return getProfileData();
@@ -256,46 +259,18 @@ void  LoginWrapper::sendProfileData(std::string data)
 
 	struct curl_slist *headers = NULL;
 
+	headers = curl_slist_append(headers, "Content-Type: application/json");
 
-	    headers = curl_slist_append(headers, client_id_header);
-    headers = curl_slist_append(headers, "Content-Type: application/json");
+	curl_easy_setopt(mCurl, CURLOPT_HTTPHEADER, headers); 
+	curl_easy_setopt(mCurl, CURLOPT_URL,"https://creamstout.cs.usfca.edu/profile");  
+	curl_easy_setopt(mCurl, CURLOPT_CUSTOMREQUEST, "PUT"); 
+	curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYHOST, 0L);
+	curl_easy_setopt(mCurl, CURLOPT_WRITEFUNCTION, get_profile_callback);
 
- //   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
- //   curl_easy_setopt(curl, CURLOPT_URL, request_url);  
- //   curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT"); /* !!! */
+	curl_easy_setopt(mCurl, CURLOPT_POSTFIELDS, data.c_str()); 
 
- //   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_struct); /* data goes here */
+	CURLcode res = curl_easy_perform(mCurl);
 
- //   res = curl_easy_perform(curl);
-
- //   curl_slist_free_all(headers);
- //   curl_easy_cleanup(curl);
-
-
-	//curl_easy_setopt(mCurl, CURLOPT_UPLOAD, true); 
-	//curl_easy_setopt(mCurl, CURLOPT_READFUNCTION, read_callback); 
-
-
-
-	//   sprintf(jsonObj, "\"name\" : \"%s\", \"age\" : \"%s\"", name, age);
-
- //   struct curl_slist *headers = NULL;
- //   curl_slist_append(headers, "Accept: application/json");
- //   curl_slist_append(headers, "Content-Type: application/json");
- //   curl_slist_append(headers, "charsets: utf-8");
-
- //   curl_easy_setopt(curl, CURLOPT_URL, url);
-
- //   curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
- //   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers); 
- //   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonObj);
- //   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
- //   curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
- //   curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcrp/0.1");
-
-    res = curl_easy_perform(curl);
-
-
-	// Send data down the wire
-
+	curl_slist_free_all(headers);
 }
