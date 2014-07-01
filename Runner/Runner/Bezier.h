@@ -15,19 +15,19 @@ public:
 	void AddPathSegment(Ogre::Vector3 p1, Ogre::Vector3 p2, Ogre::Vector3 p3,
 					    Ogre::Vector3 nrml1, Ogre::Vector3 nrml2, Ogre::Vector3 nrml3, Kind kind = NORMAL);
 	void AddPathSegment(Ogre::Vector3 p1, Ogre::Vector3 p2, Ogre::Vector3 p3, Kind kind = NORMAL);
-	Ogre::Vector3 getPoint(int segemntIndex, float percent);
+	Ogre::Vector3 getPoint(int segemntIndex, float percent, bool mirrored = false);
 	int NumSegments() { return mNumSegments; }
 	void removePathSegment(int startIndex, int endIndex);
 	float pathLength(int pathIndex) { return mCurveDistance[pathIndex]; }
-	void getPointAndForward(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward);
-	void getPointAndRotaionMatrix(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward, Ogre::Vector3 &right, Ogre::Vector3 &up);
+	void getPointAndForward(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward, bool mirrored = false);
+	void getPointAndRotaionMatrix(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward, Ogre::Vector3 &right, Ogre::Vector3 &up,  bool mirrored = false);
 	int kind(int segmentIndex) { return mKind[segmentIndex]; }
 	bool getObjectPlaced(int segmentIndex) { return mBladesPlaced[segmentIndex]; }
 	void setObjectPlaced(int segmentIndex, bool bladeSet) {  mBladesPlaced[segmentIndex] = bladeSet;  }
 
 private:
 	std::vector<Ogre::Vector3> mControlPoints;
-	std::vector<Ogre::Vector3> mNormals;
+	std::vector<Ogre::Vector3> mNormals[2];
 	Ogre::Vector3 calculateBezierPoint(float t, Ogre::Vector3 p0, Ogre::Vector3 p1, Ogre::Vector3 p2, Ogre::Vector3 p3);
 	int mNumSegments;
 	std::vector<float> mCurveDistance;

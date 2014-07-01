@@ -58,9 +58,13 @@ Runner::~Runner()
 void
 Runner::createCamera()
 {
-	mCamera = mSceneMgr->createCamera("PlayerCam");
-	mCamera->setPosition(Ogre::Vector3(0,10,3000));
-	mCamera->lookAt(Ogre::Vector3(0,0,0));
+	mCamera[0] = mSceneMgr->createCamera("Player1Cam");
+	mCamera[0]->setPosition(Ogre::Vector3(0,10,3000));
+	mCamera[0]->lookAt(Ogre::Vector3(0,0,0));
+		mCamera[1] = mSceneMgr->createCamera("Player2Cam");
+	mCamera[1]->setPosition(Ogre::Vector3(0,10,3000));
+	mCamera[1]->lookAt(Ogre::Vector3(0,0,0));
+
 }
 
 
@@ -85,10 +89,24 @@ void
 Runner::createViewports(void)
 {
 	    // Create one viewport, entire window
-        Ogre::Viewport* vp = mWindow->addViewport(mCamera);
+
+#ifdef TEST
+        Ogre::Viewport* vp = mWindow->addViewport(mCamera[0],0,0,0,0.5, 1);
         vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
         // Alter the camera aspect ratio to match the viewport
-        mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth()) / Ogre::Real(vp->getActualHeight()));    
+        mCamera[0]->setAspectRatio(Ogre::Real(vp->getActualWidth() / 2) / Ogre::Real(vp->getActualHeight()));    
+        Ogre::Viewport* vp2 = mWindow->addViewport(mCamera[1],1,0.5f,0,0.5f,1);
+        vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
+        // Alter the camera aspect ratio to match the viewport
+        mCamera[1]->setAspectRatio(Ogre::Real(vp->getActualWidth() /2 ) / Ogre::Real(vp->getActualHeight()));    
+
+#else
+        Ogre::Viewport* vp = mWindow->addViewport(mCamera[0]);
+        vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
+        // Alter the camera aspect ratio to match the viewport
+        mCamera[0]->setAspectRatio(Ogre::Real(vp->getActualWidth()) / Ogre::Real(vp->getActualHeight()));    
+
+#endif
 }
 
 // Here is where we set up all of the non-rendering stuff (our world, various managers, etc)
@@ -100,19 +118,23 @@ Runner::createScene()
 
 	SoundBank::getInstance()->setup();
 	mHUD = new HUD();
-	mAchievements = new Achievements("Achievements.txt");
-	mWorld = new World(mSceneMgr, mHUD, this);
-	mAIManager = new AIManager(mWorld);
-	mRunnerCamera = new RunnerCamera(mCamera, mWorld);
+	mAchievements[0] = new Achievements("Achievements.txt");
+	mAchievements[1] = new Achievements("Achievements.txt");
+	mWorld[0] = new World(mSceneMgr, mHUD, this, false);
+	//mWorld[1] = new World(mSceneMgr, mHUD, this, true, mWorld[0]->trackPath);
+	mRunnerCamera[0] = new RunnerCamera(mCamera[0], mWorld[0]);
+	//mRunnerCamera[1] = new RunnerCamera(mCamera[1], mWorld[1]);
 	InputHandler::getInstance()->initialize(mWindow);
 	InputHandler::getInstance()->setEventCallback(MenuManager::getInstance());
 
 	mKinect = new Kinect();
 	mKinect->initSensor();
 	mGamepad = new XInputManager();
-	mPlayer = new Player(mWorld, mGamepad, mKinect, mAchievements);
-	mRunnerCamera->TrackObject(mPlayer);
-	mWorld->addCamera(mRunnerCamera);
+	mPlayer[0] = new Player(mWorld[0], mGamepad, mKinect, mAchievements[0]);
+	//mPlayer[1] = new Player(mWorld[1], mGamepad, mKinect, mAchievements[1]);
+	mRunnerCamera[0]->TrackObject(mPlayer[0]);
+	//mRunnerCamera[1]->TrackObject(mPlayer[1]);
+	mWorld[0]->addCamera(mRunnerCamera[0]);
 
 	mLogin = new LoginWrapper();
 	mLogger = new Logger(mLogin);
@@ -124,10 +146,14 @@ Runner::createScene()
 void
 	Runner::startGame()
 {
-	mWorld->reset(); 
-	mPlayer->reset(); 
-	mAchievements->ResetActive(); 
-	mPlayer->startGame();
+	mWorld[0]->reset(); 
+	//mWorld[1]->reset(); 
+	mPlayer[0]->reset(); 
+	//mPlayer[1]->reset(); 
+	mAchievements[0]->ResetActive(); 
+	//mAchievements[1]->ResetActive(); 
+	mPlayer[0]->startGame();
+	//mPlayer[1]->startGame();
 	mLogger->StartSession();
 	mKinect->StartSession();
 }
@@ -140,11 +166,11 @@ void Runner::endGame()
 }
 
 
-void Runner::writeConfigStr()
+void Runner::writeConfigStr(int player)
 {
 	MenuManager *menus = MenuManager::getInstance();
 
-	std::string result = getConfigString();
+	std::string result = getConfigString(player);
 	//std::ofstream configFile;
 	//configFile.open ("config.txt", std::ios::out);
 
@@ -155,7 +181,7 @@ void Runner::writeConfigStr()
 }
 
 
-void Runner::setSingleConfig(std::string key, std::string value)
+void Runner::setSingleConfig(std::string key, std::string value, int player)
 {
 	key = JSON_UTIL::stripQuotes(key);
 	if (key == "menus")
@@ -164,29 +190,29 @@ void Runner::setSingleConfig(std::string key, std::string value)
 	}
 	else if (key == "achievements")
 	{
-		mAchievements->setCompletedAchievements(value);
+		mAchievements[player]->setCompletedAchievements(value);
 	}
 	else if (key == "coins")
 	{
-		mPlayer->setTotalCoins(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+		mPlayer[player]->setTotalCoins(atoi(JSON_UTIL::stripQuotes(value).c_str()));
 	}
 	else if (key == "lifetimeCoins")
 	{
-		mPlayer->setLifetimeCoins(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+		mPlayer[player]->setLifetimeCoins(atoi(JSON_UTIL::stripQuotes(value).c_str()));
 	}
 	else if (key == "totalMeters")
 	{
-		mPlayer->setTotalMeters((float)atof(JSON_UTIL::stripQuotes(value).c_str()));
+		mPlayer[player]->setTotalMeters((float)atof(JSON_UTIL::stripQuotes(value).c_str()));
 
 	}
 	else if (key == "armor")
 	{
-		mPlayer->setInitialArmor(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+		mPlayer[player]->setInitialArmor(atoi(JSON_UTIL::stripQuotes(value).c_str()));
 
 	}
 }
 
-void Runner::setFromConfigString(std::string configString)
+void Runner::setFromConfigString(std::string configString, int player)
 {
 
 	///TODO:  This parsing of JSON dictionaries really needs to be refactored ..
@@ -216,34 +242,31 @@ void Runner::setFromConfigString(std::string configString)
 		remainder = remainder.substr(colonIndex+1);
 		std::string value = JSON_UTIL::firstItem(remainder);
 		remainder = JSON_UTIL::removeFirstitem(remainder);
-		setSingleConfig(nextKey, value);
+		setSingleConfig(nextKey, value, player);
 
 		nextIndex = remainder.find_first_not_of("\t \n");
 		if (nextIndex != std::string::npos && remainder[nextIndex] == ',')
 			nextIndex++;
 		remainder = remainder.substr(nextIndex);
 		nextIndex = remainder.find_first_not_of("\t \n");
-
 	}
-
-
 
 }
 
-std::string Runner::getConfigString()
+std::string Runner::getConfigString(int player)
 {
 	std::string configStr = "{ \"menus\" : " + MenuManager::getInstance()->getMenuConfig(); 
-	configStr += ", \"achievements\" : " + mAchievements->getCompletedAchievements();
-	configStr += ", \"coins\" : \"" + std::to_string(mPlayer->getTotalCoins()) +"\"";
-	configStr += ", \"lifetimeCoins\" : \"" + std::to_string(mPlayer->getLifetimeCoins())+"\"";
-	configStr += ", \"totalMeters\" : \"" + std::to_string(mPlayer->getTotalMeters())+"\"";
-	configStr += ", \"armor\" : \"" + std::to_string(mPlayer->getInitialArmor())+"\"";
+	configStr += ", \"achievements\" : " + mAchievements[player]->getCompletedAchievements();
+	configStr += ", \"coins\" : \"" + std::to_string(mPlayer[player]->getTotalCoins()) +"\"";
+	configStr += ", \"lifetimeCoins\" : \"" + std::to_string(mPlayer[player]->getLifetimeCoins())+"\"";
+	configStr += ", \"totalMeters\" : \"" + std::to_string(mPlayer[player]->getTotalMeters())+"\"";
+	configStr += ", \"armor\" : \"" + std::to_string(mPlayer[player]->getInitialArmor())+"\"";
 	configStr += "}";
 
 	return configStr;
 }
 
-void Runner::readConfigStr()
+void Runner::readConfigStr(int player)
 {
 	MenuManager *menus = MenuManager::getInstance();
 
@@ -252,7 +275,7 @@ void Runner::readConfigStr()
 	if (config.size() > 0)
 	{
 
-		setFromConfigString(config);
+		setFromConfigString(config, player);
 	}
 }
 
@@ -263,10 +286,10 @@ Runner::setupMenus(bool loginRequired)
 
     HUD *h = mHUD;
     MainListener *l = mFrameListener;
-    Player *p = mPlayer;
-    World *w = mWorld;
+    Player *p = mPlayer[0];
+    World *w = mWorld[0];
     Kinect *k = mKinect;
-	Achievements *a = mAchievements;
+	Achievements *a = mAchievements[0];
 	SoundBank *sb = SoundBank::getInstance();
 	LoginWrapper *lm = mLogin;
 
@@ -576,9 +599,11 @@ Runner::setupResources(void)
 void
 Runner::destroyScene()
 {
-    delete mWorld;
-    delete mAIManager;
-    delete mRunnerCamera;
+    delete mWorld[0];
+    // delete mWorld[1];
+    // delete mAIManager;
+    delete mRunnerCamera[0];
+  //  delete mRunnerCamera[1];
 	InputHandler::destroyInstance();
 }
 

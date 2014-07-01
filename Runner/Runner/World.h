@@ -20,7 +20,7 @@ class World
 {
 public:
 	
-    World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base);
+    World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool isMirror = false, BezierPath *path = NULL);
 
     // You'll want various methods to access & change your world here
     
@@ -30,7 +30,7 @@ public:
 
 	void AddSegment(Ogre::Vector3 deltap1, Ogre::Vector3 deltap2, Ogre::Vector3 deltap3, BezierPath::Kind type = BezierPath::Kind::NORMAL);
 
-    void reset();
+    void reset(BezierPath *path = NULL);
 	void resetToDefaults();
 
 	void AddRandomSegment();
@@ -88,7 +88,7 @@ public:
 
 protected:
 
-    void setup();
+    void setup(BezierPath *path = NULL);
 
 	void clearBefore(ItemQueue *queue, int segment);
 
@@ -102,6 +102,7 @@ protected:
 	void addPoints(float percent, int segmentIndexToAdd, std::vector<Ogre::Vector3> &points, std::vector<Ogre::Vector3> &normals);
 
 
+	bool mIsMirror;
 
 	int mUnitsPerSegment;
 	

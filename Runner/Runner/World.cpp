@@ -29,14 +29,15 @@ void World::resetToDefaults()
 	mSimpleMaterials = false;
 }
 
-World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base)   : mSceneManager(sceneManager), mTrackSceneNodes(), width(20.0f), mHUD(hud), mBase(base)
+World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool isMirror, BezierPath *path)   : mSceneManager(sceneManager), mTrackSceneNodes(), 
+	width(20.0f), mHUD(hud), mBase(base), mIsMirror(isMirror), trackPath(path)
 {
 	mMeshIDIndex = 0;
 	resetToDefaults();
-	setup();
+	setup(path);
 }
 
-void World::setup()
+void World::setup(BezierPath *path /* = NULL */)
 {
 	// Global illumination for now.  Adding individual light sources will make you scene look more realistic
 	mSceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
@@ -51,11 +52,23 @@ void World::setup()
 	mCoins = new ItemQueue(500);
 	mSawPowerup = new ItemQueue(100);
 
+	if (path == NULL && !mIsMirror)
+	{
 	trackPath = new BezierPath(Ogre::Vector3(0,0,0),
 		Ogre::Vector3(50,0,0),
 		Ogre::Vector3(100,0,0),
 		Ogre::Vector3(150,0,0));
 
+	}
+	else if (path != NULL && mIsMirror)
+	{
+		trackPath = path;
+	}
+	else
+	{
+
+		// Throw here?
+	}
 	int size = trackPath->NumSegments();
 
 	for (int i = 0; i < size; i++)
@@ -68,7 +81,10 @@ void World::setup()
 	}
 	for (int i = 0; i < 5; i++)
 	{
-		AddRandomSegment();
+		if (path == NULL)
+		{
+			AddRandomSegment();
+		}
 		addCoins();
 	}
 	AddObjects(3);
@@ -83,16 +99,19 @@ void World::setup()
 }
 
 
-void World::reset()
+void World::reset(BezierPath *path)
 {
 	delete mSawPowerup;
 	delete mCoins;
-	mSceneManager->clearScene();
-	delete trackPath;
-	trackPath = NULL;
+	if (!mIsMirror)
+	{
+		mSceneManager->clearScene();
+		delete trackPath;
+	}
+	trackPath = path;
 	mSceneManager->setSkyBox(true, "Skybox/Cloudy");
 
-	setup();
+	setup(path);
 }
 
 

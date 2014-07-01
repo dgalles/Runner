@@ -130,6 +130,10 @@ void SoundBank::setup()
 	openFile("empty.wav", "up", 0);
 	openFile("coin.wav", "coin", 0);
 	openFile("crash.wav", "crash", 0);
+	openFile("fanfare10.wav", "clearAchievement", 0);
+
+
+	
 
 	openFile("bellRight.wav", "left", 1);
 	openFile("bellLeft.wav", "right", 1);
@@ -138,6 +142,7 @@ void SoundBank::setup()
 	openFile("ascending.wav", "up", 1);
 	openFile("coin.wav", "coin", 1);
 	openFile("crash.wav", "crash", 1);
+	openFile("fanfare10.wav", "clearAchievement", 1);
 
 
 
@@ -181,7 +186,11 @@ void SoundBank::play(std::string id)
 {
 	if(mSoundEnabled)
 	{
-		mChunks[mSoundIndex][id]->play();
+		SoundChunk *c = mChunks[mSoundIndex][id];
+		if (c != NULL)
+		{
+			c->play();
+		}
 	}
 }
 

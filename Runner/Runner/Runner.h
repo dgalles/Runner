@@ -83,27 +83,27 @@ protected:
 
 	AIManager *mAIManager;
 	InputHandler *mInputHandler;
-	World *mWorld;
-    RunnerCamera *mRunnerCamera;
+	World *mWorld[2];
+    RunnerCamera *mRunnerCamera[2];
     Kinect *mKinect;
 	XInputManager *mGamepad;
-	Player *mPlayer;
+	Player *mPlayer[2];
 	HUD *mHUD;
-	Achievements *mAchievements;
+	Achievements *mAchievements[2];
 	LoginWrapper *mLogin;
 	Logger *mLogger;
 
 
-	void writeConfigStr();
-	void setFromConfigString(std::string);
+	void writeConfigStr(int player = 0);
+	void setFromConfigString(std::string, int player = 0);
 
-	std::string getConfigString();
-	void readConfigStr();
-	void setSingleConfig(std::string key, std::string value);
+	std::string getConfigString(int player = 0);
+	void readConfigStr(int player = 0);
+	void setSingleConfig(std::string key, std::string value, int player = 0);
 
 
     Ogre::Root *mRoot;
-    Ogre::Camera* mCamera;
+    Ogre::Camera* mCamera[2];
     Ogre::SceneManager* mSceneMgr;
     MainListener* mFrameListener;
     Ogre::RenderWindow* mWindow;
