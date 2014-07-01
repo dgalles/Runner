@@ -759,8 +759,7 @@ void World::AddObjects(int segment)
 		}
 		else
 		{
-			int x;
-			x++;
+			// Should pribably throw here ...
 		}
 
 
@@ -830,14 +829,14 @@ void
 	{
 		mLastObjSeg++;
 		r = (rand() / (float) RAND_MAX);
-		if (r > 0.6)
+		if (r > 0.95)
 		{
 			float r2 = (rand() / float (RAND_MAX));
-			if (r2 > 0.99)
+			if (r2 > 0.5f)
 			{
 				AddBarrierSegment(BezierPath::Kind::SHIELD);
 			}
-			else if (r2 >= 0.98)
+			else if (r2 >= 0.0f)
 			{
 				AddBarrierSegment(BezierPath::Kind::BOOST);
 			}
