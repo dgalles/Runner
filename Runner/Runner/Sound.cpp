@@ -1,82 +1,5 @@
-//
-//#include "SDL.h"
-//#include "SDL_audio.h"
-//0
-//#include "Sound.h"
  #include "OgreResourceGroupManager.h"
-//
-//CSoundBank CSoundBank::SoundControl;
-// 
-//CSoundBank::CSoundBank() {
-//}
-// 
-//int CSoundBank::OnLoad(char* File) {
-//    Mix_Chunk* TempSound = NULL;
-// 
-//    if((TempSound = Mix_LoadWAV(File)) == NULL) {
-//        return -1;
-//    }
-// 
-//    SoundList.push_back(TempSound);
-// 
-//    return (SoundList.size() - 1);
-//}
-// 
-//void CSoundBank::OnCleanup() {
-//    for(int i = 0;i < SoundList.size();i++) {
-//        Mix_FreeChunk(SoundList[i]);
-//    }
-// 
-//    SoundList.clear();
-//}
-// 
-//void CSoundBank::Play(int ID) {
-//    if(ID < 0 || ID >= SoundList.size()) return;
-//    if(SoundList[ID] == NULL) return;
-// 
-//    Mix_PlayChannel(-1, SoundList[ID], 0);
-//}
-//
-//
-//
-//
-//
-//
-//Sound::Sound(void)
-//{
-//}
-//
-//
-//
-//void Sound::play(Ogre::String sound)
-//{
-//
-//	std::string foundPath = sound;
-//	Ogre::ResourceGroupManager* groupManager = Ogre::ResourceGroupManager::getSingletonPtr() ;
-//	Ogre::String group = groupManager->findGroupContainingResource(sound) ;
-//	Ogre::FileInfoListPtr fileInfos = groupManager->findResourceFileInfo(group,foundPath);
-//	Ogre::FileInfoList::iterator it = fileInfos->begin();
-//	if(it != fileInfos->end())
-//	{
-//		foundPath = it->archive->getName() + "/" + foundPath;
-//	}
-//	else
-//	{
-//		foundPath = "";
-//	}
-//
-//	PlaySound(TEXT(foundPath.c_str()),NULL,SND_ASYNC);
-//
-//}
-//
-//void Sound::stopPlaying()
-//{
-//	PlaySound(NULL,NULL,SND_ASYNC);
-//
-//}
-//Sound::~Sound(void)
-//{
-//}
+
 
 #include "Sound.h"
 #include "SDL.h"
@@ -110,6 +33,9 @@ void SoundChunk::play()
 
 void SoundChunk::fadeIn(int ms, bool repeat)
 {
+	// Don't start playing if we are already playing this chanel ...
+	if (mCurrentChanel < 0)
+	{
 	if (repeat)
 	{
 		 mCurrentChanel = Mix_FadeInChannel(-1,mChunk,-1, ms);
@@ -117,6 +43,7 @@ void SoundChunk::fadeIn(int ms, bool repeat)
 	else
 	{
 		 mCurrentChanel = Mix_FadeInChannel(-1,mChunk, 0, ms);
+	}
 	}
 }
 
@@ -152,6 +79,8 @@ SoundBank::SoundBank() : mChunks()
 {
 	mHasBeenSetup= false;
 	mSoundEnabled = true;
+	mSoundIndex = 0;
+	mNumSounds = 1;
 	mVolume = 100;
 }
 
@@ -181,13 +110,34 @@ void SoundBank::setup()
 	mHasBeenSetup = true;
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
+	mNumSounds = 2;
 
-	openFile("BuzzsawRight1.wav", "BuzzsawRight1");
-	openFile("BuzzsawLeft1.wav", "BuzzsawLeft1");
-	openFile("BuzzsawCenter1.wav", "BuzzsawCenter1");
-	openFile("BuzzsawCenterHigh1.wav", "BuzzsawCenterHigh1");
-	openFile("coin.wav", "coin");
-	openFile("crash.wav", "crash");
+	std::map<std::string, SoundChunk*> nextChunk;
+
+	for (int i = 0; i < mNumSounds; i++)
+	{
+		mChunks.push_back(nextChunk);
+	}
+
+
+	openFile("BuzzsawRight1.wav", "left", 0);
+	openFile("BuzzsawLeft1.wav", "right", 0);
+	openFile("BuzzsawCenter1.wav", "center", 0);
+	openFile("BuzzsawCenterHigh1.wav", "down", 0);
+	openFile("empty.wav", "up", 0);
+	openFile("coin.wav", "coin", 0);
+	openFile("crash.wav", "crash", 0);
+
+	openFile("bellRight.wav", "left", 1);
+	openFile("bellLeft.wav", "right", 1);
+	openFile("bellCenter.wav", "center", 1);
+	openFile("descending.wav", "down", 1);
+	openFile("ascending.wav", "up", 1);
+	openFile("coin.wav", "coin", 1);
+	openFile("crash.wav", "crash", 1);
+
+
+
 	Mix_Volume(-1, mVolume);
 
 }
@@ -211,10 +161,14 @@ SoundBank* SoundBank::getInstance()
 
 void SoundBank::free()
 {
-	std::map<std::string, SoundChunk*>::iterator iter = mChunks.begin();
-	while(iter != mChunks.end()){
-		delete(iter->second);
-		iter++;
+	for (int i = 0; i < mChunks.size(); i++)
+	{
+		std::map<std::string, SoundChunk*>::iterator iter = mChunks[i].begin();
+		while(iter != mChunks[i].end()){
+			delete(iter->second);
+			iter++;
+		}
+		mChunks[i].clear();
 	}
 	mChunks.clear();
 }
@@ -223,7 +177,7 @@ void SoundBank::play(std::string id)
 {
 	if(mSoundEnabled)
 	{
-		mChunks[id]->play();
+		mChunks[mSoundIndex][id]->play();
 	}
 }
 
@@ -231,25 +185,25 @@ void SoundBank::fadeIn(std::string id, int ms, bool repeat)
 {
 	if (mSoundEnabled)
 	{
-		mChunks[id]->fadeIn(ms, repeat);
+		mChunks[mSoundIndex][id]->fadeIn(ms, repeat);
 	}
 }
 
 void SoundBank::fadeOut(std::string id, int ms)
 {
-	mChunks[id]->fadeOut(ms);
+	mChunks[mSoundIndex][id]->fadeOut(ms);
 }
 
-void SoundBank::addSound(SoundChunk* s, std::string id)
+void SoundBank::addSound(SoundChunk* s, std::string id, int index)
 {
-	mChunks[id] = s;
+	mChunks[index][id] = s;
 }
 
 void SoundBank::removeSound(std::string id){
 	//  TODO:: Do removechunks->erase(id);
 }
 
-void SoundBank::openFile(std::string path, std::string id)
+void SoundBank::openFile(std::string path, std::string id, int index)
 {
 	std::string foundPath = path;
 	Ogre::ResourceGroupManager* groupManager = Ogre::ResourceGroupManager::getSingletonPtr() ;
@@ -265,5 +219,5 @@ void SoundBank::openFile(std::string path, std::string id)
 		foundPath = "";
 	}
 
-	this->addSound(new SoundChunk(foundPath), id);
+	this->addSound(new SoundChunk(foundPath), id, index);
 }

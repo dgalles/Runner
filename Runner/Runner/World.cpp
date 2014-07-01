@@ -20,15 +20,19 @@
 
 
 
-
-
-World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base)   : mSceneManager(sceneManager), mTrackSceneNodes(), width(20.0f), mHUD(hud), mBase(base)
+void World::resetToDefaults()
 {
 	mDrawTrack = true;
-	mMeshIDIndex = 0;
 	mObsFreq = 0.15f;
 	mUseFrontBack = true;
 	mObsGap = 3;
+	mSimpleMaterials = false;
+}
+
+World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base)   : mSceneManager(sceneManager), mTrackSceneNodes(), width(20.0f), mHUD(hud), mBase(base)
+{
+	mMeshIDIndex = 0;
+	resetToDefaults();
 	setup();
 }
 
@@ -86,7 +90,7 @@ void World::reset()
 	mSceneManager->clearScene();
 	delete trackPath;
 	trackPath = NULL;
-			  mSceneManager->setSkyBox(true, "Skybox/Cloudy");
+	mSceneManager->setSkyBox(true, "Skybox/Cloudy");
 
 	setup();
 }
@@ -662,6 +666,8 @@ void World::AddObjects(int segment)
 		{
 			RunnerObject *saw = new RunnerObject(RunnerObject::BLADE);
 			saw->loadModel("sawblade.mesh", SceneManager());
+			if (mSimpleMaterials)
+				saw->setMaterial("simpleOrange");
 			if (type == HUD::Kind::down)
 			{
 				saw->setScale(Ogre::Vector3(8,5,8));

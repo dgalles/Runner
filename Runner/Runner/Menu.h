@@ -24,6 +24,8 @@ public:
 
 	Menu(Ogre::String header, Ogre::String name, float xpos, float ypos, float ydelta = 0.1f, Menu *parent = NULL, bool beginEnabled = false);
 
+	~Menu();
+
 	void enable();
 
 	void disable();
@@ -88,7 +90,7 @@ protected:
 	public:
 
 		MenuItem(Ogre::String text, Ogre::String name, Menu *parent, float x, float y, bool saved);
-
+		~MenuItem();
 		virtual void Select();
 		virtual void Deselect();
 		virtual void Enter() { }
@@ -250,6 +252,7 @@ public:
 	void deactivateCurrentMenu();
 	void activateMeu(Ogre::String);
 	void think(float time);
+	void resetMenus();
 
 	bool keyPressed(const OIS::KeyEvent &e);
     bool keyReleased(const OIS::KeyEvent &e);

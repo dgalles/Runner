@@ -257,7 +257,7 @@ void Runner::readConfigStr()
 }
 
 void
-Runner::setupMenus()
+Runner::setupMenus(bool loginRequired)
 {
     MenuManager *menus = MenuManager::getInstance();
 
@@ -275,18 +275,20 @@ Runner::setupMenus()
     Menu *controlOptions = new Menu("Control Options", "controloptions", 0.05f, 0.1f, 0.07f, options);
     Menu *gameplayOptions = new Menu("Gameplay Options", "gameplayoptions", 0.05f, 0.05f, 0.07f, options);
     Menu *soundOptions = new Menu("Sound Options", "soundOptions", 0.05f, 0.1f,0.1f, options);
-    Menu *advancedOptions = new Menu("Advanced Options", "advancedOptions", 0.05f, 0.1f,0.1f, options);
+    Menu *advancedOptions = new Menu("Advanced Options", "advancedOptions", 0.05f, 0.1f, 0.08f, options);
     Menu *login = new Menu("Login", "login", 0.05f, 0.1f,0.1f, mainMenu);
     Menu *pauseMenu = new Menu("Pause Menu", "pause", 0.05f, 0.1f);
+    Menu *obstacleMenu = new Menu("Obstacle Options", "obstacle", 0.05f, 0.1f, 0.1f, options);
+    Menu *confirmMenu = new Menu("Confirm Profile Reset", "profleReset", 0.1f, 0.1f, 0.1f, advancedOptions);
 
-    pauseMenu->disable();
-    options->disable();
-	controlOptions->disable();
-	gameplayOptions->disable();
-	advancedOptions->disable();
-	soundOptions->disable();
-	mainMenu->disable();
-	login->enable();
+	if (loginRequired)
+	{
+		login->enable();
+	}
+	else
+	{
+		mainMenu->enable();
+	}
 
 	menus->addMenu(mainMenu);
     menus->addMenu(options);
@@ -296,7 +298,8 @@ Runner::setupMenus()
 	menus->addMenu(soundOptions);
 	menus->addMenu(advancedOptions);
 	menus->addMenu(login);
-
+	menus->addMenu(obstacleMenu);
+	menus->addMenu(confirmMenu);
 
 	login->AddChooseString("Username",[lm](Ogre::String s) {lm->changeUsername(s); },"",15,false);
 	login->AddChooseString("Password",[lm, this](Ogre::String s) {this->setFromConfigString(lm->changePassword(s));},"",15,true);
@@ -309,26 +312,66 @@ Runner::setupMenus()
     options->AddSelectElement("Advanced Options", [options, advancedOptions]() {options->disable(); advancedOptions->enable();});
 	options->AddSelectElement("Return to Main Menu", [options, mainMenu]() {options->disable(); mainMenu->enable();});
 
-    gameplayOptions->AddChooseBool("Arrow Indicators", [h](bool show) {h->showArrows(show);}, h->arrowsShown(), true);
+
+    obstacleMenu->AddChooseFloat("Obstacle Frequency", [w](float x) {w->setObstacleFrequency(x); }, 0.0f, 1.0f,w->getObstacleFrequency(), 0.1f, true);
+    obstacleMenu->AddChooseInt("Minimum Obstacle Separation", [w](int x) {w->setObstacleSeparation(x); }, 0, 15, w->getObstacleSeparation(), 1, true);
+	 obstacleMenu->AddChooseBool("Arrow Indicators", [h](bool show) {h->showArrows(show);}, h->arrowsShown(), true);
+	std::vector<Ogre::String> namesArrowDist;
+	std::vector<std::function<void()>> callbacksArrowDist;
+	namesArrowDist.push_back("Close");
+	callbacksArrowDist.push_back([p]() { p->setArrowDistance(1); });
+	
+	namesArrowDist.push_back("Medium");
+	callbacksArrowDist.push_back([p,w]() {  { p->setArrowDistance(2); } });
+
+	namesArrowDist.push_back("Far");
+	callbacksArrowDist.push_back([p,w]() {  { p->setArrowDistance(3); } });
+
+	namesArrowDist.push_back("Very Far");
+	callbacksArrowDist.push_back([p,w]() {  { p->setArrowDistance(4); } });
+
+	obstacleMenu->AddChooseEnum("Arrow Indicator Distance",namesArrowDist,callbacksArrowDist,p->getArrowDistance(), true);	
+
+
+	std::vector<Ogre::String> namesTexture;
+	std::vector<std::function<void()>> callbackTexture;
+	namesTexture.push_back("Realistic");
+	callbackTexture.push_back([w]() { w->setUsingSimpleMaterials(false); });
+	
+	namesTexture.push_back("Representational");
+	callbackTexture.push_back([w]() {  w->setUsingSimpleMaterials(true); });
+
+	obstacleMenu->AddChooseEnum("Blade Texture Type",namesTexture,callbackTexture,w->getUsingSimpleMaterials() ? 1 : 0, true);	
+	obstacleMenu->AddSelectElement("Return to Gameplay Options", [obstacleMenu,gameplayOptions]() {obstacleMenu->disable(); gameplayOptions->enable();});
+
+
+   
+    gameplayOptions->AddSelectElement("Obstacle Options", [gameplayOptions,obstacleMenu]() {gameplayOptions->disable(); obstacleMenu->enable();});
     gameplayOptions->AddChooseInt("Starting Armor", [p](int x) {p->setInitialArmor(x); }, 1, 8, p->getInitialArmor(), 1, true);
 	gameplayOptions->AddChooseBool("Use Forward / Backward Leaning", [w, p](bool use) {w->setUseFrontBack(use); p->setUseFrontBack(use);} , p->getUseFrontBack(), true);
-    gameplayOptions->AddChooseFloat("Obstacle Frequency", [w](float x) {w->setObstacleFrequency(x); }, 0.0f, 1.0f,w->getObstacleFrequency(), 0.1f, true);
-    gameplayOptions->AddChooseInt("Minimum Obstacle Separation", [w](int x) {w->setObstacleSeparation(x); }, 0, 15, w->getObstacleSeparation(), 1, true);
     gameplayOptions->AddChooseInt("Initial Speed", [p](int x) {p->setInitialSpeed(x); }, 5, 100, p->getInitialSpeed(), 5, true);
     gameplayOptions->AddChooseInt("Max Speed", [p](int x) {p->setMaxSpeed(x); }, 30, 100, p->getMaxSpeed(), 5, true);
     gameplayOptions->AddChooseInt("Auto Speed Increase Rate", [p](int x) {p->setAutoAceelerateRate(x); }, 0, 20, p->getAutoAccelerateRate(), 1, true);
 
-	std::vector<Ogre::String> names;
-	std::vector<std::function<void()>> callbacks;
-	names.push_back("Duck / Lean");
-	callbacks.push_back([p, w]() { p->setLeanEqualsDuck(true); w->setUseFrontBack(p->getUseFrontBack()); });
+	std::vector<Ogre::String> namesDuckLean;
+	std::vector<std::function<void()>> callbacksDuckLean;
+	namesDuckLean.push_back("Duck / Lean");
+	callbacksDuckLean.push_back([p, w]() { p->setLeanEqualsDuck(true); w->setUseFrontBack(p->getUseFrontBack()); });
 	
-	names.push_back("Change Speed");
-	callbacks.push_back([p,w]() {  p->setLeanEqualsDuck(false); w->setUseFrontBack(false); });
+	namesDuckLean.push_back("Change Speed");
+	callbacksDuckLean.push_back([p,w]() {  p->setLeanEqualsDuck(false); w->setUseFrontBack(false); });
 
-	gameplayOptions->AddChooseEnum("Forward / Back Controls",names,callbacks,0, true);	
+	gameplayOptions->AddChooseEnum("Forward / Back Controls",namesDuckLean,callbacksDuckLean,0, true);	
+
     gameplayOptions->AddChooseInt("Manual Speed Change Rate", [p](int x) {p->setManualAceelerateRate(x); }, 0, 20, p->getManualAccelerateRate(), 1, true);
-    gameplayOptions->AddSelectElement("Return to Options Menu", [gameplayOptions,options]() {gameplayOptions->disable(); options->enable();});
+
+	gameplayOptions->AddSelectElement("Return to Options Menu", [gameplayOptions,options]() {gameplayOptions->disable(); options->enable();});
+
+
+
+
+
+
 
     controlOptions->AddChooseBool("Callibrate Kinect Every Game", [p](bool x) {p->setAutoCallibrate(x); }, p->getAutoCallibrate(), true);
     controlOptions->AddChooseFloat("Kinect Sensitivity Left / Right", [p](float x) {p->setKinectSentitivityLR(x); }, 0.7f, 1.5f, 1.f, 0.1f, true);
@@ -345,6 +388,19 @@ Runner::setupMenus()
 
     soundOptions->AddChooseBool("Enalbe Sound", [sb](bool x) {sb->setEnableSound(x); }, sb->getEnableSound(), true);
 	soundOptions->AddChooseInt("Volume", [sb](int x) {sb->setVolume(x); }, 0, 128, sb->getVolume(), 5, true);
+
+		std::vector<Ogre::String> namesSoundType;
+	std::vector<std::function<void()>> callbacksSoundType;
+	namesSoundType.push_back("Realistic (blades)");
+	callbacksSoundType.push_back([sb]() {sb->setCurrentIndex(0); });
+
+	namesSoundType.push_back("Representational (tones)");
+	callbacksSoundType.push_back([sb]() {sb->setCurrentIndex(1); });
+
+		soundOptions->AddChooseEnum("Sound Type",namesSoundType,callbacksSoundType,0, true);	
+
+
+
     soundOptions->AddSelectElement("Return to Options Menu", [soundOptions,options]() {soundOptions->disable(); options->enable();});
 
 
@@ -362,30 +418,43 @@ Runner::setupMenus()
 
 
 
-	std::vector<Ogre::String> names2;
-	std::vector<std::function<void()>> callbacks2;
-	names2.push_back("Very Low");
-	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.005f); });
+	std::vector<Ogre::String> namesResolution;
+	std::vector<std::function<void()>> callbacksResolution;
+	namesResolution.push_back("Very Low");
+	callbacksResolution.push_back([w]() { w->setUnitsPerPathLength(0.005f); });
 
-	names2.push_back("Low");
-	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.01f); });
+	namesResolution.push_back("Low");
+	callbacksResolution.push_back([w]() { w->setUnitsPerPathLength(0.01f); });
 
-	names2.push_back("Medium");
-	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.05f); });
+	namesResolution.push_back("Medium");
+	callbacksResolution.push_back([w]() { w->setUnitsPerPathLength(0.05f); });
 
 
-	names2.push_back("High");
-	callbacks2.push_back([w]() { w->setUnitsPerPathLength(0.1f); });
+	namesResolution.push_back("High");
+	callbacksResolution.push_back([w]() { w->setUnitsPerPathLength(0.1f); });
 
-	advancedOptions->AddChooseEnum("Track Resolution",names2,callbacks2,3, true);	
+	advancedOptions->AddChooseEnum("Track Resolution",namesResolution,callbacksResolution,3, true);	
 
 
 	advancedOptions->AddChooseInt("Track View Distance (segments)", [p](int x) {p->setTrackLookahed(x);}, 10, 200,  p->getTrackLookahead(), 5, true);
 	    advancedOptions->AddSelectElement("Send Profile to Server", [this]() {this->writeConfigStr();});
     advancedOptions->AddSelectElement("Get Profile from Server", [this]() {this->readConfigStr();});
 
+
+    advancedOptions->AddSelectElement("Reset Profile", [advancedOptions, confirmMenu]() {advancedOptions->disable();confirmMenu->enable();});
+
+
 	advancedOptions->AddSelectElement("Return to Options Menu", [advancedOptions, options]() {advancedOptions->disable(); options->enable();});
 
+
+
+    confirmMenu->AddSelectElement("Reset Profile (Cannot be undone!)", [this, p, w, a, advancedOptions, confirmMenu, menus]() {p->resetToDefaults();
+																											   w->resetToDefaults(); 
+																											   a->ResetAll();
+																											   menus->resetMenus();
+																											   this->setupMenus(false);});
+
+    confirmMenu->AddSelectElement("Cancel Profile Reset", [advancedOptions, confirmMenu]() {advancedOptions->enable();confirmMenu->disable();});
 
 
 }
