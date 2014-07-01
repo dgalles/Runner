@@ -3,7 +3,7 @@
 // The name of the overlay comes first
 HUD/Score
 {
-    zorder 200
+    zorder 400
 	
 	container Panel(HUD/Armor/Panel)
     {

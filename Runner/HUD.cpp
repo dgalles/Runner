@@ -187,26 +187,31 @@ void HUD::stopArrow(Kind type)
     mArrowOverlay[(int) type]->hide();
 	mArrowFlashTime[(int) type] = 0;
 
+	SoundBank *sb = SoundBank::getInstance();
+
 	if (type == Kind::left)
 	{
-		SoundBank::getInstance()->fadeOut("BuzzsawRight1", 1000);
+		sb->fadeOut("left", 1000);
 
 	}
 	else if (type == Kind::right)
 	{
-		SoundBank::getInstance()->fadeOut("BuzzsawLeft1", 1000);
+	sb->fadeOut("right", 1000);
 
 	}
 	else if (type == Kind::down)
 	{
-		SoundBank::getInstance()->fadeOut("BuzzsawCenterHigh1", 1000);
+		sb->fadeOut("down", 1000);
 
 	}
 	else if (type == Kind::center)
 	{
-		SoundBank::getInstance()->fadeOut("BuzzsawCenter1", 1000);
+	sb->fadeOut("center", 1000);
 	}
-
+		else if (type == Kind::up)
+	{
+	sb->fadeOut("up", 1000);
+	}
 	//	Sound::stopPlaying();
 }
 
@@ -220,6 +225,8 @@ void HUD::startArrow(HUD::Kind type, float time /*= 5.0*/,  float flashDelay /* 
 	mArrowTimeRemaining[(int) type] = time;
 	if (!mArrowStatus[(int) type])
 	{
+			SoundBank *sb = SoundBank::getInstance();
+
 		mArrowStatus[(int) type] = true;
 		if (mShowArrows && mShowHUDElems)
 		{
@@ -227,24 +234,25 @@ void HUD::startArrow(HUD::Kind type, float time /*= 5.0*/,  float flashDelay /* 
 		}
 		if (type == HUD::Kind::left)
 		{
-			SoundBank::getInstance()->fadeIn("BuzzsawRight1", 100, true);
+			sb->fadeIn("left", 100, true);
 		}
 		else if (type == HUD::Kind::right)
 		{
-			SoundBank::getInstance()->fadeIn("BuzzsawLeft1", 100, true);
+			sb->fadeIn("right", 100, true);
 
 		}
 		else if (type == HUD::Kind::center)
 		{
-			SoundBank::getInstance()->fadeIn("BuzzsawCenter1", 100, true);
+			sb->fadeIn("center", 100, true);
 		}
 		else if(type == HUD::Kind::down)
 		{
-			SoundBank::getInstance()->fadeIn("BuzzsawCenterHigh1", 100, true);
+			sb->fadeIn("down", 100, true);
 
 		}
 		else if(type == HUD::Kind::up)
 		{
+			sb->fadeIn("up", 100, true);
 
 		}
 	}

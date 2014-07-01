@@ -271,6 +271,7 @@ void  LoginWrapper::sendProfileData(std::string data)
 	curl_easy_setopt(mCurl, CURLOPT_POSTFIELDS, data.c_str()); 
 
 	CURLcode res = curl_easy_perform(mCurl);
+	curl_easy_reset(mCurl);
 
 	curl_slist_free_all(headers);
 }

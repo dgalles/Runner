@@ -6,7 +6,7 @@
 
 Achievements/Completed1
 {
-    zorder 200
+    zorder 100
     container Panel(Achievements/Completed1/Panel)
     {
       metrics_mode relative

@@ -2,7 +2,7 @@
 
 Kinect/Torso1
 {
-    zorder 200
+    zorder 300
 	metrics_mode relative
 	
     container Panel(Kinect/Torso1/Panel)
@@ -18,7 +18,7 @@ Kinect/Torso1
 
 Kinect/Torso2
 {
-
+    zorder 300
     container Panel(Kinect/Torso2/Panel)
     {
       metrics_mode relative

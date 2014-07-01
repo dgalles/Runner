@@ -30,6 +30,9 @@ class Player : public TrackableObject
 public:
 	Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach);
 
+
+	void resetToDefaults();
+
 	void Think(float time);
 
 	float reltiveX() { return mRelativeX;} 
@@ -90,6 +93,9 @@ public:
 
 	float getTotalMeters() { return mTotalMeters; }
 	void  setTotalMeters(float meters) {  mTotalMeters = meters; }
+
+	void setArrowDistance(int newDelta) { mWarningDelta = newDelta; }
+	int getArrowDistance() { return mWarningDelta; }
 
     void reset();
 
@@ -160,6 +166,8 @@ protected:
 	static const float SPEED_MULTIPLYER;
 
 
+
+	int mWarningDelta;
 	int mLifetimeCoins;
 	int mTotalCoins;
 	float mTotalMeters;

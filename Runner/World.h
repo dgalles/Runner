@@ -31,6 +31,7 @@ public:
 	void AddSegment(Ogre::Vector3 deltap1, Ogre::Vector3 deltap2, Ogre::Vector3 deltap3, BezierPath::Kind type = BezierPath::Kind::NORMAL);
 
     void reset();
+	void resetToDefaults();
 
 	void AddRandomSegment();
 	void AddBarrierSegment(BezierPath::Kind type);
@@ -81,6 +82,9 @@ public:
 	void trackObject(TrackableObject *o);
 	void setUnitsPerPathLength(float uppl) { mUnitsPerPathLength = uppl; }
 
+	bool getUsingSimpleMaterials() { return mSimpleMaterials; }
+	void setUsingSimpleMaterials(bool simple) {  mSimpleMaterials = simple; }
+
 
 protected:
 
@@ -116,6 +120,8 @@ protected:
 	bool mUseFrontBack;
 	int mLastObjSeg;
 	int mObsGap;
+
+	bool mSimpleMaterials;
 
 	Runner *mBase;
 

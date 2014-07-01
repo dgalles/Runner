@@ -379,44 +379,6 @@ void
 
 	ResetActive();
 
-
-
-
-	//AddAchievement("Getting Started", "Run 100 Meters in one run");
-	//AddAchievement("Pennies From Heaven", "Collect 100 Coins in one run");
-	//AddAchievement("Making Money", "Collect 200 Coins in one run");
-	//AddAchievement("Looper", "Complete a Loop-de-loop");
-	//AddAchievement("Greedy I", "Get all coins in a 20 meter segment");
-	//AddAchievement("Buzzed", "Hit a Sawblade");
-	//AddAchievement("Booster", "Use a Boost");
-	//AddAchievement("Penniless I", "Run 10 Meters without picking up a coin");
-	//AddAchievement("Marathon I", "Run 5000 Meters Lifetime");
-	//AddAchievement("Snap", "Complete a Snap Turn");
-	//AddAchievement("Greedy II", "Get all coins in a 50 meter segment");
-	//AddAchievement("Need for Speed", "Use 2 Boosts on one run");
-	//AddAchievement("Getting Bank", "Collect 500 Coins in one run");
-	//AddAchievement("Penniless II", "Run 50 Meters without picking up a coin");
-	//AddAchievement("Blazin'", "Use 3 Boosts on one run");
-	//AddAchievement("Middle Distance", "Run 500 Meters in one run");
-	//AddAchievement("Greedy III", "Get all coins in a 100 meter segment");
-	//AddAchievement("Long Haul", "Run 1000 Meters in one run");
-	//AddAchievement("Building Bling", "Collect 5000 Coins Lifetime");
-	//AddAchievement("Penniless III", "Run 100 Meters without picking up a coin");
-	//AddAchievement("Marathon II", "Run 10000 Meters Lifetime");
-	//AddAchievement("Marathon III", "Run 50000 Meters Lifetime");
-
-	//AddAchievement("Shielded", "Use a shield");
-	//AddAchievement("Covered", "Use two shields on one run");
-	//AddAchievement("Invunerable", "Use three shields on one run");
-
-	//AddAchievement("Magnetic", "Use a magnet");
-	//AddAchievement("Sticky", "Use two magnets on one run");
-	//AddAchievement("Sticky", "Use three magnets on one run");
-
-
-	//AddAchievement("Hat Trick", "Use a Boost, Shield, and Magnet on one run");
-
-
 }
 
 void Achievements::AddAchievement(Ogre::String shortName, Ogre::String longName)
@@ -444,6 +406,15 @@ void Achievements::ResetActive()
 			mAchievmentsActive[i] = false;
 		}
 	}
+}
+
+void Achievements::ResetAll()
+{
+	for (unsigned int i = 0; i < mAchievmentsCleared.size(); i++)
+	{
+		mAchievmentsCleared[i] = false;
+	}
+	ResetActive();
 }
 
 void Achievements::DisplayActiveAchievements(float time /* = -1*/)

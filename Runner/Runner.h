@@ -79,7 +79,7 @@ protected:
 
 
 	void startGame();
-    void setupMenus() ;
+    void setupMenus(bool login = true) ;
 
 	AIManager *mAIManager;
 	InputHandler *mInputHandler;

@@ -71,9 +71,9 @@ public:
 
 	void setup();
 	void play(std::string id);
-	void addSound(SoundChunk* s, std::string id);
+	void addSound(SoundChunk* s, std::string id, int index);
 	void removeSound(std::string id);
-	void openFile(std::string path, std::string id);
+	void openFile(std::string path, std::string id, int index);
 	void free();
 	void fadeIn(std::string id, int ms, bool repeat);
     void fadeOut(std::string id, int ms);
@@ -81,15 +81,21 @@ public:
 	void setEnableSound(bool newVal) { mSoundEnabled = newVal; }
 	int getVolume() { return mVolume;}
 	void setVolume(int newVol);
+	int getCurrentIndex() { return mSoundIndex; }
+	void setCurrentIndex(int newIndex) {if (newIndex < mNumSounds) mSoundIndex = newIndex; }
+
+
 
 private:
-	std::map<std::string, SoundChunk*> mChunks;
+	std::vector<std::map<std::string, SoundChunk*>> mChunks;
 	static SoundBank* instance;
 	SoundBank();
 	~SoundBank();
 	bool mHasBeenSetup;
 	bool mSoundEnabled;
 	int mVolume;
+	int mSoundIndex;
+	int mNumSounds;
 };
 
 #endif

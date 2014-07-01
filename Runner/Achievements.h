@@ -56,6 +56,7 @@ public:
 	std::string getCompletedAchievements();
 	void setCompletedAchievements(std::string json);
 
+	void ResetAll();
 
 	~Achievements(void);
 

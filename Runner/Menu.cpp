@@ -44,6 +44,17 @@ bool  MenuManager::keyReleased(const OIS::KeyEvent &e)
 	return true;
 }
 
+void MenuManager::resetMenus()
+{
+	for (std::map<Ogre::String, Menu*>::iterator it = mMenus.begin();
+		it != mMenus.end();
+		it++)
+	{
+		delete (*it).second;
+	}
+	mMenus.clear();
+}
+
 
 
 std::string  MenuManager::getMenuConfig()
@@ -293,6 +304,27 @@ void Menu::think(float time)
 
 }
 
+
+Menu::~Menu()
+{
+
+
+	for (unsigned int i = 0; i < mMenuItems.size(); i++)
+	{
+		delete mMenuItems[i];	
+	}
+
+	mMenuItems.clear();
+
+	Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
+	overlayManager.destroyOverlayElement( mName + "Header");
+	overlayManager.destroyOverlayElement(mMenuHighlight);
+	overlayManager.destroyOverlayElement(mPanelText);
+	overlayManager.destroyOverlayElement(mPanel);
+	overlayManager.destroy(mMenuOverlay);
+}
+
+
 Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float ydelta, Menu *parent, bool beginEnabled)
 	: mHighlightColor(1.0f,0.0f, 0.0f), mUnHighlightColor(1.0f, 1.0f, 1.0f)
 {
@@ -323,7 +355,7 @@ Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float
 	 mPanelText->setPosition(0,0);
 	 mPanel->addChild(mPanelText);
 
-	 mMenuHighlight = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", name +"HIghlightPanel" ) );
+	 mMenuHighlight = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", name +"HighlightPanel" ) );
 	 mMenuHighlight->setDimensions(0.9f, mItemHeight * 1.5f);
 	 mMenuHighlight->setMaterialName( "Menu/Highlight/Blue" );
 	 mPanel->addChild(mMenuHighlight);
@@ -359,6 +391,12 @@ void Menu::enable()
 	}
 }
 
+
+Menu::MenuItem::~MenuItem()
+{
+	Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
+	overlayManager.destroyOverlayElement(mItemText);
+}
 void Menu::disable()
 {
 	mMenuOverlay->hide();
@@ -536,7 +574,7 @@ void Menu::ChooseEnumMenuItem::Decrease()
 		mCurrentValue = mChoiceNames.size() - 1;
 	}
 	mItemText->setCaption(mText + ":" + "  " +mChoiceNames[mCurrentValue]);
-	mCallbacks[mCurrentValue];
+	mCallbacks[mCurrentValue]();
 }
 
 

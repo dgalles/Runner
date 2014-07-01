@@ -15,10 +15,11 @@
 
 const float Player::SPEED_MULTIPLYER = 20;
 
- Player::Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach) : mWorld(world), mXInputManager(inputManager), mKinect(k), mAchievements(ach)
-//Player::Player(World *world, XInputManager *inputManager) : mWorld(world), mInputManager(inputManager)
+
+
+void Player::resetToDefaults()
 {
-    mKinectSensitivityLR = 1.0f;
+	mKinectSensitivityLR = 1.0f;
     mKinectSensitivityFB = 1.0f;
     mInitialSpeed = 30;
     mAutoCallibrate = true;
@@ -42,9 +43,15 @@ const float Player::SPEED_MULTIPLYER = 20;
 
 	mUseFrontBack = true;
 	mLeanEqualsDuck = true;
+	mWarningDelta = 1;
+
+}
 
 
-
+ Player::Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach) : mWorld(world), mXInputManager(inputManager), mKinect(k), mAchievements(ach)
+//Player::Player(World *world, XInputManager *inputManager) : mWorld(world), mInputManager(inputManager)
+{
+	resetToDefaults();
 }
 
  void Player::reset()
@@ -157,11 +164,11 @@ void
 			for (int i = 0; i < mWorld->SawPowerup()->size(); i++)
 			{
 				ItemQueueData d = mWorld->SawPowerup()->atRelativeIndex(i);
-				if (d.segmentIndex == newSegment && d.object->type() == RunnerObject::BLADE)
+				if (d.segmentIndex <= newSegment + mWarningDelta  && d.segmentIndex >= newSegment &&  d.object->type() == RunnerObject::BLADE)
 				{
                     mWorld->getHUD()->startArrow(d.xtraData);
 				}
-				else if (d.segmentIndex  > newSegment)
+				else if (d.segmentIndex  > newSegment + mWarningDelta * 2)
 				{
 					break;
 				}
@@ -523,9 +530,16 @@ void
 			newSegment++;
 			mWorld->AddObjects(newSegment + 5);
 			newPercent = 0.0f;
-			if ((mWorld->trackPath->kind(newSegment + 2) == BezierPath::Kind::GAP) ||
-				(mWorld->trackPath->kind(newSegment + 1) == BezierPath::Kind::GAP)  ||
-				(mWorld->trackPath->kind(newSegment + 3) == BezierPath::Kind::GAP))
+			bool flagUp = false;
+			for (int i = 0; i < mWarningDelta + 2; i++)
+			{
+				if (mWorld->trackPath->kind(newSegment + 1 + i) == BezierPath::Kind::GAP)
+				{
+					flagUp = true;
+					break;
+				}
+			}
+			if (flagUp)
 			{
 				mWorld->getHUD()->startArrow(HUD::Kind::up);
 			}
