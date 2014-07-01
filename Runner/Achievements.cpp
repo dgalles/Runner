@@ -8,7 +8,7 @@
 #include "InputHandler.h"
 #include "OgreResourceGroupManager.h"
 #include "JsonUtils.h"
-
+#include "Sound.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -278,6 +278,7 @@ void  Achievements::setupCompletedUI(Ogre::String message, float timeToDisplay)
 		// This is an error ..
 		return;
 	}
+	SoundBank::getInstance()->play("clearAchievement");
 	mShowCompletedTimeRemaining[mCompletedActive] = timeToDisplay;
 	mCompletedText[mCompletedActive]->setCaption(message);
 	mCompletedAchievement[mCompletedActive]->show();

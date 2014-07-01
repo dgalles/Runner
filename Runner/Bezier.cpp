@@ -16,10 +16,13 @@ BezierPath::BezierPath(Ogre::Vector3 pt0, Ogre::Vector3 pt1, Ogre::Vector3 pt2, 
 	mControlPoints.push_back(pt1);
 	mControlPoints.push_back(pt2);
 	mControlPoints.push_back(pt3);
-	mNormals.push_back(Ogre::Vector3::UNIT_Y);
-	mNormals.push_back(Ogre::Vector3::UNIT_Y);
-	mNormals.push_back(Ogre::Vector3::UNIT_Y);
-	mNormals.push_back(Ogre::Vector3::UNIT_Y);
+	for (int i = 0; i < 2; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			mNormals[i].push_back(Ogre::Vector3::UNIT_Y);
+		}
+	}
 	mNumSegments = 1;
 	float dist = calcDist(0);
 	mCurveDistance.push_back(dist);
@@ -28,10 +31,10 @@ BezierPath::BezierPath(Ogre::Vector3 pt0, Ogre::Vector3 pt1, Ogre::Vector3 pt2, 
 
 
 void
-	BezierPath::getPointAndForward(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward)
+	BezierPath::getPointAndForward(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward,  bool mirrored /* = false */ )
 
 {
-	point = getPoint(pathIndex, percentage);
+	point = getPoint(pathIndex, percentage, mirrored);
 
 
 		if (percentage + 0.03 > 1)
@@ -52,33 +55,40 @@ void
 			Ogre::Vector3 nextPoint = getPoint(pathIndex, percentage + 0.03f);
 			forward = nextPoint - point;
 		}
+		if (mirrored)
+		{
+			point.z = - point.z;
+			point.x = - point.x;
+			forward.z = -forward.z;
+			forward.x = -forward.x;
+		}
 		forward.normalise();
 }
 
 
-void BezierPath::getPointAndRotaionMatrix(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward, Ogre::Vector3 &right, Ogre::Vector3 &up)
+void BezierPath::getPointAndRotaionMatrix(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward, Ogre::Vector3 &right, Ogre::Vector3 &up, bool mirrored /* = fakse */)
 {
-	getPointAndForward(pathIndex, percentage, point, forward);
+	getPointAndForward(pathIndex, percentage, point, forward, mirrored);
 	Ogre::Vector3 relativeUp;
 
 	if (percentage < 0.33f)
 	{
-		Ogre::Quaternion q = mNormals[pathIndex*3].getRotationTo(mNormals[pathIndex*3+1]);
+		Ogre::Quaternion q = mNormals[(int) mirrored][pathIndex*3].getRotationTo(mNormals[(int) mirrored][pathIndex*3+1]);
 		q = Ogre::Quaternion::Slerp(percentage*3, Ogre::Quaternion::IDENTITY, q,true);
-		relativeUp = mNormals[pathIndex*3];
-		relativeUp = (q * mNormals[pathIndex*3]);
+		relativeUp = mNormals[(int) mirrored][pathIndex*3];
+		relativeUp = (q * mNormals[(int) mirrored][pathIndex*3]);
 	}
 	else if (percentage < 0.66)
 	{
-		Ogre::Quaternion q = mNormals[pathIndex*3+1].getRotationTo(mNormals[pathIndex*3+2]);
+		Ogre::Quaternion q = mNormals[(int) mirrored][pathIndex*3+1].getRotationTo(mNormals[(int) mirrored][pathIndex*3+2]);
 		q = Ogre::Quaternion::Slerp((percentage-0.33f)*3, Ogre::Quaternion::IDENTITY, q,true);
-		relativeUp = (q * mNormals[pathIndex*3+1]);	
+		relativeUp = (q * mNormals[(int) mirrored][pathIndex*3+1]);	
 	}
 	else
 	{
-		Ogre::Quaternion q = mNormals[pathIndex*3+2].getRotationTo(mNormals[pathIndex*3+3]);
+		Ogre::Quaternion q = mNormals[(int) mirrored][pathIndex*3+2].getRotationTo(mNormals[(int) mirrored][pathIndex*3+3]);
 		q = Ogre::Quaternion::Slerp((percentage -0.66f)*3, Ogre::Quaternion::IDENTITY, q,true);
-		relativeUp = (q * mNormals[pathIndex*3+2]);	
+		relativeUp = (q * mNormals[(int) mirrored][pathIndex*3+2]);	
 	}
 
 	right= forward.crossProduct(relativeUp);
@@ -126,9 +136,18 @@ BezierPath::AddPathSegment(Ogre::Vector3 pt1, Ogre::Vector3 pt2, Ogre::Vector3 p
 	nrml1.normalise();
 	nrml2.normalise();
 	nrml3.normalise();
-	mNormals.push_back(nrml1);
-	mNormals.push_back(nrml2);
-	mNormals.push_back(nrml3);
+	mNormals[0].push_back(nrml1);
+	mNormals[0].push_back(nrml2);
+	mNormals[0].push_back(nrml3);
+	nrml1.z = -nrml1.z;
+	nrml2.z = -nrml2.z;
+	nrml3.z = -nrml3.z;
+	nrml1.x = -nrml1.x;
+	nrml2.x = -nrml2.x;
+	nrml3.x = -nrml3.x;
+	mNormals[1].push_back(nrml1);
+	mNormals[1].push_back(nrml2);
+	mNormals[1].push_back(nrml3);
 	mNumSegments++;
 	float dist = calcDist(mNumSegments-1);
 	mCurveDistance.push_back(dist);
@@ -138,7 +157,7 @@ BezierPath::AddPathSegment(Ogre::Vector3 pt1, Ogre::Vector3 pt2, Ogre::Vector3 p
 
 
 Ogre::Vector3 
-BezierPath::getPoint(int segementIndex, float percent)
+BezierPath::getPoint(int segementIndex, float percent, bool mirrored /* = false */)
 {
 	if (segementIndex >= mNumSegments)
 	{
@@ -146,7 +165,13 @@ BezierPath::getPoint(int segementIndex, float percent)
 		return Ogre::Vector3::ZERO;
 	}
 	int nodeIndex = segementIndex * 3;
-	return calculateBezierPoint(percent, mControlPoints[nodeIndex], mControlPoints[nodeIndex+1], mControlPoints[nodeIndex+2], mControlPoints[nodeIndex+3]);
+	Ogre::Vector3 point =  calculateBezierPoint(percent, mControlPoints[nodeIndex], mControlPoints[nodeIndex+1], mControlPoints[nodeIndex+2], mControlPoints[nodeIndex+3]);
+	if (mirrored)
+	{
+		point.x = -point.x;
+		point.z = -point.z;
+	}
+	return point;
 }
 
 

@@ -12,12 +12,19 @@
 #include <stdio.h>
 
 
-MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *cam, Kinect *sensor, XInputManager *gamepad, Player *player,  HUD *hud, Achievements *ach) :
+MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world[], RunnerCamera *cams[], Kinect *sensor, XInputManager *gamepad, Player *player[],  HUD *hud, Achievements *ach[]) :
 //MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *cam, XInputManager *gamepad, Player *player,  HUD *hud) :
-mRenderWindow(window), mAIManager(aiManager), mWorld(world), mRunnerCamera(cam), mGamepad(gamepad), mPlayer(player), mHUD(hud),  mKinect(sensor), mAchievements(ach)
+mRenderWindow(window), mAIManager(aiManager), mGamepad(gamepad), mHUD(hud),  mKinect(sensor)
 {
+	for (int i = 0; i < 2; i++)
+	{
+		mRunnerCamera[i] = cams[i];
+		mWorld[i] = world[i];
+		mPlayer[i] = player[i];
+		mAchievements[i] = ach[i];
+	}
 	mPaused = false;
-    mQuit = false;
+	mQuit = false;
 	//mInputHandler->setFrameListener(this);
 }
 
@@ -45,12 +52,14 @@ bool
 		//  The only reason we have the Think method of the InputHandler return
 		//   a value, is for the escape key to cause our application to end.
 		//   Feel free to change this to something that makes more sense to you.
-		mWorld->Think(time);
+		for (int i = 0; i < 1; i++)
+		{
+			mWorld[i]->Think(time);
+			mPlayer[i]->Think(time);
+			mRunnerCamera[0]->Think(time);
+			mAchievements[i]->Think(time);
+		}
 		mGamepad->update();
-		mPlayer->Think(time);
-		mRunnerCamera->Think(time);
-		mAchievements->Think(time);
-		bool keepGoing = true;
 	}
 	MenuManager::getInstance()->think(time);
 
@@ -66,19 +75,22 @@ bool
         {
             // do nothing
         }
-        else if (mAchievements->ShowingAllAchievements())
+        else if (mAchievements[0]->ShowingAllAchievements())
 		{
-			mAchievements->ShowAllAchievements(false);
+			mAchievements[0]->ShowAllAchievements(false);
             MenuManager::getInstance()->getMenu("main")->enable();
 
 		}
 		else
         {
-			mAchievements->clearUI();
+			mAchievements[0]->clearUI();
             MenuManager::getInstance()->getMenu("pause")->enable();
-            mPlayer->setPaused(true);
-			mWorld->getHUD()->setShowDecreaseSpeed(false);
-			mWorld->getHUD()->setShowIncreaseSpeed(false);
+            mPlayer[0]->setPaused(true);
+          //  mPlayer[1]->setPaused(true);
+			mWorld[0]->getHUD()->setShowDecreaseSpeed(false);
+			mWorld[0]->getHUD()->setShowIncreaseSpeed(false);
+			//mWorld[1]->getHUD()->setShowDecreaseSpeed(false);
+			//mWorld[1]->getHUD()->setShowIncreaseSpeed(false);
         }
     }
 
