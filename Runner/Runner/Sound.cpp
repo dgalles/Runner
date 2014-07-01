@@ -110,6 +110,9 @@ void SoundBank::setup()
 	mHasBeenSetup = true;
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
+	// TODO:  The following should all be read in from a file in Content.
+	///       not hardcorded.
+
 	mNumSounds = 2;
 
 	std::map<std::string, SoundChunk*> nextChunk;
@@ -161,10 +164,11 @@ SoundBank* SoundBank::getInstance()
 
 void SoundBank::free()
 {
-	for (int i = 0; i < mChunks.size(); i++)
+	for (unsigned int i = 0; i < mChunks.size(); i++)
 	{
 		std::map<std::string, SoundChunk*>::iterator iter = mChunks[i].begin();
-		while(iter != mChunks[i].end()){
+		while(iter != mChunks[i].end())
+		{
 			delete(iter->second);
 			iter++;
 		}

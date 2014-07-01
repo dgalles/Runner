@@ -123,7 +123,7 @@ void HUD::setArmorLevel(int level)
 {
 	for (unsigned int i = 0; i < mArmorIndicator.size(); i++)
 	{
-		if (level > i)
+		if (level > (int) i)
 		{
 			mArmorIndicator[i]->show();
 		}
