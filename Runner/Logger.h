@@ -45,6 +45,7 @@ public:
 
 protected:
   ServerCom *mSock;
+  ServerCom *mLRTrueSock;
   ServerCom *mScoreSock;
   ServerCom *mLRSock;
   ServerCom *mFBSock;

@@ -49,8 +49,8 @@ void World::setup(BezierPath *path /* = NULL */)
 	mLastCoinAddedSegment = 0;
 	mUnitsPerSegment = 10;
 	mUnitsPerPathLength = 0.1f;
-	mCoins = new ItemQueue(500);
-	mSawPowerup = new ItemQueue(100);
+	mCoins = new ItemQueue<ItemQueueData>(500);
+	mSawPowerup = new ItemQueue<ItemQueueData>(100);
 
 	if (path == NULL && !mIsMirror)
 	{
@@ -122,7 +122,7 @@ void
 }
 
 void 
-	World::clearBefore(ItemQueue *queue, int segment)
+	World::clearBefore(ItemQueue<ItemQueueData> *queue, int segment)
 {
 	if (queue->size() == 0)
 		return;
@@ -256,7 +256,7 @@ void
 			coin->setPosition(pos);
 			coin->setOrientation(q);
 			coin->roll(Ogre::Degree(90));
-			mCoins->enqueue(segmentToAdd,i* 1.0f / (float) COINS_PER_SEGMENT,relX, 10, coin);
+			mCoins->enqueue(ItemQueueData(segmentToAdd,i* 1.0f / (float) COINS_PER_SEGMENT,relX, 10, coin));
 		}
 	}
 	mLastCoinAddedSegment = std::max(segmentToAdd, mLastCoinAddedSegment);

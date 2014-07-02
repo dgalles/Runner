@@ -1,6 +1,7 @@
 #include "OgreVector3.h"
 #include "Bezier.h"
 #include <queue>
+#include "ItemQueue.h"
 
 namespace Ogre {
     class SceneNode;
@@ -9,7 +10,6 @@ namespace Ogre {
 
 class BezierPath;
 class Player;
-class ItemQueue;
 class HUD;
 class RunnerCamera;
 class TrackableObject;
@@ -75,8 +75,8 @@ public:
 
 	void AddObjects(int segment);
 
-    ItemQueue *SawPowerup() { return mSawPowerup; }
-	ItemQueue *Coins() { return mCoins; }
+    ItemQueue<ItemQueueData> *SawPowerup() { return mSawPowerup; }
+	ItemQueue<ItemQueueData> *Coins() { return mCoins; }
 	HUD *getHUD() { return mHUD; }
 
 	void trackObject(TrackableObject *o);
@@ -90,7 +90,7 @@ protected:
 
     void setup(BezierPath *path = NULL);
 
-	void clearBefore(ItemQueue *queue, int segment);
+	void clearBefore(ItemQueue<ItemQueueData> *queue, int segment);
 
 	Ogre::SceneManager *mSceneManager;
 
@@ -111,8 +111,8 @@ protected:
 	float mUnitsPerPathLength;
 
 	int mMeshIDIndex;
-	ItemQueue *mCoins;
-    ItemQueue *mSawPowerup;
+	ItemQueue<ItemQueueData> *mCoins;
+    ItemQueue<ItemQueueData> *mSawPowerup;
 	int mLastCoinAddedSegment;
 	HUD *mHUD;
 	RunnerCamera *mCamera;
