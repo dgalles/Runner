@@ -56,6 +56,7 @@
     <ClCompile Include="LoginWrapper.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="JsonUtils.cpp" />
+    <ClCompile Include="Ghost.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIManager.h">
@@ -111,6 +112,7 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Receivers.h" />
     <ClInclude Include="JsonUtils.h" />
+    <ClInclude Include="Ghost.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header File">

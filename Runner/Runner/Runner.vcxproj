@@ -129,6 +129,7 @@ copy resources.cfg "$(OutDir)"</Command>
     <ClInclude Include="Bezier.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="Ghost.h" />
     <ClInclude Include="HUD.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="ItemQueue.h" />
@@ -152,6 +153,7 @@ copy resources.cfg "$(OutDir)"</Command>
     <ClCompile Include="Bezier.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
+    <ClCompile Include="Ghost.cpp" />
     <ClCompile Include="HUD.cpp" />
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="ItemQueue.cpp" />

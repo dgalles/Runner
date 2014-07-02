@@ -35,6 +35,7 @@ Logger::Logger(LoginWrapper *login) : mPlyrData(), mSkelLock(), mPlyrLock(), mDb
   mSock = new ServerCom();
   mScoreSock = new ServerCom();
   mLRSock = new ServerCom();
+  mLRTrueSock = new ServerCom();
   mFBSock = new ServerCom();
   mHost = DEFAULT_HOST;
   mPort = DEFAULT_PORT;
@@ -202,7 +203,7 @@ Logger::daemonSendSkelData(SkelData *sdata)
             mSeconds2 % 60, 
             sdata->lrAngleTrue);
   WriteToLog(mKinBuf1, DEFAULT_BUFSIZE);
-  if(DB_Send(mKinBuf1, strlen(mKinBuf1), mLRSock) == 1)
+  if(DB_Send(mKinBuf1, strlen(mKinBuf1), mLRTrueSock) == 1)
     WriteToLog("DB_Send failed.\n", 18);
 
   memset(mKinBuf2, 0, DEFAULT_BUFSIZE);
@@ -275,12 +276,13 @@ Logger::WriteToLog(char *buf, size_t buflen)
 int
 Logger::Connect(void)
 {
-  int res1, res2, res3, res4;
+  int res1, res2, res3, res4, res5;
   res1 = DB_Connect(mHost, mPort, mScoreSock);
   res2 = DB_Connect(mHost, mPort, mLRSock);
   res3 = DB_Connect(mHost, mPort, mFBSock);
-  res4 = DB_Connect(mHost, mPort, mSock);
-  return (res1 && res2 && res3);
+  res4 = DB_Connect(mHost, mPort, mLRTrueSock);
+  res5 = DB_Connect(mHost, mPort, mSock);
+  return (res1 && res2 && res3 && res4);
 }
 
 void
@@ -289,6 +291,7 @@ Logger::Disconnect(void)
   DB_Disconnect(mScoreSock);
   DB_Disconnect(mLRSock);
   DB_Disconnect(mFBSock);
+  DB_Disconnect(mLRTrueSock);
   DB_Disconnect(mSock);
 }
 

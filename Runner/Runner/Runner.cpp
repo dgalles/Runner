@@ -427,7 +427,7 @@ Runner::setupMenus(bool loginRequired)
     soundOptions->AddSelectElement("Return to Options Menu", [soundOptions,options]() {soundOptions->disable(); options->enable();});
 
 
-    mainMenu->AddSelectElement("Start Game", [mainMenu,this]() {this->writeConfigStr(); mainMenu->disable(); this->startGame(); });
+    mainMenu->AddSelectElement("Start Game", [mainMenu,this]() { mainMenu->disable(); this->startGame(); });
 
     mainMenu->AddSelectElement("Login", [mainMenu, login]() {mainMenu->disable(); login->enable();});
     mainMenu->AddSelectElement("Show Goals", [mainMenu, a]() {a-> ShowAllAchievements(true); mainMenu->disable();});
@@ -437,7 +437,7 @@ Runner::setupMenus(bool loginRequired)
 
     pauseMenu->AddSelectElement("Continue", [pauseMenu, p]() {pauseMenu->disable(); p->setPaused(false); });
     pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w, h, this]() {this->endGame(), h->showHUDElements(false); pauseMenu->disable();mainMenu->enable(); p->setPaused(true); });
-    pauseMenu->AddSelectElement("Quit (Close Program)", [l]() {l->quit();});
+    pauseMenu->AddSelectElement("Quit (Close Program)", [this, l]() {this->writeConfigStr();l->quit();});
 
 
 
