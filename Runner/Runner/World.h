@@ -20,7 +20,7 @@ class World
 {
 public:
 	
-    World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool isMirror = false, BezierPath *path = NULL);
+    World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useMirror = false);
 
     // You'll want various methods to access & change your world here
     
@@ -30,7 +30,7 @@ public:
 
 	void AddSegment(Ogre::Vector3 deltap1, Ogre::Vector3 deltap2, Ogre::Vector3 deltap3, BezierPath::Kind type = BezierPath::Kind::NORMAL);
 
-    void reset(BezierPath *path = NULL);
+    void reset();
 	void resetToDefaults();
 
 	void AddRandomSegment();
@@ -50,15 +50,15 @@ public:
 	void RemovePathSegment(int start, int end);
 	Ogre::SceneManager *SceneManager() { return mSceneManager; }
 
-	void getWorldPositionAndMatrix(int segment, float percentage, float relativeX, float relativeY, Ogre::Vector3 &worldPostion, Ogre::Vector3 &forward, Ogre::Vector3 &right, Ogre::Vector3 &up);
+	void getWorldPositionAndMatrix(int segment, float percentage, float relativeX, float relativeY, Ogre::Vector3 &worldPostion, Ogre::Vector3 &forward, Ogre::Vector3 &right, Ogre::Vector3 &up, bool isSecondPlayer);
 
 	void clearCoinsBefore(int segment);
 	void clearBarriersBefore(int segment);
 
 
-	int lastCoinAddedSegment() { return mLastCoinAddedSegment;} 
-	void addCoins(int segmentToAdd);
-	void addCoins();
+	int lastCoinAddedSegment(bool player) { return mLastCoinAddedSegment[(int) player];} 
+	void addCoins(int segmentToAdd, bool player);
+	void addCoins(bool player);
 	void AddTwisty();
 	void AddLoop(); 
 	void AddJump(); 
@@ -73,7 +73,7 @@ public:
 	void setObstacleSeparation(int gap) {mObsGap = gap; }
 	int getObstacleSeparation() { return  mObsGap; }
 
-	void AddObjects(int segment);
+	void AddObjects(int segment, bool player);
 
     ItemQueue<ItemQueueData> *SawPowerup() { return mSawPowerup; }
 	ItemQueue<ItemQueueData> *Coins() { return mCoins; }
@@ -88,7 +88,7 @@ public:
 
 protected:
 
-    void setup(BezierPath *path = NULL);
+    void setup();
 
 	void clearBefore(ItemQueue<ItemQueueData> *queue, int segment);
 
@@ -99,10 +99,11 @@ protected:
 	std::vector<std::vector<Ogre::SceneNode *>> mTrackSceneNodes;
 
 	void addTrackNodes(int segmentIndextToAdd, bool startCap = false, bool endCap = false);
-	void addPoints(float percent, int segmentIndexToAdd, std::vector<Ogre::Vector3> &points, std::vector<Ogre::Vector3> &normals);
+	void addTrackNodesOne(int segmentIndextToAdd, bool mirrored, bool startCap = false, bool endCap = false);
+	void addPoints(float percent, int segmentIndexToAdd, std::vector<Ogre::Vector3> &points, std::vector<Ogre::Vector3> &normals, bool mirror);
 
 
-	bool mIsMirror;
+	bool mUseMirror;
 
 	int mUnitsPerSegment;
 	
@@ -113,7 +114,7 @@ protected:
 	int mMeshIDIndex;
 	ItemQueue<ItemQueueData> *mCoins;
     ItemQueue<ItemQueueData> *mSawPowerup;
-	int mLastCoinAddedSegment;
+	int mLastCoinAddedSegment[2];
 	HUD *mHUD;
 	RunnerCamera *mCamera;
 

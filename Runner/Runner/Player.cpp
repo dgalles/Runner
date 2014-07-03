@@ -48,7 +48,8 @@ void Player::resetToDefaults()
 }
 
 
- Player::Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach) : mWorld(world), mXInputManager(inputManager), mKinect(k), mAchievements(ach)
+ Player::Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach, bool isSecond) : 
+	 mWorld(world), mXInputManager(inputManager), mKinect(k), mAchievements(ach),mIsSecondPlayer(isSecond)
 //Player::Player(World *world, XInputManager *inputManager) : mWorld(world), mInputManager(inputManager)
 {
 	resetToDefaults();
@@ -101,7 +102,7 @@ void Player::setup()
 	Ogre::Vector3 forward;
 	Ogre::Vector3 right;
 	Ogre::Vector3 up;
-	mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,forward, right, up);
+	mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,forward, right, up, mIsSecondPlayer);
 	Ogre::Quaternion q(-right,up,forward);
 
 	mPlayerObject->setPosition(pos);
@@ -348,6 +349,12 @@ void Player::updateAnglesFromControls(Ogre::Degree &angle, Ogre::Degree &angle2)
 
 	if (mEnableKeyboard)
 		{
+			if (InputHandler::getInstance()->KeyPressedThisFrame(OIS::KC_R))
+			{
+				mWorld->getCamera()->setReview(!mWorld->getCamera()->getReview());
+			} 
+
+
 			if (InputHandler::getInstance()->IsKeyDown(OIS::KC_LEFT))
 			{
 				angle = -Ogre::Degree(30);
@@ -528,7 +535,7 @@ void
 		{
 			distance -= mWorld->trackPath->pathLength(newSegment) * (1 - newPercent);
 			newSegment++;
-			mWorld->AddObjects(newSegment + 5);
+			mWorld->AddObjects(newSegment + 5, mIsSecondPlayer);
 			newPercent = 0.0f;
 			bool flagUp = false;
 			for (int i = 0; i < mWarningDelta + 2; i++)
@@ -591,9 +598,9 @@ void
 		{
 			mWorld->AddRandomSegment();
 		}
-		if (newSegment > mWorld->lastCoinAddedSegment() - 5)
+		if (newSegment > mWorld->lastCoinAddedSegment(mIsSecondPlayer) - 5)
 		{
-			mWorld->addCoins();
+			mWorld->addCoins(mIsSecondPlayer);
 		}
 
 
@@ -646,7 +653,7 @@ void
 
 		mRelativeY = - mPlayerObject->minPointLocalScaled().y + mDeltaY;
 
-		mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,forward, right, up);
+		mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,forward, right, up, mIsSecondPlayer);
 		Ogre::Quaternion q(-right,up,forward);
 
 		mPlayerObject->setOrientation(q);
@@ -813,7 +820,7 @@ void
 
 		Ogre::Vector3 pos;
 
-		mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,mExplosionforward, mExplosionright, mExplosionup);
+		mWorld->getWorldPositionAndMatrix(mCurrentSegment, mSegmentPercent, mRelativeX, mRelativeY, pos,mExplosionforward, mExplosionright, mExplosionup, mIsSecondPlayer);
 		Ogre::Quaternion q(-mExplosionright,mExplosionup,mExplosionforward);
 
 

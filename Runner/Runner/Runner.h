@@ -83,7 +83,7 @@ protected:
 
 	AIManager *mAIManager;
 	InputHandler *mInputHandler;
-	World *mWorld[2];
+	World *mWorld;
     RunnerCamera *mRunnerCamera[2];
     Kinect *mKinect;
 	XInputManager *mGamepad;

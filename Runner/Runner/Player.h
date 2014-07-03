@@ -28,7 +28,7 @@ class Player : public TrackableObject
 {
 
 public:
-	Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach);
+	Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach, bool isSecond = false);
 
 
 	void resetToDefaults();
@@ -118,6 +118,7 @@ protected:
 	float mRelativeY;
 	bool mPaused;
     bool mAutoCallibrate;
+	bool mIsSecondPlayer;
 
 	Ogre::SceneNode *mMagnetNode;
 

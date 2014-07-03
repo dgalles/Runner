@@ -25,6 +25,8 @@ public:
 	void Shake(float time = 1);
 	void Pause();
 	void UnPause();
+	bool getReview() { return mReview; }
+	void setReview(bool rev) {mReview = rev;}
 protected:
 
     Ogre::Camera *mRenderCamera;
@@ -47,4 +49,5 @@ protected:
 	float mShakeRoll;
 	float mShakePitch;
 	Ogre::Vector3 mShakeOffset;
+	bool mReview;
 };

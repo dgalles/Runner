@@ -108,8 +108,13 @@ void SoundBank::setup()
 
 
 	mHasBeenSetup = true;
-	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+	int error = Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
+	if (error != 0)
+	{
+		mSoundEnabled = false;
+		return;
+	}
 	// TODO:  The following should all be read in from a file in Content.
 	///       not hardcorded.
 
@@ -204,7 +209,10 @@ void SoundBank::fadeIn(std::string id, int ms, bool repeat)
 
 void SoundBank::fadeOut(std::string id, int ms)
 {
-	mChunks[mSoundIndex][id]->fadeOut(ms);
+	if (mSoundEnabled)
+	{
+		mChunks[mSoundIndex][id]->fadeOut(ms);
+	}
 }
 
 void SoundBank::addSound(SoundChunk* s, std::string id, int index)

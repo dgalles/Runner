@@ -21,7 +21,7 @@ namespace Ogre
 class MainListener : public Ogre::FrameListener
 {
 public:
- 	MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world[], RunnerCamera *cams[], Kinect *sensor, XInputManager *gamepad, Player *player[], HUD *hud, Achievements *ach[]);
+ 	MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *cams[], Kinect *sensor, XInputManager *gamepad, Player *player[], HUD *hud, Achievements *ach[]);
 	//MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *pongCam, XInputManager *gamepad, Player *player, HUD *hud);
 
 	bool frameStarted(const Ogre::FrameEvent &evt);
@@ -33,7 +33,7 @@ public:
 protected:
 	InputHandler *mInputHandler;
 	AIManager *mAIManager;
-	World *mWorld[2];
+	World *mWorld;
     RunnerCamera *mRunnerCamera[2];
 	Kinect     *mKinect;
 	XInputManager *mGamepad;
