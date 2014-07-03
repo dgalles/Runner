@@ -35,11 +35,11 @@ void Ghost::think(float time)
 
 	if (mPlayingBack)
 	{
-		while (mDataindex < mData.size() + 1 && mData[mDataindex+1].mTime < mCurrentTime)
+		while (mDataindex < (int) mData.size() + 1 && mData[mDataindex+1].mTime < mCurrentTime)
 		{
 			mDataindex++;
 		}
-		if (mDataindex >= mData.size() - 1)
+		if (mDataindex >= (int) mData.size() - 1)
 		{
 			return;
 		}
@@ -48,10 +48,10 @@ void Ghost::think(float time)
 			                  ((mData[mDataindex].mSegment + mData[mDataindex].mPercent));
 
 		int segment = mData[mDataindex].mSegment + (int) segmentDelta;
-		float percent = segmentDelta - (int) segmentDelta;
+		float segPercent = segmentDelta - (int) segmentDelta;
 
-		float xPos = mData[mDataindex].mXdelta + ( mData[mDataindex + 1].mXdelta -  mData[mDataindex].mXdelta) * percent;
-		float lean = mData[mDataindex].mLean + ( mData[mDataindex + 1].mLean -  mData[mDataindex].mLean) * percent;
+		float xPos = mData[mDataindex].mXdelta + ( mData[mDataindex + 1].mXdelta -  mData[mDataindex].mXdelta) * segPercent;
+		float lean = mData[mDataindex].mLean + ( mData[mDataindex + 1].mLean -  mData[mDataindex].mLean) * segPercent;
 
 	}
 }
@@ -76,7 +76,7 @@ void  Ghost::startPlayback()
 {
 	mDataindex = 0;
 	mCurrentTime = 0;
-	mRunnerObject->setAlpha(0.3);
+	mRunnerObject->setAlpha(0.3f);
 }
 
 void  Ghost::readFile(std::string filename)

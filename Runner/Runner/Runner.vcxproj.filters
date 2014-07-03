@@ -57,6 +57,7 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="JsonUtils.cpp" />
     <ClCompile Include="Ghost.cpp" />
+    <ClCompile Include="Store.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIManager.h">
@@ -113,6 +114,7 @@
     <ClInclude Include="Receivers.h" />
     <ClInclude Include="JsonUtils.h" />
     <ClInclude Include="Ghost.h" />
+    <ClInclude Include="Store.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header File">

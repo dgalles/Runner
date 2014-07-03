@@ -144,6 +144,7 @@ copy resources.cfg "$(OutDir)"</Command>
     <ClInclude Include="Runner.h" />
     <ClInclude Include="RunnerObject.h" />
     <ClInclude Include="Sound.h" />
+    <ClInclude Include="Store.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="XInputManager.h" />
   </ItemGroup>
@@ -168,6 +169,7 @@ copy resources.cfg "$(OutDir)"</Command>
     <ClCompile Include="Runner.cpp" />
     <ClCompile Include="RunnerObject.cpp" />
     <ClCompile Include="Sound.cpp" />
+    <ClCompile Include="Store.cpp" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="XInputManager.cpp" />
   </ItemGroup>

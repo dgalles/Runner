@@ -78,6 +78,7 @@ void Player::setup()
 	mMagnetTime = 0;
 	mMagnetActive = false;
 
+	mTimeSinceLastLog = 0;
 
 	mBoostsHit = 0;
 	mShieldsHit = 0;
@@ -87,6 +88,10 @@ void Player::setup()
 	mPaused = true;
 	mDistanceWithoutCoins = 0.0f;
 	mMaxDistWithoutCoins = 0.0f;
+
+	mLeftCoinsCollected = 0;
+	mRightCoinsCollected = 0;
+	mMiddleCoinsCollected = 0;
 
 	mCurrentSegment = 0;
 	mSegmentPercent = 0.3f;
@@ -200,6 +205,18 @@ void
             Ogre::Vector3 MTV;
             if (d.object->collides(mPlayerObject, MTV))
 			{
+				if (d.relativeX < 0)
+				{
+					mLeftCoinsCollected++;
+				}
+				else if (d.relativeX > 0)
+				{
+					mRightCoinsCollected++;
+				}
+				else
+				{
+					mMiddleCoinsCollected++;
+				}
                 d.object->setScale(Ogre::Vector3::ZERO);
 				d.object->setPosition(Ogre::Vector3(0,0,0));
                 mCoinsCollected++;
@@ -397,6 +414,21 @@ void Player::setLeanEqualsDuck(bool val)
 }
 
 
+void Player::SendData(float time)
+{
+		mTimeSinceLastLog += time;
+		if(mTimeSinceLastLog >= 1.0)
+		{
+			for (std::vector<PlyrDataMsgr *>::iterator it = mLogger.begin(); it != mLogger.end(); it++)
+			{
+				(*it)->ReceivePlyrData(new PlyrData("", mLeftCoinsCollected,mRightCoinsCollected,mMiddleCoinsCollected,
+					mWorld->getCoinsMissedLeft(), mWorld->getCoinsMissedRight(), mWorld->getCoinsMissedMiddle(), mCurrentSpeed));
+			} 
+			mTimeSinceLastLog = 0.0;
+		}
+
+}
+
 void 
 	Player::Think(float time)
 {
@@ -406,7 +438,7 @@ void
 		return;
 	}
 
-
+	SendData(time);
 
 	if (mAlive)
 	{

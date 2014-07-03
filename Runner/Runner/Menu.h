@@ -44,6 +44,8 @@ public:
 
 	void think(float time);
 
+	float getItemSpacing() { return mItemSpacing; }
+
 	void setItemHeight(float height);
 	void setItemSpacing(float spacing);
 
@@ -113,6 +115,7 @@ protected:
 		bool mSaved;
 		bool mChanged;
 		Ogre::String mText;
+		Ogre::OverlayContainer *getPanelText() { return mParent->mPanelText;}
 
 	};
 
