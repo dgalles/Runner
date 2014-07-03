@@ -1,4 +1,5 @@
 #include "OgreVector3.h"
+#include "Receivers.h"
 class World;
 class XInputManager;
 class Ogre::SceneNode;
@@ -96,12 +97,14 @@ public:
 
 	void setArrowDistance(int newDelta) { mWarningDelta = newDelta; }
 	int getArrowDistance() { return mWarningDelta; }
+	
+	void addPlayerListener(PlyrDataMsgr *listener) { mLogger.push_back(listener); }
 
-    void reset();
+	void reset();
 
 protected:
 	void updateAchievements();
-
+	void SendData(float time);
 	void updateAnglesFromControls(Ogre::Degree &angle, Ogre::Degree &angle2);
 
 	void kill();
@@ -130,6 +133,9 @@ protected:
 	Ogre::SceneNode *debris[4];
 
 	int mTrackLookahead;
+
+	float mTimeSinceLastLog;
+	std::vector<PlyrDataMsgr *> mLogger;
 
 	float mCurrentSpeed;
 	float mInitialSpeed;
@@ -188,4 +194,11 @@ protected:
 	float mMagnetActive;
 	bool mLeanEqualsDuck;
 	float mMaxSpeed;
+
+	int mLeftCoinsCollected;
+	int mRightCoinsCollected;
+	int mMiddleCoinsCollected;
+
+
+
 };

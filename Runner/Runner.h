@@ -30,6 +30,8 @@ class MenuManager;
 class Achievements;
 class LoginWrapper;
 class Logger;
+class Store;
+class Menu;
 
 class Runner :  public Ogre::WindowEventListener
 {
@@ -80,6 +82,7 @@ protected:
 
 	void startGame();
     void setupMenus(bool login = true) ;
+	Store * createStore(Menu *parent);
 
 	AIManager *mAIManager;
 	InputHandler *mInputHandler;

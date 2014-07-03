@@ -85,12 +85,20 @@ public:
 	bool getUsingSimpleMaterials() { return mSimpleMaterials; }
 	void setUsingSimpleMaterials(bool simple) {  mSimpleMaterials = simple; }
 
+	int getCoinsMissedLeft() { return mLeftCoinsMissed;}
+	int getCoinsMissedRight() { return mRightCoinsMissed; }
+	int getCoinsMissedMiddle() { return mMiddleCoinsMissed; }
 
 protected:
 
+
+	int mLeftCoinsMissed;
+	int mRightCoinsMissed;
+	int mMiddleCoinsMissed;
+
     void setup();
 
-	void clearBefore(ItemQueue<ItemQueueData> *queue, int segment);
+	void clearBefore(ItemQueue<ItemQueueData> *queue, int segment, bool isCoins);
 
 	Ogre::SceneManager *mSceneManager;
 

@@ -49,6 +49,17 @@ protected:
   ServerCom *mScoreSock;
   ServerCom *mLRSock;
   ServerCom *mFBSock;
+
+  ServerCom *mCoinsLeftSock;
+  ServerCom *mCoinsRightSock;
+  ServerCom *mCoinsMiddleSock;
+  ServerCom *mCoinsLeftMissedSock;
+  ServerCom *mCoinsRightMissedSock;
+  ServerCom *mCoinsMiddleMissedSock;
+  ServerCom *mSpeedSock;
+
+
+
   char mPlyrBuf[DEFAULT_BUFSIZE];
   char mKinBuf1[DEFAULT_BUFSIZE];
   char mKinBuf2[DEFAULT_BUFSIZE];

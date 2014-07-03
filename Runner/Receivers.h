@@ -16,36 +16,50 @@ struct PlyrData
 {
   Ogre::String id;
   
-  int totalScore;
-  int currency;
-  int sessionsPlayed;
-  Session LastSession;
+  int leftCoinsCollected;
+  int rightCoinsCollected;
+  int middleCoinsCollected;
+  int leftCoinsMissed;
+  int middleCoinsMissed;
+  int rightCoinsMissed;
+  float speed;
 
-  PlyrData()
-  {
-    id = "";
-    totalScore = 0;
-    currency = 0;
-    sessionsPlayed = 0;
-  }
+  //PlyrData()
+  //{
+  //  id = "";
+  // leftCoinsCollected = 0;
+  // rightCoinsCollected = 0;
+  // middleCoinsCollected = 0;
+  // leftCoinsMissed = 0;
+  // middleCoinsMissed = 0;
+  // rightCoinsMissed = 0;
+  // speed = 0;
+  //}
 
-  PlyrData(Ogre::String ID, 
-           int tScore = 0, 
-           int cur = 0, 
-           int seshPlayed = 0)
+  PlyrData(Ogre::String ID = "", 
+           int leftCollect = 0, 
+           int rightCollect = 0, 
+           int middleCollect = 0,
+		   int leftMissed = 0,
+		   int rightMissed = 0,
+		   int middleMissed = 0,
+		   float spd = 0) :
+  id(ID), leftCoinsCollected(leftCollect), rightCoinsCollected(rightCollect),middleCoinsCollected(middleCollect),
+	  leftCoinsMissed(leftMissed), rightCoinsMissed(rightMissed), middleCoinsMissed(middleMissed), speed(spd)
   {
-    id = ID;
-    totalScore = tScore;
-    currency = cur;
-    sessionsPlayed = seshPlayed;
+
   }
 
   PlyrData(PlyrData *data)
   {
-    id = data->id;
-    totalScore = data->totalScore;
-    currency = data->currency;
-    sessionsPlayed = data->sessionsPlayed;
+	  id = data->id;
+	  leftCoinsCollected  = data->leftCoinsCollected;
+	  rightCoinsCollected = data->rightCoinsCollected;
+	  middleCoinsCollected = data->middleCoinsCollected;
+	  leftCoinsMissed = data ->leftCoinsMissed;
+	  middleCoinsMissed = data->middleCoinsMissed;
+	  rightCoinsMissed = data->rightCoinsMissed;
+	  speed = data->speed;
   }
 };
 

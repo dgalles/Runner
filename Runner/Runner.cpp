@@ -15,6 +15,7 @@
 #include "OgreConfigFile.h"
 #include "Kinect.h"
 #include "Menu.h"
+#include "Store.h"
 #include "OgreOverlaySystem.h"
 #include "OgreFontManager.h"
 #include "SDL.h"
@@ -120,7 +121,7 @@ Runner::createScene()
 	mHUD = new HUD();
 	mAchievements[0] = new Achievements("Achievements.txt");
 	mAchievements[1] = new Achievements("Achievements.txt");
-	mWorld = new World(mSceneMgr, mHUD, this, true);
+	mWorld = new World(mSceneMgr, mHUD, this, false);
 	//mWorld[1] = new World(mSceneMgr, mHUD, this, true, mWorld[0]->trackPath);
 	mRunnerCamera[0] = new RunnerCamera(mCamera[0], mWorld);
 	//mRunnerCamera[1] = new RunnerCamera(mCamera[1], mWorld[1]);
@@ -141,6 +142,7 @@ Runner::createScene()
 	mLogger->Connect();
 	
 	mKinect->addSkelListener(mLogger);
+	mPlayer[0]->addPlayerListener(mLogger);
 
 }
 void
@@ -279,6 +281,25 @@ void Runner::readConfigStr(int player)
 	}
 }
 
+
+Store * Runner::createStore(Menu *parent)
+{
+
+	 Player *p = mPlayer[0];
+
+	Store *store = new Store("Store", "Store", 0.1, 0.1, 0.1, parent);
+	
+	std::vector<int> prices;
+	prices.push_back(100);
+	prices.push_back(200);
+	prices.push_back(300);
+	prices.push_back(400);
+	prices.push_back(500);
+
+	store->AddStoreElem("Armor", [p]() { return p->getInitialArmor();}, [p](int x) { p->setInitialArmor(x); },1, 5, prices);
+
+	return store;
+}
 void
 Runner::setupMenus(bool loginRequired)
 {
@@ -304,6 +325,10 @@ Runner::setupMenus(bool loginRequired)
     Menu *obstacleMenu = new Menu("Obstacle Options", "obstacle", 0.05f, 0.1f, 0.1f, options);
     Menu *confirmMenu = new Menu("Confirm Profile Reset", "profleReset", 0.1f, 0.1f, 0.1f, advancedOptions);
 
+	Store *store = createStore(mainMenu);
+
+	
+
 	if (loginRequired)
 	{
 		login->enable();
@@ -323,6 +348,7 @@ Runner::setupMenus(bool loginRequired)
 	menus->addMenu(login);
 	menus->addMenu(obstacleMenu);
 	menus->addMenu(confirmMenu);
+	menus->addMenu(store);
 
 	login->AddChooseString("Username",[lm](Ogre::String s) {lm->changeUsername(s); },"",15,false);
 	login->AddChooseString("Password",[lm, this](Ogre::String s) {this->setFromConfigString(lm->changePassword(s));},"",15,true);
@@ -433,7 +459,11 @@ Runner::setupMenus(bool loginRequired)
     mainMenu->AddSelectElement("Show Goals", [mainMenu, a]() {a-> ShowAllAchievements(true); mainMenu->disable();});
 
     mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
-    mainMenu->AddSelectElement("Quit", [l, this]() {this->writeConfigStr(); l->quit();});
+
+	 mainMenu->AddSelectElement("Store", [store, mainMenu]() {store->enable(); mainMenu->disable();});
+
+	
+	mainMenu->AddSelectElement("Quit", [l, this]() {this->writeConfigStr(); l->quit();});
 
     pauseMenu->AddSelectElement("Continue", [pauseMenu, p]() {pauseMenu->disable(); p->setPaused(false); });
     pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w, h, this]() {this->endGame(), h->showHUDElements(false); pauseMenu->disable();mainMenu->enable(); p->setPaused(true); });

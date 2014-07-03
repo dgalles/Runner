@@ -68,6 +68,7 @@ void World::setup()
 	{
 		AddNormalSegment();
 	}
+	addCoins(false,1);
 	for (int i = 0; i < 5; i++)
 	{
 	
@@ -95,7 +96,9 @@ void World::setup()
 	//AddJump();
 	//AddJump();
 	//AddJump();
-
+	mLeftCoinsMissed = 0;
+	mRightCoinsMissed = 0;
+	mMiddleCoinsMissed = 0;
 }
 
 
@@ -114,11 +117,11 @@ void World::reset()
 void 
 	World::clearBarriersBefore(int segment)
 {
-	clearBefore(mSawPowerup, segment);
+	clearBefore(mSawPowerup, segment, false);
 }
 
 void 
-	World::clearBefore(ItemQueue<ItemQueueData> *queue, int segment)
+	World::clearBefore(ItemQueue<ItemQueueData> *queue, int segment, bool isCoins)
 {
 	if (queue->size() == 0)
 		return;
@@ -127,7 +130,25 @@ void
 	while (d.segmentIndex < segment && queue->size() > 0)
 	{
 		RunnerObject *runnerObj = d.object;
-
+		if (isCoins && d.object->getScale().x > 0)
+		{
+			if (d.relativeX < 0)
+			{
+				mLeftCoinsMissed++;
+			}
+			else if (d.relativeX > 0)
+			{
+				mRightCoinsMissed++;
+			}
+			else
+			{
+				mMiddleCoinsMissed++;
+			}
+		}
+		else if (isCoins)
+		{
+			float x = d.relativeX;
+		}
 		delete runnerObj;
 		queue->dequeue();
 		d = queue->atRelativeIndex(0);
@@ -145,7 +166,7 @@ void
 void 
 	World::clearCoinsBefore(int segment)
 {
-	clearBefore(mCoins, segment);
+	clearBefore(mCoins, segment, true);
 
 }
 
@@ -222,7 +243,8 @@ void World::addCoins(bool player)
 void
 	World::addCoins(int segmentToAdd, bool player)
 {
-	const int COINS_PER_SEGMENT = 4;
+
+	 int COINS_PER_SEGMENT = (int) (trackPath->pathLength(segmentToAdd) * 2 / 400);
 
 
 	float r =  rand() / (float) RAND_MAX;
