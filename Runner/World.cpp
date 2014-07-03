@@ -29,15 +29,15 @@ void World::resetToDefaults()
 	mSimpleMaterials = false;
 }
 
-World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool isMirror, BezierPath *path)   : mSceneManager(sceneManager), mTrackSceneNodes(), 
-	width(20.0f), mHUD(hud), mBase(base), mIsMirror(isMirror), trackPath(path)
+World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useMirror)   : mSceneManager(sceneManager), mTrackSceneNodes(), 
+	width(20.0f), mHUD(hud), mBase(base), mUseMirror(useMirror)
 {
 	mMeshIDIndex = 0;
 	resetToDefaults();
-	setup(path);
+	setup();
 }
 
-void World::setup(BezierPath *path /* = NULL */)
+void World::setup()
 {
 	// Global illumination for now.  Adding individual light sources will make you scene look more realistic
 	mSceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
@@ -46,29 +46,18 @@ void World::setup(BezierPath *path /* = NULL */)
 	mLastObjSeg = 0;
 
 
-	mLastCoinAddedSegment = 0;
+	mLastCoinAddedSegment[0] = 0;
+	mLastCoinAddedSegment[1] = 0;
 	mUnitsPerSegment = 10;
 	mUnitsPerPathLength = 0.1f;
 	mCoins = new ItemQueue<ItemQueueData>(500);
 	mSawPowerup = new ItemQueue<ItemQueueData>(100);
 
-	if (path == NULL && !mIsMirror)
-	{
 	trackPath = new BezierPath(Ogre::Vector3(0,0,0),
 		Ogre::Vector3(50,0,0),
 		Ogre::Vector3(100,0,0),
 		Ogre::Vector3(150,0,0));
 
-	}
-	else if (path != NULL && mIsMirror)
-	{
-		trackPath = path;
-	}
-	else
-	{
-
-		// Throw here?
-	}
 	int size = trackPath->NumSegments();
 
 	for (int i = 0; i < size; i++)
@@ -81,16 +70,27 @@ void World::setup(BezierPath *path /* = NULL */)
 	}
 	for (int i = 0; i < 5; i++)
 	{
-		if (path == NULL)
-		{
+	
 			AddRandomSegment();
-		}
-		addCoins();
-	}
-	AddObjects(3);
-	AddObjects(4);
-	AddObjects(5);
 
+		addCoins(false);
+		if (mUseMirror)
+		{
+		addCoins(true);
+
+		}
+	}
+	AddObjects(3, false);
+	AddObjects(4, false);
+	AddObjects(5, false);
+
+	if (mUseMirror)
+	{
+		AddObjects(3, true);
+		AddObjects(4, true);
+		AddObjects(5, true);
+
+	}
 	//AddJump();
 	//AddJump();
 	//AddJump();
@@ -99,19 +99,15 @@ void World::setup(BezierPath *path /* = NULL */)
 }
 
 
-void World::reset(BezierPath *path)
+void World::reset()
 {
 	delete mSawPowerup;
 	delete mCoins;
-	if (!mIsMirror)
-	{
 		mSceneManager->clearScene();
 		delete trackPath;
-	}
-	trackPath = path;
 	mSceneManager->setSkyBox(true, "Skybox/Cloudy");
 
-	setup(path);
+	setup();
 }
 
 
@@ -154,9 +150,9 @@ void
 }
 
 void 
-	World::getWorldPositionAndMatrix(int segment, float percentage, float relativeX, float relativeY, Ogre::Vector3 &worldPosition, Ogre::Vector3 &forward, Ogre::Vector3 &right, Ogre::Vector3 &up)
+	World::getWorldPositionAndMatrix(int segment, float percentage, float relativeX, float relativeY, Ogre::Vector3 &worldPosition, Ogre::Vector3 &forward, Ogre::Vector3 &right, Ogre::Vector3 &up, bool isSecondPlayer)
 {
-	trackPath->getPointAndRotaionMatrix(segment, percentage, worldPosition, forward, right, up);
+	trackPath->getPointAndRotaionMatrix(segment, percentage, worldPosition, forward, right, up, isSecondPlayer);
 	worldPosition += right*relativeX;
 	worldPosition += up*relativeY;
 }
@@ -218,13 +214,13 @@ void
 
 
 
-void World::addCoins()
+void World::addCoins(bool player)
 {
-	addCoins(mLastCoinAddedSegment + 1);
+	addCoins(mLastCoinAddedSegment[(int) player] + 1, player);
 }
 
 void
-	World::addCoins(int segmentToAdd)
+	World::addCoins(int segmentToAdd, bool player)
 {
 	const int COINS_PER_SEGMENT = 4;
 
@@ -250,7 +246,7 @@ void
 			Ogre::Vector3 pos;
 			Ogre::Vector3 right;
 			Ogre::Vector3 up;
-			getWorldPositionAndMatrix(segmentToAdd,i* 1.0f / (float) COINS_PER_SEGMENT, relX, 10, pos,forward, right, up);
+			getWorldPositionAndMatrix(segmentToAdd,i* 1.0f / (float) COINS_PER_SEGMENT, relX, 10, pos,forward, right, up, player);
 			Ogre::Quaternion q(-right,up,forward);
 
 			coin->setPosition(pos);
@@ -259,20 +255,20 @@ void
 			mCoins->enqueue(ItemQueueData(segmentToAdd,i* 1.0f / (float) COINS_PER_SEGMENT,relX, 10, coin));
 		}
 	}
-	mLastCoinAddedSegment = std::max(segmentToAdd, mLastCoinAddedSegment);
+	mLastCoinAddedSegment[(int) player] = std::max(segmentToAdd, mLastCoinAddedSegment[(int) player]);
 
 
 }
 
 void 
-	World::addPoints(float percent, int segmentIndextToAdd, std::vector<Ogre::Vector3> &points, std::vector<Ogre::Vector3> &normals)
+	World::addPoints(float percent, int segmentIndextToAdd, std::vector<Ogre::Vector3> &points, std::vector<Ogre::Vector3> &normals, bool mirror)
 
 {
 	Ogre::Vector3 centerPoint;
 	Ogre::Vector3 right;
 	Ogre::Vector3 up;
 	Ogre::Vector3 forward;
-	trackPath->getPointAndRotaionMatrix(segmentIndextToAdd,percent,centerPoint,forward,right, up);
+	trackPath->getPointAndRotaionMatrix(segmentIndextToAdd,percent,centerPoint,forward,right, up, mirror);
 
 	float deltaLeft = 30;
 	float deltaRight  = 30;
@@ -297,8 +293,23 @@ void
 	normals.push_back(-up);
 }
 
+
 void
 	World::addTrackNodes(int segmentIndextToAdd, bool startCap, bool endcap)
+{
+
+	addTrackNodesOne(segmentIndextToAdd, false, startCap, endcap);
+	if (mUseMirror)
+	{
+		addTrackNodesOne(segmentIndextToAdd, true, startCap, endcap);
+
+	}
+
+}
+
+
+void
+	World::addTrackNodesOne(int segmentIndextToAdd, bool mirror, bool startCap, bool endcap)
 {
 	if (!mDrawTrack)
 		return;
@@ -310,7 +321,7 @@ void
 	// Add a little before this segment, so we don't see any gaps ..
 	if (segmentIndextToAdd > 0)
 	{
-		addPoints(0.95f, segmentIndextToAdd-1, points, normals);
+		addPoints(0.95f, segmentIndextToAdd-1, points, normals, mirror);
 	}
 	float deltaPercent = 20 / trackPath->pathLength(segmentIndextToAdd);
 
@@ -318,10 +329,10 @@ void
 	{
 		float percent = ((float) j) / (trackPath->pathLength(segmentIndextToAdd) * mUnitsPerPathLength);
 
-		addPoints(percent, segmentIndextToAdd, points, normals);
+		addPoints(percent, segmentIndextToAdd, points, normals, mirror);
 	}
 
-	addPoints(1, segmentIndextToAdd, points, normals);
+	addPoints(1, segmentIndextToAdd, points, normals, mirror);
 
 
 
@@ -556,7 +567,7 @@ void World::AddBarrierSegment(BezierPath::Kind type)
 
 }
 
-void World::AddObjects(int segment)
+void World::AddObjects(int segment, bool player)
 {
 
 	if (((trackPath->kind(segment) != BezierPath::Kind::BLADES) && trackPath->kind(segment) != BezierPath::Kind::BOOST
@@ -702,7 +713,7 @@ void World::AddObjects(int segment)
 			Ogre::Vector3 up;
 
 
-			getWorldPositionAndMatrix(segment, barrierPercent, relX[i], relY[i], pos,forward, right, up);
+			getWorldPositionAndMatrix(segment, barrierPercent, relX[i], relY[i], pos,forward, right, up, player);
 			Ogre::Quaternion q(-right,up,forward);
 
 			saw->setPosition(pos); ///5
@@ -741,7 +752,7 @@ void World::AddObjects(int segment)
 		Ogre::Vector3 right;
 		Ogre::Vector3 up;
 
-		getWorldPositionAndMatrix(segment, barrierPercent, relX, relY, pos,forward, right, up);
+		getWorldPositionAndMatrix(segment, barrierPercent, relX, relY, pos,forward, right, up, player);
 		Ogre::Quaternion q(-right,up,forward);
 
 		RunnerObject *obj;

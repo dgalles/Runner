@@ -120,9 +120,9 @@ Runner::createScene()
 	mHUD = new HUD();
 	mAchievements[0] = new Achievements("Achievements.txt");
 	mAchievements[1] = new Achievements("Achievements.txt");
-	mWorld[0] = new World(mSceneMgr, mHUD, this, false);
+	mWorld = new World(mSceneMgr, mHUD, this, true);
 	//mWorld[1] = new World(mSceneMgr, mHUD, this, true, mWorld[0]->trackPath);
-	mRunnerCamera[0] = new RunnerCamera(mCamera[0], mWorld[0]);
+	mRunnerCamera[0] = new RunnerCamera(mCamera[0], mWorld);
 	//mRunnerCamera[1] = new RunnerCamera(mCamera[1], mWorld[1]);
 	InputHandler::getInstance()->initialize(mWindow);
 	InputHandler::getInstance()->setEventCallback(MenuManager::getInstance());
@@ -130,11 +130,11 @@ Runner::createScene()
 	mKinect = new Kinect();
 	mKinect->initSensor();
 	mGamepad = new XInputManager();
-	mPlayer[0] = new Player(mWorld[0], mGamepad, mKinect, mAchievements[0]);
+	mPlayer[0] = new Player(mWorld, mGamepad, mKinect, mAchievements[0]);
 	//mPlayer[1] = new Player(mWorld[1], mGamepad, mKinect, mAchievements[1]);
 	mRunnerCamera[0]->TrackObject(mPlayer[0]);
 	//mRunnerCamera[1]->TrackObject(mPlayer[1]);
-	mWorld[0]->addCamera(mRunnerCamera[0]);
+	mWorld->addCamera(mRunnerCamera[0]);
 
 	mLogin = new LoginWrapper();
 	mLogger = new Logger(mLogin);
@@ -146,7 +146,7 @@ Runner::createScene()
 void
 	Runner::startGame()
 {
-	mWorld[0]->reset(); 
+	mWorld->reset(); 
 	//mWorld[1]->reset(); 
 	mPlayer[0]->reset(); 
 	//mPlayer[1]->reset(); 
@@ -287,7 +287,7 @@ Runner::setupMenus(bool loginRequired)
     HUD *h = mHUD;
     MainListener *l = mFrameListener;
     Player *p = mPlayer[0];
-    World *w = mWorld[0];
+    World *w = mWorld;
     Kinect *k = mKinect;
 	Achievements *a = mAchievements[0];
 	SoundBank *sb = SoundBank::getInstance();
@@ -599,7 +599,7 @@ Runner::setupResources(void)
 void
 Runner::destroyScene()
 {
-    delete mWorld[0];
+    delete mWorld;
     // delete mWorld[1];
     // delete mAIManager;
     delete mRunnerCamera[0];

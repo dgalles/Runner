@@ -6,7 +6,7 @@
 #include "Player.h"
 
 RunnerCamera::RunnerCamera(Ogre::Camera *renderCamera, World *world) :
-mRenderCamera(renderCamera), mWorld(world), mCurrentTrackingObject(0)
+mRenderCamera(renderCamera), mWorld(world), mCurrentTrackingObject(0), mReview(false)
 {
 	currentSegment = 0;
 	currentPercent = 0.3f;
@@ -151,6 +151,10 @@ RunnerCamera::Think(float time)
 			cameraPercent = 0;
 		}
 		
+		if (mReview)
+		{
+			segment++;
+		}
 
 
 		mWorld->trackPath->getPointAndRotaionMatrix(segment, cameraPercent, cameraPos, cameraForward, cameraRight,cameraUp);

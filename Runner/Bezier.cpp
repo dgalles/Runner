@@ -37,32 +37,30 @@ void
 	point = getPoint(pathIndex, percentage, mirrored);
 
 
-		if (percentage + 0.03 > 1)
+	if (percentage + 0.03 > 1)
+	{
+		if (pathIndex == NumSegments() - 1)
 		{
-			if (pathIndex == NumSegments() - 1)
-			{
-				Ogre::Vector3 nextPoint = getPoint(pathIndex, percentage-0.03f);
-				forward = point - nextPoint;
-			}
-			else
-			{
-				Ogre::Vector3 nextPoint = getPoint(pathIndex+1, percentage + 0.03f - 1);
-				forward = nextPoint - point;
-			}
+			Ogre::Vector3 nextPoint = getPoint(pathIndex, percentage-0.03f);
+			forward = point - nextPoint;
 		}
 		else
 		{
-			Ogre::Vector3 nextPoint = getPoint(pathIndex, percentage + 0.03f);
+			Ogre::Vector3 nextPoint = getPoint(pathIndex+1, percentage + 0.03f - 1);
 			forward = nextPoint - point;
 		}
-		if (mirrored)
-		{
-			point.z = - point.z;
-			point.x = - point.x;
-			forward.z = -forward.z;
-			forward.x = -forward.x;
-		}
-		forward.normalise();
+	}
+	else
+	{
+		Ogre::Vector3 nextPoint = getPoint(pathIndex, percentage + 0.03f);
+		forward = nextPoint - point;
+	}
+	if (mirrored)
+	{
+		forward.z = -forward.z;
+		forward.x = -forward.x;
+	}
+	forward.normalise();
 }
 
 

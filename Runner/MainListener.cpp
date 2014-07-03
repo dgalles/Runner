@@ -12,14 +12,13 @@
 #include <stdio.h>
 
 
-MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world[], RunnerCamera *cams[], Kinect *sensor, XInputManager *gamepad, Player *player[],  HUD *hud, Achievements *ach[]) :
+MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *cams[], Kinect *sensor, XInputManager *gamepad, Player *player[],  HUD *hud, Achievements *ach[]) :
 //MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *cam, XInputManager *gamepad, Player *player,  HUD *hud) :
-mRenderWindow(window), mAIManager(aiManager), mGamepad(gamepad), mHUD(hud),  mKinect(sensor)
+mRenderWindow(window), mAIManager(aiManager), mGamepad(gamepad), mHUD(hud),  mKinect(sensor), mWorld(world)
 {
 	for (int i = 0; i < 2; i++)
 	{
 		mRunnerCamera[i] = cams[i];
-		mWorld[i] = world[i];
 		mPlayer[i] = player[i];
 		mAchievements[i] = ach[i];
 	}
@@ -54,7 +53,7 @@ bool
 		//   Feel free to change this to something that makes more sense to you.
 		for (int i = 0; i < 1; i++)
 		{
-			mWorld[i]->Think(time);
+			mWorld->Think(time);
 			mPlayer[i]->Think(time);
 			mRunnerCamera[0]->Think(time);
 			mAchievements[i]->Think(time);
@@ -87,8 +86,8 @@ bool
             MenuManager::getInstance()->getMenu("pause")->enable();
             mPlayer[0]->setPaused(true);
           //  mPlayer[1]->setPaused(true);
-			mWorld[0]->getHUD()->setShowDecreaseSpeed(false);
-			mWorld[0]->getHUD()->setShowIncreaseSpeed(false);
+			mWorld->getHUD()->setShowDecreaseSpeed(false);
+			mWorld->getHUD()->setShowIncreaseSpeed(false);
 			//mWorld[1]->getHUD()->setShowDecreaseSpeed(false);
 			//mWorld[1]->getHUD()->setShowIncreaseSpeed(false);
         }
