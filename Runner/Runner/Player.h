@@ -190,6 +190,7 @@ protected:
 	Achievements *mAchievements;
 	static const float SPEED_MULTIPLYER;
 
+	float mTime;
 
 
 	int mWarningDelta;
