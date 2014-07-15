@@ -2,7 +2,7 @@
 #include "OgreOverlay.h"
 #include "OgreOverlayManager.h"
 #include "OgreOverlayContainer.h"
- #include <OgreTextAreaOverlayElement.h>
+#include <OgreTextAreaOverlayElement.h>
 #include "OgreFontManager.h"
 #include "OgreOverlayElement.h"
 #include "OgreIteratorWrappers.h"
@@ -13,7 +13,7 @@ HUD::HUD() : mArmorIndicator()
 
 	Ogre::FontManager::getSingleton().getByName("Big")->load();
 
-    mShowArrows = true;
+	mShowArrows = true;
 	Ogre::OverlayManager& om = Ogre::OverlayManager::getSingleton();
 	mArrowOverlay[HUD::left] = om.getByName("HUD/LeftArrow");
 	mArrowOverlay[HUD::right] = om.getByName("HUD/RightArrow");
@@ -38,6 +38,13 @@ HUD::HUD() : mArmorIndicator()
 	mCoinsText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Coins");
 	mDistanceText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Distance");
 	mSpeedText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Speed");
+
+	mGhostCoinsText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel/Coins");
+	mGhostDistanceText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel/Distance");
+	mGhostSpeedText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel/Speed");
+
+
+
 
 	int armorIndex =  1;
 	while (Ogre::OverlayManager::getSingleton().hasOverlayElement("HUD/Armor/" + std::to_string(armorIndex)))
@@ -65,7 +72,7 @@ void HUD::showHUDElements(bool show)
 }
 
 void 
-HUD::stopAllArrows()
+	HUD::stopAllArrows()
 {
 	for (int i = ((int) Kind::none) + 1; i < Kind::last; i++)
 	{
@@ -74,11 +81,19 @@ HUD::stopAllArrows()
 }
 
 
-void HUD::setCoins(int newScore)
+void HUD::setCoins(int newScore, bool ghost)
 {
 	std::string score = "Coins = ";
 	score.append(std::to_string((long long)newScore));
-	mCoinsText->setCaption(score);
+
+	if (ghost)
+	{
+		mGhostCoinsText->setCaption(score);
+	}
+	else
+	{
+		mCoinsText->setCaption(score);
+	}
 }
 
 
@@ -108,14 +123,19 @@ void  HUD::setShowDecreaseSpeed(bool show)
 }
 
 
-void HUD::setSpeed(int speed)
+void HUD::setSpeed(int speed, bool ghost)
 {
 	std::string score = "Speed = ";
 	score.append(std::to_string((long long)speed));
-    score.append(" m / s");
-	mSpeedText->setCaption(score);
-
-
+	score.append(" m / s");
+	if (ghost)
+	{
+		mGhostSpeedText->setCaption(score);
+	}
+	else
+	{
+		mSpeedText->setCaption(score);
+	}
 }
 
 
@@ -137,54 +157,61 @@ void HUD::setArmorLevel(int level)
 }
 
 
-void HUD::setDistance(int newScore)
+void HUD::setDistance(int newScore, bool ghost)
 {
 	std::string score = "Distance = ";
 	score.append(std::to_string((long long)newScore));
-    score.append(" meters");
-	mDistanceText->setCaption(score);
+	score.append(" meters");
+	if (ghost)
+	{
+		mGhostDistanceText->setCaption(score);
+	}
+	else
+	{
+		mDistanceText->setCaption(score);
+	}
 }
 void HUD::update(float time)
 {
-    for (int i = HUD::none + 1; i < (int) HUD::last; i++)
-    {
-        if (mArrowTimeRemaining[i] <= time)
-        {
-            mArrowTimeRemaining[i] = 0;
-            mArrowStatus[i] = false;
-            mArrowOverlay[i]->hide();
-        }
-        else
-        {
-            mArrowTimeRemaining[i] -= time;
-            if (mArrowFlashTime[i] <= time)
-            {
-                mArrowFlashTime[i] += mArrowFlashDelay[i] - time;
-                mArrowStatus[i] = !mArrowStatus[i];
-                if (mArrowStatus[i] && mShowArrows && mShowHUDElems)
-                {
-                    mArrowOverlay[i]->show();
-                }
-                else
-                {
-                    mArrowOverlay[i]->hide();
-                }
-            }
-            else
-            {
-                mArrowFlashTime[i] -= time;
-            }
-        }
-    }
+	for (int i = HUD::none + 1; i < (int) HUD::last; i++)
+	{
+		if (mArrowTimeRemaining[i] <= time)
+		{
+			mArrowTimeRemaining[i] = 0;
+			mArrowStatus[i] = false;
+			mArrowOverlay[i]->hide();
+		}
+		else
+		{
+			mArrowTimeRemaining[i] -= time;
+			if (mArrowFlashTime[i] <= time)
+			{
+				mArrowFlashTime[i] += mArrowFlashDelay[i] - time;
+				mArrowStatus[i] = !mArrowStatus[i];
+				if (mArrowStatus[i] && mShowArrows && mShowHUDElems)
+				{
+					mArrowOverlay[i]->show();
+				}
+				else
+				{
+					mArrowOverlay[i]->hide();
+				}
+			}
+			else
+			{
+				mArrowFlashTime[i] -= time;
+			}
+		}
+	}
 
 
 }
 
 void HUD::stopArrow(Kind type)
 {
-    mArrowStatus[(int) type] = false;
-    mArrowTimeRemaining[(int) type] = 0;
-    mArrowOverlay[(int) type]->hide();
+	mArrowStatus[(int) type] = false;
+	mArrowTimeRemaining[(int) type] = 0;
+	mArrowOverlay[(int) type]->hide();
 	mArrowFlashTime[(int) type] = 0;
 
 	SoundBank *sb = SoundBank::getInstance();
@@ -196,7 +223,7 @@ void HUD::stopArrow(Kind type)
 	}
 	else if (type == Kind::right)
 	{
-	sb->fadeOut("right", 1000);
+		sb->fadeOut("right", 1000);
 
 	}
 	else if (type == Kind::down)
@@ -206,11 +233,11 @@ void HUD::stopArrow(Kind type)
 	}
 	else if (type == Kind::center)
 	{
-	sb->fadeOut("center", 1000);
+		sb->fadeOut("center", 1000);
 	}
-		else if (type == Kind::up)
+	else if (type == Kind::up)
 	{
-	sb->fadeOut("up", 1000);
+		sb->fadeOut("up", 1000);
 	}
 	//	Sound::stopPlaying();
 }
@@ -225,7 +252,7 @@ void HUD::startArrow(HUD::Kind type, float time /*= 5.0*/,  float flashDelay /* 
 	mArrowTimeRemaining[(int) type] = time;
 	if (!mArrowStatus[(int) type])
 	{
-			SoundBank *sb = SoundBank::getInstance();
+		SoundBank *sb = SoundBank::getInstance();
 
 		mArrowStatus[(int) type] = true;
 		if (mShowArrows && mShowHUDElems)

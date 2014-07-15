@@ -123,6 +123,7 @@ void Player::setup()
 	mManualAccel = 5;
 	mArmor = mInitialArmor;
 	mWorld->getHUD()->setArmorLevel(mArmor);
+	mTime = 0;
 }
 
 Ogre::Vector3 
@@ -705,9 +706,11 @@ void
 
 		mPlayerObject->roll(Ogre::Radian(angle));
 
+		mTime += time;
 		if (mGhost != NULL)
 		{
-			mGhost->record(time, mCurrentSegment, 	mSegmentPercent, mRelativeX, mRelativeY, angle, angle2);			
+
+			mGhost->record(mTime, mCurrentSegment, 	mSegmentPercent, mRelativeX, mRelativeY, angle, angle2);			
 		}
 
 		// Collision with coins

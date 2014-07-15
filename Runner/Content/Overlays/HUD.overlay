@@ -10,7 +10,7 @@ HUD/Score
       metrics_mode relative
 
 		left 0.01
-		top 0.8
+		top 0.7
 		element TextArea(HUD/Armor/Text)
 		{
 			font_name Big
@@ -135,7 +135,63 @@ HUD/Score
 		}
 
 		
+	
+		
+		
+		
+		
     }
+	
+	 container Panel(HUD/Score/GhostPanel)
+    {
+      metrics_mode relative
+
+      left 0.0
+      top 0.8
+      width 1
+      height 0.1
+		
+		element TextArea(HUD/Score/GhostPanel/Coins)
+		{
+		metrics_mode relative
+		
+         left 0.02
+         font_name Big
+         char_height 0.04
+         colour 1 1 1
+         caption Coins = 0
+		}
+		element TextArea(HUD/Score/GhostPanel/Distance)
+		{
+		metrics_mode relative
+		
+         left 0.3
+         font_name Big
+         char_height 0.04
+         colour 1 1 1
+         caption Distance = 0 meters
+		}
+		
+		element TextArea(HUD/Score/GhostPanel/Speed)
+		{
+		metrics_mode relative
+		
+         left 0.7
+         font_name Big
+         char_height 0.04
+         colour 1 1 1
+         caption Speed = 0 m / s
+		}
+
+		
+	
+		
+		
+		
+		
+    }
+	
+	
 }
 
 HUD/LeftArrow

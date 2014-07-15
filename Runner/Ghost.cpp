@@ -1,10 +1,14 @@
 #include "Ghost.h"
 #include "RunnerObject.h"
 #include "World.h"
+#include "OgreOverlayManager.h"
+#include "OgreOverlayContainer.h"
+ #include <OgreTextAreaOverlayElement.h>
+
 
 Ghost::Ghost(World *w) : mWorld(w)
 {
-	mSampleLength = 1.0f;
+	mSampleLength = 1;
 	mPlayingBack= false;
 }
 
@@ -35,7 +39,7 @@ void Ghost::think(float time)
 
 	if (mPlayingBack && mAlive)
 	{
-		while (mDataindex < (int) mData.size() + 1 && mData[mDataindex+1].mTime < mCurrentTime)
+		while (mDataindex < (int) mData.size() - 1 && mData[mDataindex+1].mTime <= mCurrentTime)
 		{
 			mDataindex++;
 		}
@@ -45,21 +49,20 @@ void Ghost::think(float time)
 		}
 		float percent = (mCurrentTime - mData[mDataindex].mTime) / (mData[mDataindex+1].mTime - mData[mDataindex].mTime);
 		float segmentDelta =  (mData[mDataindex+1].mSegment + mData[mDataindex+1].mPercent) - 
-			                  ((mData[mDataindex].mSegment + mData[mDataindex].mPercent));
+			                  ((mData[mDataindex].mSegment + mData[mDataindex].mPercent)) * percent;
 
-		int segment = mData[mDataindex].mSegment + (int) segmentDelta;
-		float segPercent = segmentDelta - (int) segmentDelta;
+		int segment = mData[mDataindex].mSegment + (int) (segmentDelta + mData[mDataindex].mPercent);
+		float segPercent = segmentDelta  +  mData[mDataindex].mPercent - (int) (segmentDelta  +  mData[mDataindex].mPercent);
 
-		float xPos = mData[mDataindex].mXdelta + ( mData[mDataindex + 1].mXdelta -  mData[mDataindex].mXdelta) * segPercent;
-		float lean = mData[mDataindex].mLean.valueDegrees() + ( mData[mDataindex + 1].mLean.valueDegrees() -  mData[mDataindex].mLean.valueDegrees()) * segPercent;
+		float xPos = mData[mDataindex].mXdelta + ( mData[mDataindex + 1].mXdelta -  mData[mDataindex].mXdelta) * percent;
+		float lean = mData[mDataindex].mLean.valueDegrees() + ( mData[mDataindex + 1].mLean.valueDegrees() -  mData[mDataindex].mLean.valueDegrees()) * percent;
 
-		float yPos = mData[mDataindex].mYDelta + ( mData[mDataindex + 1].mYDelta-  mData[mDataindex].mYDelta) * segPercent;
+		float yPos = mData[mDataindex].mYDelta + ( mData[mDataindex + 1].mYDelta-  mData[mDataindex].mYDelta) * percent;
 		
 		Ogre::Vector3 pos;
 		Ogre::Vector3 forward;
 		Ogre::Vector3 right;
 		Ogre::Vector3 up;
-		segment++;
 		mWorld->getWorldPositionAndMatrix(segment, segPercent, xPos, yPos, pos,forward, right, up, false);
 		Ogre::Quaternion q(-right,up,forward);
 
@@ -86,12 +89,12 @@ void  Ghost::record(float time, int segment, float percent, float xdelta, float 
 {
 	if (mRecording)
 	{
-		if (mLastRecordTime + mSampleLength <= mCurrentTime)
+		if (mLastRecordTime + mSampleLength <= time)
 		{
-			mLastRecordTime = mCurrentTime;
+			mLastRecordTime = time;
 			mData.push_back(GhostData(mLastRecordTime,segment,percent,xdelta,ydelta, lean, upDown));
 		}
-				mCurrentTime += time;
+				mCurrentTime = time;
 
 	}
 }

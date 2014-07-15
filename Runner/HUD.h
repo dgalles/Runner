@@ -15,9 +15,9 @@ public:
 
 	enum Kind {none, left, right, center, down, up, last};
 
-	void setCoins(int newScore);
-    void setDistance(int distance);
-    void setSpeed(int speed);
+	void setCoins(int newScore, bool ghost = false);
+    void setDistance(int distance, bool ghost = false);
+    void setSpeed(int speed, bool ghost = false;);
 
 	void update(float time);
     
@@ -35,12 +35,20 @@ public:
 
 	void showHUDElements(bool show);
 
+	void showGhost(bool show);
+
 protected:
 	Ogre::Overlay *mArrowOverlay[(int) HUD::last];
 	Ogre::Overlay *mScoreOverlay;
 	Ogre::OverlayElement *mCoinsText;
 	Ogre::OverlayElement *mDistanceText;
 	Ogre::OverlayElement *mSpeedText;
+
+	Ogre::OverlayElement *mGhostCoinsText;
+	Ogre::OverlayElement *mGhostDistanceText;
+	Ogre::OverlayElement *mGhostSpeedText;
+
+
 	Ogre::Overlay *mSpeedUpOverlay;
 	Ogre::Overlay *mSlowDownOverlay;
 
@@ -55,5 +63,6 @@ protected:
 	float mArrowTimeRemaining[(int) HUD::last];
     bool mShowArrows;
 	bool mShowHUDElems;
+	bool mShowGhostElements;
 	int mSpeed;
 };
