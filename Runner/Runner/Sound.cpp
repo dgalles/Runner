@@ -62,16 +62,19 @@ SoundBank* SoundBank::instance =NULL;
 
 void SoundBank::setVolume(int newVol)
 {
-	if (newVol > 128)
+	if (mSoundEnabled && mSoundAvailable)
 	{
-		newVol = 128;
+		if (newVol > 128)
+		{
+			newVol = 128;
+		}
+		if (newVol < 0)
+		{
+			newVol = 0;
+		}
+		Mix_Volume(-1, newVol);
+		mVolume = newVol;
 	}
-	if (newVol < 0)
-	{
-		newVol = 0;
-	}
-	Mix_Volume(-1, newVol);
-	mVolume = newVol;
 
 }
 
@@ -82,6 +85,7 @@ SoundBank::SoundBank() : mChunks()
 	mSoundIndex = 0;
 	mNumSounds = 1;
 	mVolume = 100;
+	mSoundAvailable = true;
 }
 
 SoundBank::~SoundBank()
@@ -113,6 +117,7 @@ void SoundBank::setup()
 	if (error != 0)
 	{
 		mSoundEnabled = false;
+		mSoundAvailable = false;
 		return;
 	}
 	// TODO:  The following should all be read in from a file in Content.
@@ -189,7 +194,7 @@ void SoundBank::free()
 
 void SoundBank::play(std::string id)
 {
-	if(mSoundEnabled)
+	if(mSoundEnabled && mSoundAvailable)
 	{
 		SoundChunk *c = mChunks[mSoundIndex][id];
 		if (c != NULL)
@@ -201,7 +206,7 @@ void SoundBank::play(std::string id)
 
 void SoundBank::fadeIn(std::string id, int ms, bool repeat)
 {
-	if (mSoundEnabled)
+	if (mSoundEnabled && mSoundAvailable)
 	{
 		mChunks[mSoundIndex][id]->fadeIn(ms, repeat);
 	}
@@ -209,7 +214,7 @@ void SoundBank::fadeIn(std::string id, int ms, bool repeat)
 
 void SoundBank::fadeOut(std::string id, int ms)
 {
-	if (mSoundEnabled)
+	if (mSoundEnabled && mSoundAvailable)
 	{
 		mChunks[mSoundIndex][id]->fadeOut(ms);
 	}

@@ -6,6 +6,7 @@ class Ogre::SceneNode;
 class Kinect;
 class RunnerObject;
 class Achievements;
+class Ghost;
 
 
 
@@ -42,14 +43,15 @@ public:
 	virtual Ogre::Vector3 worldPosition();
 	void setPaused(bool p) { mPaused = p; }
 
-    void setInitialSpeed(int speed) {mInitialSpeed = (float) speed;}
+	void setInitialSpeed(int speed) {mInitialSpeed = (float) speed;}
 	int getInitialSpeed() { return (int) mInitialSpeed; }
-    void setKinectSentitivityLR(float sensitivity) {mKinectSensitivityLR = sensitivity; }
-    void setKinectSentitivityFB(float sensitivity) {mKinectSensitivityFB = sensitivity; }
-    void setLevel(int level);
+	void setKinectSentitivityLR(float sensitivity) {mKinectSensitivityLR = sensitivity; }
+	void setKinectSentitivityFB(float sensitivity) {mKinectSensitivityFB = sensitivity; }
+	void setLevel(int level);
 
 	void setLeanEqualsDuck(bool val);
 
+	void setGhost(Ghost *g) { mGhost = g; }
 
 	int getTotalCoins() { return mTotalCoins; }
 	void setTotalCoins(int totalCoins) { mTotalCoins = totalCoins; }
@@ -57,10 +59,10 @@ public:
 	int getLifetimeCoins() { return mLifetimeCoins; }
 	void setLifetimeCoins(int livetimeCoins) { mLifetimeCoins = livetimeCoins; }
 
-	
+
 	void startGame();
-    void setAutoCallibrate(bool autoCal) { mAutoCallibrate = autoCal; }
-    bool getAutoCallibrate() { return mAutoCallibrate; }
+	void setAutoCallibrate(bool autoCal) { mAutoCallibrate = autoCal; }
+	bool getAutoCallibrate() { return mAutoCallibrate; }
 
 	bool getEnableKinect() { return mEnableKinect; }
 	void setEnableKinect(bool enable) { mEnableKinect = enable; }
@@ -83,7 +85,7 @@ public:
 	void setAutoAceelerateRate(int rate) { mAutoAccel = rate;} 
 	int getAutoAccelerateRate() { return mAutoAccel; }
 
-		void setManualAceelerateRate(int rate) { mManualAccel = rate;} 
+	void setManualAceelerateRate(int rate) { mManualAccel = rate;} 
 	int getManualAccelerateRate() { return mManualAccel; }
 
 	void setInitialArmor(int initialArmor) { mInitialArmor = initialArmor; }
@@ -97,10 +99,24 @@ public:
 
 	void setArrowDistance(int newDelta) { mWarningDelta = newDelta; }
 	int getArrowDistance() { return mWarningDelta; }
-	
+
 	void addPlayerListener(PlyrDataMsgr *listener) { mLogger.push_back(listener); }
 
 	void reset();
+
+
+	int getBoostDuration() { return mBoostDuration; }
+	void setBoostDuration(int n) { mBoostDuration = n; }
+
+
+
+
+	int getShieldDuration() { return mShieldDuration; }
+	void setShieldDuration(int n) { mShieldDuration = n; }
+
+	int getMagnetDuration() { return mMagnetDuration; }
+	void setMagnetDuration(int n) { mMagnetDuration = n; }
+
 
 protected:
 	void updateAchievements();
@@ -108,25 +124,27 @@ protected:
 	void updateAnglesFromControls(Ogre::Degree &angle, Ogre::Degree &angle2);
 
 	void kill();
-    void setup();
+	void setup();
 	void startArrows(int newSegment);
 	void stopArrows(int segment, float percent);
 	void moveExplosion(float time);
 	bool detectCollision(int newSegment, float newPercent, float newX);
 	void coinCollision(int newSegment, float newPercent, float newX);
 	World *mWorld;
- 	Kinect *mKinect;
+	Kinect *mKinect;
 	XInputManager *mXInputManager;
 	float mRelativeX;
 	float mRelativeY;
 	bool mPaused;
-    bool mAutoCallibrate;
+	bool mAutoCallibrate;
 	bool mIsSecondPlayer;
 
 	Ogre::SceneNode *mMagnetNode;
 
+	Ghost *mGhost;
+
 	float mVelocity;
-    RunnerObject *mPlayerObject;
+	RunnerObject *mPlayerObject;
 
 	// Ogre::SceneNode * mPlayerSceneNode;
 
@@ -143,12 +161,12 @@ protected:
 	int mCoinsCollected;
 	bool mAlive;
 	float mExplodeTimer;
-    float mTimeSinceSpeedIncrease;
+	float mTimeSinceSpeedIncrease;
 
 	Ogre::Vector3 mExplosionforward;
 	Ogre::Vector3 mExplosionright;
 	Ogre::Vector3 mExplosionup;
-    float mKinectSensitivityLR;
+	float mKinectSensitivityLR;
 	float mKinectSensitivityFB;
 
 	double mDistance;
@@ -199,6 +217,7 @@ protected:
 	int mRightCoinsCollected;
 	int mMiddleCoinsCollected;
 
-
-
+	int mShieldDuration;
+	int mBoostDuration;
+	int mMagnetDuration;
 };

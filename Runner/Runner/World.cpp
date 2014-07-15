@@ -27,6 +27,9 @@ void World::resetToDefaults()
 	mUseFrontBack = true;
 	mObsGap = 3;
 	mSimpleMaterials = false;
+	mBoostFreq = 1;
+	mShieldFreq = 1;
+	mMagnetFreq = 1;
 }
 
 World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useMirror)   : mSceneManager(sceneManager), mTrackSceneNodes(), 
@@ -37,7 +40,7 @@ World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useM
 	setup();
 }
 
-void World::setup()
+void World::setup(int seed /* = -1 */)
 {
 	// Global illumination for now.  Adding individual light sources will make you scene look more realistic
 	mSceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
@@ -45,6 +48,13 @@ void World::setup()
 
 	mLastObjSeg = 0;
 
+	mSeed = seed;
+	if (mSeed <  0)
+	{
+		mSeed = rand();
+	}
+
+	srand(mSeed);
 
 	mLastCoinAddedSegment[0] = 0;
 	mLastCoinAddedSegment[1] = 0;
@@ -71,13 +81,13 @@ void World::setup()
 	addCoins(false,1);
 	for (int i = 0; i < 5; i++)
 	{
-	
-			AddRandomSegment();
+
+		AddRandomSegment();
 
 		addCoins(false);
 		if (mUseMirror)
 		{
-		addCoins(true);
+			addCoins(true);
 
 		}
 	}
@@ -102,15 +112,15 @@ void World::setup()
 }
 
 
-void World::reset()
+void World::reset(int seed /* -1 */)
 {
 	delete mSawPowerup;
 	delete mCoins;
-		mSceneManager->clearScene();
-		delete trackPath;
+	mSceneManager->clearScene();
+	delete trackPath;
 	mSceneManager->setSkyBox(true, "Skybox/Cloudy");
 
-	setup();
+	setup(seed);
 }
 
 
@@ -244,7 +254,7 @@ void
 	World::addCoins(int segmentToAdd, bool player)
 {
 
-	 int COINS_PER_SEGMENT = (int) (trackPath->pathLength(segmentToAdd) * 2 / 400);
+	int COINS_PER_SEGMENT = (int) (trackPath->pathLength(segmentToAdd) * 2 / 400);
 
 
 	float r =  rand() / (float) RAND_MAX;
@@ -593,8 +603,8 @@ void World::AddObjects(int segment, bool player)
 {
 
 	if (((trackPath->kind(segment) != BezierPath::Kind::BLADES) && trackPath->kind(segment) != BezierPath::Kind::BOOST
-		  && trackPath->kind(segment) != BezierPath::Kind::SHIELD && trackPath->kind(segment) != BezierPath::Kind::MAGNET ) || 
-		  trackPath->getObjectPlaced(segment))
+		&& trackPath->kind(segment) != BezierPath::Kind::SHIELD && trackPath->kind(segment) != BezierPath::Kind::MAGNET ) || 
+		trackPath->getObjectPlaced(segment))
 	{
 		return;
 	}
@@ -746,7 +756,7 @@ void World::AddObjects(int segment, bool player)
 		}
 	}
 	else if (trackPath->kind(segment) == BezierPath::Kind::BOOST || trackPath->kind(segment) == BezierPath::Kind::SHIELD ||
-		      trackPath->kind(segment) == BezierPath::Kind::MAGNET)
+		trackPath->kind(segment) == BezierPath::Kind::MAGNET)
 	{
 
 		float barrierPercent = 0.9f;
