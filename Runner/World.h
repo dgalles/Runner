@@ -4,8 +4,8 @@
 #include "ItemQueue.h"
 
 namespace Ogre {
-    class SceneNode;
-    class SceneManager;
+	class SceneNode;
+	class SceneManager;
 }
 
 class BezierPath;
@@ -19,18 +19,18 @@ class Runner;
 class World
 {
 public:
-	
-    World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useMirror = false);
 
-    // You'll want various methods to access & change your world here
-    
-    void Think(float time);
+	World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useMirror = false);
+
+	// You'll want various methods to access & change your world here
+
+	void Think(float time);
 
 	BezierPath *trackPath;
 
 	void AddSegment(Ogre::Vector3 deltap1, Ogre::Vector3 deltap2, Ogre::Vector3 deltap3, BezierPath::Kind type = BezierPath::Kind::NORMAL);
 
-    void reset();
+	void reset(int seed = -1);
 	void resetToDefaults();
 
 	void AddRandomSegment();
@@ -39,14 +39,14 @@ public:
 	Ogre::Vector3 getWorldPosition(int segment, float percentage, float relativeX, float relativeY);
 	Ogre::Vector3 getTrackUp(int segment, float percentage);
 
-	
+
 	void addCamera(RunnerCamera *c) { mCamera = c; }
 	RunnerCamera *getCamera() { return mCamera;}
 
 	void removeWorldSegment(int index);
 
 	void endGame();
-	
+
 	void RemovePathSegment(int start, int end);
 	Ogre::SceneManager *SceneManager() { return mSceneManager; }
 
@@ -75,7 +75,7 @@ public:
 
 	void AddObjects(int segment, bool player);
 
-    ItemQueue<ItemQueueData> *SawPowerup() { return mSawPowerup; }
+	ItemQueue<ItemQueueData> *SawPowerup() { return mSawPowerup; }
 	ItemQueue<ItemQueueData> *Coins() { return mCoins; }
 	HUD *getHUD() { return mHUD; }
 
@@ -89,6 +89,19 @@ public:
 	int getCoinsMissedRight() { return mRightCoinsMissed; }
 	int getCoinsMissedMiddle() { return mMiddleCoinsMissed; }
 
+
+	int getShieldFreq() { return mShieldFreq; }
+	void setShieldFreq(int n) { mShieldFreq = n; }
+
+	int getBoostFreq() { return mBoostFreq; }
+	void setBoostFreq(int n) { mBoostFreq = n; }
+
+	int getMagnetFrequency() { return mMagnetFreq; }
+	void setMagnetFrequency(int n) { mMagnetFreq = n; }
+
+	int getSeed() { return mSeed;}
+
+
 protected:
 
 
@@ -96,7 +109,7 @@ protected:
 	int mRightCoinsMissed;
 	int mMiddleCoinsMissed;
 
-    void setup();
+	void setup(int seed = -1);
 
 	void clearBefore(ItemQueue<ItemQueueData> *queue, int segment, bool isCoins);
 
@@ -114,14 +127,14 @@ protected:
 	bool mUseMirror;
 
 	int mUnitsPerSegment;
-	
+
 	Player *mPlayer;
 
 	float mUnitsPerPathLength;
 
 	int mMeshIDIndex;
 	ItemQueue<ItemQueueData> *mCoins;
-    ItemQueue<ItemQueueData> *mSawPowerup;
+	ItemQueue<ItemQueueData> *mSawPowerup;
 	int mLastCoinAddedSegment[2];
 	HUD *mHUD;
 	RunnerCamera *mCamera;
@@ -135,5 +148,11 @@ protected:
 
 	Runner *mBase;
 
-    bool mDrawTrack;
+	int mShieldFreq;
+	int mBoostFreq;
+	int mMagnetFreq;
+
+	int mSeed;
+
+	bool mDrawTrack;
 };

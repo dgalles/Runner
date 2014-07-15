@@ -12,7 +12,8 @@
 #include "Achievements.h"
 #include "Camera.h"
 #include "Sound.h"
-
+#include "Ghost.h"
+#include "Menu.h"
 const float Player::SPEED_MULTIPLYER = 20;
 
 
@@ -20,22 +21,25 @@ const float Player::SPEED_MULTIPLYER = 20;
 void Player::resetToDefaults()
 {
 	mKinectSensitivityLR = 1.0f;
-    mKinectSensitivityFB = 1.0f;
-    mInitialSpeed = 30;
-    mAutoCallibrate = true;
+	mKinectSensitivityFB = 1.0f;
+	mInitialSpeed = 30;
+	mAutoCallibrate = true;
 	mEnableGamepad = false;
 	mEnableKeyboard = false;
 	mEnableKinect = true;
 	mInvertControls = false;
 	mTrackLookahead =100;
-    setup();
+	setup();
 
-	 mTotalCoins = 0;
-	 mTotalMeters = 0;
-	 mLongestRun = 0;
-	 mMostCoins = 0;
-	 mLifetimeCoins = 0;
+	mTotalCoins = 0;
+	mTotalMeters = 0;
+	mLongestRun = 0;
+	mMostCoins = 0;
+	mLifetimeCoins = 0;
 
+	mShieldDuration = 1;
+	mBoostDuration = 1;
+	mMagnetDuration = 1;
 
 	mInitialArmor = 3;
 
@@ -48,23 +52,24 @@ void Player::resetToDefaults()
 }
 
 
- Player::Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach, bool isSecond) : 
-	 mWorld(world), mXInputManager(inputManager), mKinect(k), mAchievements(ach),mIsSecondPlayer(isSecond)
-//Player::Player(World *world, XInputManager *inputManager) : mWorld(world), mInputManager(inputManager)
+Player::Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach, bool isSecond) : 
+	mWorld(world), mXInputManager(inputManager), mKinect(k), mAchievements(ach),mIsSecondPlayer(isSecond)
+	//Player::Player(World *world, XInputManager *inputManager) : mWorld(world), mInputManager(inputManager)
 {
+	mGhost = NULL;
 	resetToDefaults();
 }
 
- void Player::reset()
- {
-     setup();
-     mWorld->trackObject(this);
+void Player::reset()
+{
+	setup();
+	mWorld->trackObject(this);
 
- }
+}
 
 void Player::setup()
 {
-    mPlayerObject = new RunnerObject(RunnerObject::PLAYER);
+	mPlayerObject = new RunnerObject(RunnerObject::PLAYER);
 	mPlayerObject->loadModel("car.mesh", mWorld->SceneManager());
 	mPlayerObject->setScale(Ogre::Vector3(5,6,10));
 
@@ -98,7 +103,7 @@ void Player::setup()
 	mRelativeX = 0;
 	mRelativeY = 5;
 	mCoinsCollected = 0;
-    mDistance = 0;
+	mDistance = 0;
 	mAlive = true;
 	mTargetDeltaY = 0.0f;
 	mDeltaY = 0.0f;
@@ -125,37 +130,37 @@ Ogre::Vector3
 
 
 void
-    Player::startGame()
+	Player::startGame()
 {
 	mWorld->getHUD()->stopAllArrows();
 	mWorld->getHUD()->showHUDElements(true);
 	mAchievements->ResetActive();
 
-    if (mAutoCallibrate)
-    {
-        mKinect->callibrate(4.0f, [this]() { 	mAchievements->DisplayActiveAchievements(3); this->setPaused(false); });
-    }
-    else
-    {
+	if (mAutoCallibrate)
+	{
+		mKinect->callibrate(4.0f, [this]() { 	mAchievements->DisplayActiveAchievements(3); this->setPaused(false); });
+	}
+	else
+	{
 		mAchievements->DisplayActiveAchievements(3);
-        mPaused = false;
-    }
+		mPaused = false;
+	}
 }
 
 void
-    Player::stopArrows(int segment, float percent)
+	Player::stopArrows(int segment, float percent)
 {
-    for (int i = 0; i< mWorld->SawPowerup()->size(); i++)
-    {
-        ItemQueueData d = mWorld->SawPowerup()->atRelativeIndex(i);
-        if (d.segmentIndex > segment)
-            break;
-        if(d.segmentIndex == segment && d.segmentPercent < percent && d.object->type() == RunnerObject::BLADE)
-        {
-            mWorld->getHUD()->stopArrow(d.xtraData);
-        }
+	for (int i = 0; i< mWorld->SawPowerup()->size(); i++)
+	{
+		ItemQueueData d = mWorld->SawPowerup()->atRelativeIndex(i);
+		if (d.segmentIndex > segment)
+			break;
+		if(d.segmentIndex == segment && d.segmentPercent < percent && d.object->type() == RunnerObject::BLADE)
+		{
+			mWorld->getHUD()->stopArrow(d.xtraData);
+		}
 
-    }
+	}
 }
 
 void
@@ -172,7 +177,7 @@ void
 				ItemQueueData d = mWorld->SawPowerup()->atRelativeIndex(i);
 				if (d.segmentIndex <= newSegment + mWarningDelta  && d.segmentIndex >= newSegment &&  d.object->type() == RunnerObject::BLADE)
 				{
-                    mWorld->getHUD()->startArrow(d.xtraData);
+					mWorld->getHUD()->startArrow(d.xtraData);
 				}
 				else if (d.segmentIndex  > newSegment + mWarningDelta * 2)
 				{
@@ -202,8 +207,8 @@ void
 				break;
 			}
 
-            Ogre::Vector3 MTV;
-            if (d.object->collides(mPlayerObject, MTV))
+			Ogre::Vector3 MTV;
+			if (d.object->collides(mPlayerObject, MTV))
 			{
 				if (d.relativeX < 0)
 				{
@@ -217,15 +222,15 @@ void
 				{
 					mMiddleCoinsCollected++;
 				}
-                d.object->setScale(Ogre::Vector3::ZERO);
+				d.object->setScale(Ogre::Vector3::ZERO);
 				d.object->setPosition(Ogre::Vector3(0,0,0));
-                mCoinsCollected++;
+				mCoinsCollected++;
 				mTotalCoins++;
 				mLifetimeCoins++;
 				SoundBank::getInstance()->play("coin");
 				mMaxDistWithoutCoins = std::max(mMaxDistWithoutCoins, mDistanceWithoutCoins);
 				mDistanceWithoutCoins = 0.0f;
-                mWorld->getHUD()->setCoins(mCoinsCollected);
+				mWorld->getHUD()->setCoins(mCoinsCollected);
 			}
 			if (d.object->getScale() != Ogre::Vector3::ZERO && d.segmentIndex == newSegment && d.segmentPercent < newPercent)
 			{
@@ -251,9 +256,9 @@ bool
 			{
 				break;
 			}
-            Ogre::Vector3 MTD;
-            if (d.object->collides(mPlayerObject, MTD))
-            {
+			Ogre::Vector3 MTD;
+			if (d.object->collides(mPlayerObject, MTD))
+			{
 				if (d.object->type() == RunnerObject::BLADE && !mShielded)
 				{
 					// TODO: Add armor here
@@ -281,7 +286,7 @@ bool
 					}
 
 					mPlayerObject->setAlpha(0.4f);
-				//	mPlayerObject->setMaterial("Kinect/Blue");
+					//	mPlayerObject->setMaterial("Kinect/Blue");
 
 					mBoosting = true;
 					mShielded = true;
@@ -294,7 +299,7 @@ bool
 					d.object->setScale(Ogre::Vector3::ZERO);
 					d.object->setPosition(Ogre::Vector3(0,0,0));
 					mShieldsHit++;
-						if (mShieldsHit == 1)
+					if (mShieldsHit == 1)
 					{
 						mAchievements->AchievementCleared("Shielded");
 					}
@@ -341,8 +346,8 @@ void Player::setLevel(int level)
 {
 
 
-//    mCurrentSpeed = 300 + level*200;
-    // Also do rate change?
+	//    mCurrentSpeed = 300 + level*200;
+	// Also do rate change?
 
 }
 
@@ -365,44 +370,44 @@ void Player::updateAnglesFromControls(Ogre::Degree &angle, Ogre::Degree &angle2)
 	}
 
 	if (mEnableKeyboard)
+	{
+		if (InputHandler::getInstance()->KeyPressedThisFrame(OIS::KC_R))
 		{
-			if (InputHandler::getInstance()->KeyPressedThisFrame(OIS::KC_R))
-			{
-				mWorld->getCamera()->setReview(!mWorld->getCamera()->getReview());
-			} 
+			mWorld->getCamera()->setReview(!mWorld->getCamera()->getReview());
+		} 
 
 
-			if (InputHandler::getInstance()->IsKeyDown(OIS::KC_LEFT))
-			{
-				angle = -Ogre::Degree(30);
-			} 
-			else if (InputHandler::getInstance()->IsKeyDown(OIS::KC_RIGHT))
-			{
-				angle = Ogre::Degree(30);
+		if (InputHandler::getInstance()->IsKeyDown(OIS::KC_LEFT))
+		{
+			angle = -Ogre::Degree(30);
+		} 
+		else if (InputHandler::getInstance()->IsKeyDown(OIS::KC_RIGHT))
+		{
+			angle = Ogre::Degree(30);
 
-			}
-			if (InputHandler::getInstance()->IsKeyDown(OIS::KC_UP))
-			{
-				angle2 = Ogre::Degree(-30);
-			}
-			else if (InputHandler::getInstance()->IsKeyDown(OIS::KC_DOWN))
-			{
-				angle2 = Ogre::Degree(30);
-			}
-			else
-			{
-				angle2 = Ogre::Degree(0);
-			}
 		}
-		if (!mUseFrontBack)
+		if (InputHandler::getInstance()->IsKeyDown(OIS::KC_UP))
+		{
+			angle2 = Ogre::Degree(-30);
+		}
+		else if (InputHandler::getInstance()->IsKeyDown(OIS::KC_DOWN))
+		{
+			angle2 = Ogre::Degree(30);
+		}
+		else
 		{
 			angle2 = Ogre::Degree(0);
 		}
-		if (mInvertControls)
-		{
+	}
+	if (!mUseFrontBack)
+	{
+		angle2 = Ogre::Degree(0);
+	}
+	if (mInvertControls)
+	{
 
-			angle2 = -angle2;
-		}
+		angle2 = -angle2;
+	}
 
 }
 
@@ -416,16 +421,16 @@ void Player::setLeanEqualsDuck(bool val)
 
 void Player::SendData(float time)
 {
-		mTimeSinceLastLog += time;
-		if(mTimeSinceLastLog >= 1.0)
+	mTimeSinceLastLog += time;
+	if(mTimeSinceLastLog >= 1.0)
+	{
+		for (std::vector<PlyrDataMsgr *>::iterator it = mLogger.begin(); it != mLogger.end(); it++)
 		{
-			for (std::vector<PlyrDataMsgr *>::iterator it = mLogger.begin(); it != mLogger.end(); it++)
-			{
-				(*it)->ReceivePlyrData(new PlyrData("", mLeftCoinsCollected,mRightCoinsCollected,mMiddleCoinsCollected,
-					mWorld->getCoinsMissedLeft(), mWorld->getCoinsMissedRight(), mWorld->getCoinsMissedMiddle(), mCurrentSpeed));
-			} 
-			mTimeSinceLastLog = 0.0;
-		}
+			(*it)->ReceivePlyrData(new PlyrData("", mLeftCoinsCollected,mRightCoinsCollected,mMiddleCoinsCollected,
+				mWorld->getCoinsMissedLeft(), mWorld->getCoinsMissedRight(), mWorld->getCoinsMissedMiddle(), mCurrentSpeed));
+		} 
+		mTimeSinceLastLog = 0.0;
+	}
 
 }
 
@@ -443,107 +448,107 @@ void
 	if (mAlive)
 	{
 
-	if (mBoostTime  > 0 && mBoostTime <= time)
-	{
-		mBoostTime = 0;
-		mBoosting = false;
-		mWorld->getCamera()->SetFollowType(RunnerCamera::NORMAL);
+		if (mBoostTime  > 0 && mBoostTime <= time)
+		{
+			mBoostTime = 0;
+			mBoosting = false;
+			mWorld->getCamera()->SetFollowType(RunnerCamera::NORMAL);
 
-		// mPlayerObject->restoreOriginalMaterial();
+			// mPlayerObject->restoreOriginalMaterial();
 
-	}
-	else
-	{
-		mBoostTime -= time;
-	}
-	if (mShieldTime > 0 && mShieldTime <= time)
-	{
-		mShieldTime = 0;
-		mShielded = false;
-		mPlayerObject->setAlpha(1);
-	}
-	else 
-	{
-		mShieldTime -= time;
-	}
+		}
+		else
+		{
+			mBoostTime -= time;
+		}
+		if (mShieldTime > 0 && mShieldTime <= time)
+		{
+			mShieldTime = 0;
+			mShielded = false;
+			mPlayerObject->setAlpha(1);
+		}
+		else 
+		{
+			mShieldTime -= time;
+		}
 		if (mMagnetTime  > 0 && mMagnetTime <= time)
-	{
-		mMagnetTime = 0;
-		mMagnetActive = false;
-		mPlayerObject->getSceneNode()->removeChild(mMagnetNode);
-	}
-	else
-	{
-		mMagnetTime -= time;
-	}
-
-	Ogre::Degree angle = Ogre::Degree(0);
-
-	Ogre::Degree angle2 = Ogre::Degree(0);
-
-	updateAnglesFromControls(angle, angle2);
-
-
-
-	int newSegment = mCurrentSegment;
-	float newPercent = mSegmentPercent;
-
-	mTimeSinceSpeedIncrease  += time;
-	if (mTimeSinceSpeedIncrease > 1 && mLeanEqualsDuck)
-	{
-		mTimeSinceSpeedIncrease = 0;
-		mCurrentSpeed += mAutoAccel;
-		mCurrentSpeed = std::min(mCurrentSpeed, mMaxSpeed);
-	}
-
-
-	if (mLeanEqualsDuck)
-	{
-		if (angle2 < Ogre::Degree(0))
 		{
-			float diff = (angle2.valueDegrees() / 10) + 6;
-			diff = std::max(diff, 0.5f);
-			mPlayerObject->setScale(Ogre::Vector3(5,diff,10));
+			mMagnetTime = 0;
+			mMagnetActive = false;
+			mPlayerObject->getSceneNode()->removeChild(mMagnetNode);
 		}
 		else
 		{
-			mPlayerObject->setScale(Ogre::Vector3(5,6,10));
+			mMagnetTime -= time;
 		}
-	}
-	else
-	{
-		if (angle2 < Ogre::Degree(-10))
+
+		Ogre::Degree angle = Ogre::Degree(0);
+
+		Ogre::Degree angle2 = Ogre::Degree(0);
+
+		updateAnglesFromControls(angle, angle2);
+
+
+
+		int newSegment = mCurrentSegment;
+		float newPercent = mSegmentPercent;
+
+		mTimeSinceSpeedIncrease  += time;
+		if (mTimeSinceSpeedIncrease > 1 && mLeanEqualsDuck)
 		{
-			mCurrentSpeed += mManualAccel * time;
+			mTimeSinceSpeedIncrease = 0;
+			mCurrentSpeed += mAutoAccel;
 			mCurrentSpeed = std::min(mCurrentSpeed, mMaxSpeed);
-
-			mWorld->getHUD()->setShowIncreaseSpeed(true);
-			mWorld->getHUD()->setShowDecreaseSpeed(false);
 		}
-		else if (angle2 > Ogre::Degree(10))
+
+
+		if (mLeanEqualsDuck)
 		{
-			mCurrentSpeed -= mManualAccel * time;
-			mCurrentSpeed = std::max(mCurrentSpeed, 5.0f);
-			mWorld->getHUD()->setShowIncreaseSpeed(false);
-			mWorld->getHUD()->setShowDecreaseSpeed(true);
+			if (angle2 < Ogre::Degree(0))
+			{
+				float diff = (angle2.valueDegrees() / 10) + 6;
+				diff = std::max(diff, 0.5f);
+				mPlayerObject->setScale(Ogre::Vector3(5,diff,10));
+			}
+			else
+			{
+				mPlayerObject->setScale(Ogre::Vector3(5,6,10));
+			}
 		}
 		else
 		{
-			mWorld->getHUD()->setShowIncreaseSpeed(false);
-			mWorld->getHUD()->setShowDecreaseSpeed(false);
+			if (angle2 < Ogre::Degree(-10))
+			{
+				mCurrentSpeed += mManualAccel * time;
+				mCurrentSpeed = std::min(mCurrentSpeed, mMaxSpeed);
+
+				mWorld->getHUD()->setShowIncreaseSpeed(true);
+				mWorld->getHUD()->setShowDecreaseSpeed(false);
+			}
+			else if (angle2 > Ogre::Degree(10))
+			{
+				mCurrentSpeed -= mManualAccel * time;
+				mCurrentSpeed = std::max(mCurrentSpeed, 5.0f);
+				mWorld->getHUD()->setShowIncreaseSpeed(false);
+				mWorld->getHUD()->setShowDecreaseSpeed(true);
+			}
+			else
+			{
+				mWorld->getHUD()->setShowIncreaseSpeed(false);
+				mWorld->getHUD()->setShowDecreaseSpeed(false);
+			}
+
 		}
 
-	}
-
-	float lateralSpeed;
-	if (mBoosting)
-	{
-		lateralSpeed = mCurrentSpeed *3;
-	}
-	else 
-	{
-		lateralSpeed = mCurrentSpeed / 2;
-	}
+		float lateralSpeed;
+		if (mBoosting)
+		{
+			lateralSpeed = mCurrentSpeed *3;
+		}
+		else 
+		{
+			lateralSpeed = mCurrentSpeed / 2;
+		}
 
 
 		float distance = time * mCurrentSpeed * SPEED_MULTIPLYER;
@@ -553,7 +558,7 @@ void
 		}
 		mDistance += distance;
 		mTotalMeters += distance;
-        mWorld->getHUD()->setDistance((int) mDistance / 200);
+		mWorld->getHUD()->setDistance((int) mDistance / 200);
 		mWorld->getHUD()->setSpeed((int) mCurrentSpeed);
 		while (distance < 0 && -distance > mWorld->trackPath->pathLength(newSegment)*newPercent)
 		{
@@ -636,7 +641,7 @@ void
 		}
 
 
-		
+
 		float distanceX = time * lateralSpeed * SPEED_MULTIPLYER;
 		float newX;
 
@@ -660,10 +665,10 @@ void
 		else
 		{
 			newX = mRelativeX + distanceX;
-        }
+		}
 
-        mWorld->clearCoinsBefore(mCurrentSegment-1);
-        mWorld->clearBarriersBefore(mCurrentSegment-1);
+		mWorld->clearCoinsBefore(mCurrentSegment-1);
+		mWorld->clearBarriersBefore(mCurrentSegment-1);
 
 		updateAchievements();
 
@@ -700,6 +705,11 @@ void
 
 		mPlayerObject->roll(Ogre::Radian(angle));
 
+		if (mGhost != NULL)
+		{
+			mGhost->record(time, mCurrentSegment, 	mSegmentPercent, mRelativeX, mRelativeY, angle, angle2);			
+		}
+
 		// Collision with coins
 
 		mDistanceWithoutCoins += distance;
@@ -722,7 +732,7 @@ void
 }
 
 void
-Player::updateAchievements()
+	Player::updateAchievements()
 {
 	if (mCoinsCollected >= 100)
 	{
@@ -741,12 +751,12 @@ Player::updateAchievements()
 	{
 		mAchievements->AchievementCleared("Getting Started");
 	}
-		if (mDistance / 200 > 500)
+	if (mDistance / 200 > 500)
 	{
 		mAchievements->AchievementCleared("Middle Distance");
 	}
 
-			if (mDistance / 200 > 1000)
+	if (mDistance / 200 > 1000)
 	{
 		mAchievements->AchievementCleared("Long Haul");
 	}
@@ -755,7 +765,7 @@ Player::updateAchievements()
 	{
 		mAchievements->AchievementCleared("Marathon I");
 	}
-		if (mTotalMeters / 200 >= 10000)
+	if (mTotalMeters / 200 >= 10000)
 	{
 		mAchievements->AchievementCleared("Marathon II");
 	}
@@ -800,15 +810,21 @@ Player::updateAchievements()
 
 
 void 
-Player::moveExplosion(float time)
+	Player::moveExplosion(float time)
 {
 	mExplodeTimer -= time;
+	if (mExplodeTimer <= 0 && mExplodeTimer > -100)
+	{
+		mExplodeTimer = -200;
+		MenuManager::getInstance()->getMenu("gameOver")->enable();
+
+	}
 	debris[0]->translate(-mExplosionforward * time * 100);
 	debris[0]->roll(Ogre::Degree(time * 600));
 	debris[1]->translate(mExplosionright * time * 100);
 	debris[1]->pitch(Ogre::Degree(time * 500));
 	debris[2]->translate(-mExplosionright * time * 100);
-		debris[2]->roll(Ogre::Degree(time * 300));
+	debris[2]->roll(Ogre::Degree(time * 300));
 	debris[2]->pitch(Ogre::Degree(time * 200));
 
 	debris[3]->translate(mExplosionup * time * 100);
@@ -866,6 +882,7 @@ void
 		mWorld->getHUD()->stopAllArrows();
 		mWorld->getHUD()->setShowDecreaseSpeed(false);
 		mWorld->getHUD()->setShowIncreaseSpeed(false);
+		mGhost->stopRecording();
 		mWorld->endGame();
 	}
 	else

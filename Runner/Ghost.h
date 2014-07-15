@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "OgreMath.h"
 
 class RunnerObject;
 class World;
@@ -11,13 +12,14 @@ public:
 	~Ghost(void);
 
 	void think(float time);
-	void record(float time, int segment, float percent, float xdelta, float lean);
+	void record(float time, int segment, float percent, float xdelta, float ydelta, Ogre::Degree lean, Ogre::Degree upDown);
+	void kill(float time);
 	void startRecording();
 	void stopRecording();
 	void startPlayback();
 	void stopPlayback();
-	void setSeed(float seed) { mSeed = seed;}
-	float getSeed() { return mSeed; }
+	void setSeed(int seed) { mSeed = seed;}
+	int getSeed() { return mSeed; }
 
 	void readFile(std::string filename);
 	void writeFile(std::string filename);
@@ -31,14 +33,16 @@ protected:
 	public:
 		GhostData();
 
-		GhostData(float time, int segment, float percent, float xdelta, float lean):
-			mTime(time), mSegment(segment), mPercent(percent), mXdelta(xdelta), mLean(lean) {}
+		GhostData(float time, int segment, float percent, float xdelta, float ydelta, Ogre::Degree lean, Ogre::Degree upDown):
+			mTime(time), mSegment(segment), mPercent(percent), mXdelta(xdelta), mYDelta(ydelta), mLean(lean), mUpDown(upDown) {}
 
 		float mTime;
 		int mSegment;
 		float mPercent;
 		float mXdelta;
-		float mLean;
+		float mYDelta;
+		Ogre::Degree mUpDown;
+		Ogre::Degree mLean;
 
 
 	};
@@ -47,11 +51,11 @@ protected:
 	bool mRecording;
 	float mCurrentTime;
 	float mLastRecordTime;
-	float mSeed;
+	int mSeed;
 	RunnerObject *mRunnerObject;
-
+	float mKillTime;
 	float mSampleLength;
-
+	bool mAlive;
 	int mDataindex;
 	std::vector<GhostData> mData;
 	World *mWorld;

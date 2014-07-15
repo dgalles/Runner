@@ -96,6 +96,7 @@ private:
 	int mVolume;
 	int mSoundIndex;
 	int mNumSounds;
+	bool mSoundAvailable;
 };
 
 #endif

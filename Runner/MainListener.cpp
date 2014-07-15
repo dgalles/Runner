@@ -9,12 +9,13 @@
 #include "HUD.h"
 #include "Menu.h"
 #include "Achievements.h"
+#include "Ghost.h"
 #include <stdio.h>
 
 
-MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *cams[], Kinect *sensor, XInputManager *gamepad, Player *player[],  HUD *hud, Achievements *ach[]) :
+MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *cams[], Kinect *sensor, XInputManager *gamepad, Player *player[],  HUD *hud, Achievements *ach[], Ghost *ghost) :
 //MainListener::MainListener(Ogre::RenderWindow *window, AIManager *aiManager, World *world, RunnerCamera *cam, XInputManager *gamepad, Player *player,  HUD *hud) :
-mRenderWindow(window), mAIManager(aiManager), mGamepad(gamepad), mHUD(hud),  mKinect(sensor), mWorld(world)
+mRenderWindow(window), mAIManager(aiManager), mGamepad(gamepad), mHUD(hud),  mKinect(sensor), mWorld(world), mGhost(ghost)
 {
 	for (int i = 0; i < 2; i++)
 	{
@@ -39,7 +40,6 @@ bool
 		time = 0.5;
 	}
 
-
 	
  	mKinect->update(evt.timeSinceLastFrame);
 	mHUD->update(time);
@@ -58,6 +58,7 @@ bool
 			mRunnerCamera[0]->Think(time);
 			mAchievements[i]->Think(time);
 		}
+		mGhost->think(time);
 		mGamepad->update();
 	}
 	MenuManager::getInstance()->think(time);

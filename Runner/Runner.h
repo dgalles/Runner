@@ -32,6 +32,7 @@ class LoginWrapper;
 class Logger;
 class Store;
 class Menu;
+class Ghost;
 
 class Runner :  public Ogre::WindowEventListener
 {
@@ -82,7 +83,9 @@ protected:
 
 	void startGame();
     void setupMenus(bool login = true) ;
-	Store * createStore(Menu *parent);
+	void createStores(Menu *parent, std::vector<Store *> &stores);
+
+	void replayGhost();
 
 	AIManager *mAIManager;
 	InputHandler *mInputHandler;
@@ -95,6 +98,7 @@ protected:
 	Achievements *mAchievements[2];
 	LoginWrapper *mLogin;
 	Logger *mLogger;
+	Ghost *mGhost;
 
 
 	void writeConfigStr(int player = 0);

@@ -23,6 +23,7 @@
 #include "Sound.h"
 #include "LoginWrapper.h"
 #include "Logger.h"
+#include "Ghost.h"
 
 #include "JsonUtils.h"
 
@@ -77,7 +78,7 @@ Runner::createCamera()
 void 
 Runner::createFrameListener(void)
 {
-	mFrameListener = new MainListener(mWindow, mAIManager, mWorld, mRunnerCamera, mKinect, mGamepad, mPlayer, mHUD, mAchievements);
+	mFrameListener = new MainListener(mWindow, mAIManager, mWorld, mRunnerCamera, mKinect, mGamepad, mPlayer, mHUD, mAchievements, mGhost);
 	//mFrameListener = new MainListener(mWindow, mAIManager, mWorld, mRunnerCamera, mGamepad, mPlayer, mHUD);
 	mRoot->addFrameListener(mFrameListener);
 	// mFrameListener->showDebugOverlay(true);
@@ -140,6 +141,9 @@ Runner::createScene()
 	mLogin = new LoginWrapper();
 	mLogger = new Logger(mLogin);
 	mLogger->Connect();
+	mGhost = new Ghost(mWorld);
+
+	mPlayer[0]->setGhost(mGhost);
 	
 	mKinect->addSkelListener(mLogger);
 	mPlayer[0]->addPlayerListener(mLogger);
@@ -156,6 +160,8 @@ void
 	//mAchievements[1]->ResetActive(); 
 	mPlayer[0]->startGame();
 	//mPlayer[1]->startGame();
+	mGhost->setSeed(mWorld->getSeed());
+	mGhost->startRecording();
 	mLogger->StartSession();
 	mKinect->StartSession();
 }
@@ -210,8 +216,36 @@ void Runner::setSingleConfig(std::string key, std::string value, int player)
 	else if (key == "armor")
 	{
 		mPlayer[player]->setInitialArmor(atoi(JSON_UTIL::stripQuotes(value).c_str()));
-
 	}
+
+	else if (key == "boostFrequency")
+	{
+		mWorld->setBoostFreq(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+	}
+		else if (key == "boostDuration")
+	{
+		mPlayer[player]->setBoostDuration(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+	}
+
+		else if (key == "shieldFrequency")
+	{
+		mWorld->setShieldFreq(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+	}
+		else if (key == "shieldDuration")
+	{
+		mPlayer[player]->setShieldDuration(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+	}
+				else if (key == "magnetFrequency")
+	{
+		mWorld->setShieldFreq(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+	}
+		else if (key == "magnetDuration")
+	{
+		mPlayer[player]->setShieldDuration(atoi(JSON_UTIL::stripQuotes(value).c_str()));
+	}
+
+
+
 }
 
 void Runner::setFromConfigString(std::string configString, int player)
@@ -263,6 +297,12 @@ std::string Runner::getConfigString(int player)
 	configStr += ", \"lifetimeCoins\" : \"" + std::to_string(mPlayer[player]->getLifetimeCoins())+"\"";
 	configStr += ", \"totalMeters\" : \"" + std::to_string(mPlayer[player]->getTotalMeters())+"\"";
 	configStr += ", \"armor\" : \"" + std::to_string(mPlayer[player]->getInitialArmor())+"\"";
+	configStr += ", \"boostFrequency\" : \"" + std::to_string(mWorld->getBoostFreq())+"\"";
+	configStr += ", \"boostDuration\" : \"" + std::to_string(mPlayer[player]->getBoostDuration())+"\"";
+	configStr += ", \"shieldFrequency\" : \"" + std::to_string(mWorld->getShieldFreq())+"\"";
+	configStr += ", \"shieldDuration\" : \"" + std::to_string(mPlayer[player]->getShieldDuration())+"\"";
+	configStr += ", \"magnetFrequency\" : \"" + std::to_string(mWorld->getMagnetFrequency())+"\"";
+	configStr += ", \"magnetDuration\" : \"" + std::to_string(mPlayer[player]->getMagnetDuration())+"\"";
 	configStr += "}";
 
 	return configStr;
@@ -282,13 +322,15 @@ void Runner::readConfigStr(int player)
 }
 
 
-Store * Runner::createStore(Menu *parent)
+void Runner::createStores(Menu *parent, std::vector<Store *> &stores)
 {
 
-	 Player *p = mPlayer[0];
+	Player *p = mPlayer[0];
+	World *w = mWorld;
 
-	Store *store = new Store("Store", "Store", 0.1, 0.1, 0.1, parent);
-	
+	Store *store  = new Store("Store", "Store1", 0.05f, 0.05f, 0.12f, [p]() {return p->getTotalCoins();}, [p](int n) {p->setTotalCoins(n);}, parent);
+	Store *store2  = new Store("Store", "Store2", 0.05f, 0.05f, 0.12f, [p]() {return p->getTotalCoins();}, [p](int n) {p->setTotalCoins(n);}, parent);
+
 	std::vector<int> prices;
 	prices.push_back(100);
 	prices.push_back(200);
@@ -297,9 +339,40 @@ Store * Runner::createStore(Menu *parent)
 	prices.push_back(500);
 
 	store->AddStoreElem("Armor", [p]() { return p->getInitialArmor();}, [p](int x) { p->setInitialArmor(x); },1, 5, prices);
+	store->AddStoreElem("Boost Duration", [p]() { return p->getBoostDuration();}, [p](int x) { p->setBoostDuration(x); },1, 5, prices);
+	store->AddStoreElem("Boost Frequency", [w]() { return w->getBoostFreq();}, [w](int x) { w->setBoostFreq(x); },1, 5, prices);
+	store->AddSelectElement("More Store Items", [store, store2]() { store->disable(); store2->enable();});
+	store->AddSelectElement("Return to Main Menu", [store, parent]() {store->disable(); parent->enable(); });
 
-	return store;
+	stores.push_back(store);
+
+	store2->AddStoreElem("Shield Duration", [p]() { return p->getShieldDuration();}, [p](int x) { p->setShieldDuration(x); },1, 5, prices);
+	store2->AddStoreElem("Shield Frequency", [w]() { return w->getShieldFreq();}, [w](int x) { w->setShieldFreq(x); },1, 5, prices);
+	store2->AddStoreElem("Magnet Duration", [p]() { return p->getMagnetDuration();}, [p](int x) { p->setMagnetDuration(x); },1, 5, prices);
+	store2->AddStoreElem("Magnet Frequency", [w]() { return w->getMagnetFrequency();}, [w](int x) { w->setMagnetFrequency(x); },1, 5, prices);
+	store2->AddSelectElement("More Store Items", [store, store2]() { store2->disable(); store->enable();});
+	store2->AddSelectElement("Return to Main Menu", [store2, parent]() {store2->disable(); parent->enable(); });
+	stores.push_back(store2);
+
 }
+
+
+void 
+	Runner::replayGhost()
+{
+	mWorld->reset(mGhost->getSeed()); 
+	//mWorld[1]->reset(); 
+	mPlayer[0]->reset(); 
+	//mPlayer[1]->reset(); 
+	mAchievements[0]->ResetActive(); 
+	//mAchievements[1]->ResetActive(); 
+	mPlayer[0]->startGame();
+	//mPlayer[1]->startGame();
+	mGhost->startPlayback();
+	mLogger->StartSession();
+	mKinect->StartSession();
+}
+
 void
 Runner::setupMenus(bool loginRequired)
 {
@@ -325,18 +398,17 @@ Runner::setupMenus(bool loginRequired)
     Menu *obstacleMenu = new Menu("Obstacle Options", "obstacle", 0.05f, 0.1f, 0.1f, options);
     Menu *confirmMenu = new Menu("Confirm Profile Reset", "profleReset", 0.1f, 0.1f, 0.1f, advancedOptions);
 
-	Store *store = createStore(mainMenu);
-
-	
-
-	if (loginRequired)
+	Menu *endGameMenu = new Menu("Game Over!", "gameOver", 0.1f, 0.1f, 0.1f, NULL);
+	std::vector<Store *> stores;
+	createStores(mainMenu, stores);
+	for (unsigned int i = 0; i < stores.size(); i++)
 	{
-		login->enable();
+		menus->addMenu(stores[i]);
+
 	}
-	else
-	{
-		mainMenu->enable();
-	}
+	Store *store = stores[0];
+
+
 
 	menus->addMenu(mainMenu);
     menus->addMenu(options);
@@ -347,8 +419,8 @@ Runner::setupMenus(bool loginRequired)
 	menus->addMenu(advancedOptions);
 	menus->addMenu(login);
 	menus->addMenu(obstacleMenu);
+	menus->addMenu(endGameMenu);
 	menus->addMenu(confirmMenu);
-	menus->addMenu(store);
 
 	login->AddChooseString("Username",[lm](Ogre::String s) {lm->changeUsername(s); },"",15,false);
 	login->AddChooseString("Password",[lm, this](Ogre::String s) {this->setFromConfigString(lm->changePassword(s));},"",15,true);
@@ -470,6 +542,9 @@ Runner::setupMenus(bool loginRequired)
     pauseMenu->AddSelectElement("Quit (Close Program)", [this, l]() {this->writeConfigStr();l->quit();});
 
 
+	endGameMenu->AddSelectElement("Replay Against Ghost", [this, endGameMenu]() {endGameMenu->disable(); this->replayGhost();});
+    endGameMenu->AddSelectElement("Return to Main Menu", [endGameMenu,mainMenu, p, w, h, this]() {this->endGame(), h->showHUDElements(false); endGameMenu->disable();mainMenu->enable(); p->setPaused(true); });
+
 
 	std::vector<Ogre::String> namesResolution;
 	std::vector<std::function<void()>> callbacksResolution;
@@ -509,6 +584,16 @@ Runner::setupMenus(bool loginRequired)
 
     confirmMenu->AddSelectElement("Cancel Profile Reset", [advancedOptions, confirmMenu]() {advancedOptions->enable();confirmMenu->disable();});
 
+
+
+		if (loginRequired)
+	{
+		login->enable();
+	}
+	else
+	{
+		mainMenu->enable();
+	}
 
 }
 
