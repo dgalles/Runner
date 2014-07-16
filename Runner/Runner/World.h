@@ -30,7 +30,7 @@ public:
 
 	void AddSegment(Ogre::Vector3 deltap1, Ogre::Vector3 deltap2, Ogre::Vector3 deltap3, BezierPath::Kind type = BezierPath::Kind::NORMAL);
 
-	void reset(int seed = -1);
+	void reset(int seed = -1, bool fromGhost = false);
 	void resetToDefaults();
 
 	void AddRandomSegment();
@@ -99,17 +99,20 @@ public:
 	int getMagnetFrequency() { return mMagnetFreq; }
 	void setMagnetFrequency(int n) { mMagnetFreq = n; }
 
-	int getSeed() { return mSeed;}
+	int getSeed() { return mInitialSeed;}
 
 
 protected:
 
 
+
+	int worldRand();
+
 	int mLeftCoinsMissed;
 	int mRightCoinsMissed;
 	int mMiddleCoinsMissed;
 
-	void setup(int seed = -1);
+	void setup(int seed = -1, bool fromGhost = false);
 
 	void clearBefore(ItemQueue<ItemQueueData> *queue, int segment, bool isCoins);
 
@@ -145,7 +148,7 @@ protected:
 	int mObsGap;
 
 	bool mSimpleMaterials;
-
+	int mInitialSeed;
 	Runner *mBase;
 
 	int mShieldFreq;
@@ -154,5 +157,9 @@ protected:
 
 	int mSeed;
 
+	bool mGhosting;
 	bool mDrawTrack;
+
+	std::vector<int> mRandom;
+	int randomIndex;
 };

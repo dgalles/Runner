@@ -140,7 +140,7 @@ Runner::createScene()
 
 	mLogin = new LoginWrapper();
 	mLogger = new Logger(mLogin);
-	mLogger->Connect();
+	// mLogger->Connect();
 	mGhost = new Ghost(mWorld);
 
 	mPlayer[0]->setGhost(mGhost);
@@ -360,7 +360,7 @@ void Runner::createStores(Menu *parent, std::vector<Store *> &stores)
 void 
 	Runner::replayGhost()
 {
-	mWorld->reset(mGhost->getSeed()); 
+	mWorld->reset(mGhost->getSeed(), true); 
 	//mWorld[1]->reset(); 
 	mPlayer[0]->reset(); 
 	//mPlayer[1]->reset(); 

@@ -10,7 +10,7 @@ HUD/Score
       metrics_mode relative
 
 		left 0.01
-		top 0.7
+		top 0.79
 		element TextArea(HUD/Armor/Text)
 		{
 			font_name Big
@@ -98,11 +98,11 @@ HUD/Score
       metrics_mode relative
 
       left 0.0
-      top 0.9
+      top 0.87
       width 1
       height 0.1
 		
-		element TextArea(HUD/ScorePanel/Coins)
+		element TextArea(HUD/Score/Panel/Coins)
 		{
 		metrics_mode relative
 		
@@ -112,7 +112,7 @@ HUD/Score
          colour 1 1 1
          caption Coins = 0
 		}
-		element TextArea(HUD/ScorePanel/Distance)
+		element TextArea(HUD/Score/Panel/Distance)
 		{
 		metrics_mode relative
 		
@@ -123,7 +123,7 @@ HUD/Score
          caption Distance = 0 meters
 		}
 		
-		element TextArea(HUD/ScorePanel/Speed)
+		element TextArea(HUD/Score/Panel/Speed)
 		{
 		metrics_mode relative
 		
@@ -133,12 +133,6 @@ HUD/Score
          colour 1 1 1
          caption Speed = 0 m / s
 		}
-
-		
-	
-		
-		
-		
 		
     }
 	
@@ -147,7 +141,7 @@ HUD/Score
       metrics_mode relative
 
       left 0.0
-      top 0.8
+      top 0.95
       width 1
       height 0.1
 		

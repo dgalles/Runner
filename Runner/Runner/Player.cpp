@@ -409,6 +409,21 @@ void Player::updateAnglesFromControls(Ogre::Degree &angle, Ogre::Degree &angle2)
 
 		angle2 = -angle2;
 	}
+	// TODO:: REMOVE ME!!
+
+	if ((int) (mTime / 2) % 3 == 0)
+	{
+		angle = -Ogre::Degree(0);
+	}
+	else if ((int) (mTime / 2) % 3 == 1)
+	{
+		angle = -Ogre::Degree(30);
+	}
+	else
+	{
+		angle = Ogre::Degree(30);
+	}
+
 
 }
 
@@ -703,6 +718,7 @@ void
 			mPlayerObject->setPosition(pos  + up *( - Ogre::Math::Sin(angle2) * mPlayerObject->minPointLocalScaled().z* 0.8f) + mDeltaY);
 		}
 
+		mWorld->getHUD()->setSpeed((int) (mTime * 100));
 
 		mPlayerObject->roll(Ogre::Radian(angle));
 
@@ -713,17 +729,18 @@ void
 			mGhost->record(mTime, mCurrentSegment, 	mSegmentPercent, mRelativeX, mRelativeY, angle, angle2, mCoinsCollected, (int) mDistance / 200, (int) mCurrentSpeed);			
 		}
 
+
+		mWorld->getHUD()->setCoins((int) mCurrentSegment );
+		mWorld->getHUD()->setDistance( (int) (mSegmentPercent * 100));
+		mWorld->getHUD()->setSpeed(mTime * 10 );
+
+
 		// Collision with coins
 
 		mDistanceWithoutCoins += distance;
 		coinCollision(newSegment, newPercent, newX);
 
 		mDistSinceMissedCoin+= distance;
-
-		/// TODO:: REMOVE!!!
-
-		mWorld->getHUD()->setSpeed(mRelativeX, false);
-
 
 
 		// Collision with walls & powerups (could kill player)

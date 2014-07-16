@@ -10,13 +10,38 @@
 #include <stdlib.h>
 #include "RunnerObject.h"
 #include "Runner.h"
-
+#include <ctime>
 
 //Ogre::SceneManager *
 //World::SM()
 //{
 //	return mSceneManager;
 //}
+
+
+static unsigned long next = 1;
+
+/* RAND_MAX assumed to be 32767 */
+int World::worldRand(void) 
+{
+    mSeed = mSeed * 1103515245 + 12345;
+	int retval = ((unsigned)(mSeed/65536) % RAND_MAX);
+	if (mGhosting)
+	{
+		if (randomIndex < mRandom.size() && retval != mRandom[randomIndex])
+		{
+			int y = 0;
+			y = y + 1;
+		}
+		randomIndex++;
+	}
+	else
+	{
+		mRandom.push_back(retval);
+	}
+    return retval;
+}
+
 
 
 
@@ -37,24 +62,32 @@ World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useM
 {
 	mMeshIDIndex = 0;
 	resetToDefaults();
+	srand(time(NULL));
 	setup();
 }
 
-void World::setup(int seed /* = -1 */)
+void World::setup(int seed /* = -1 */, bool fromGhost /* = false */)
 {
 	// Global illumination for now.  Adding individual light sources will make you scene look more realistic
 	mSceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
 	mTrackSceneNodes.clear();
+	mGhosting = fromGhost;
 
+	randomIndex = 0;
 	mLastObjSeg = 0;
 
 	mSeed = seed;
-	if (mSeed <  0)
+	if (!fromGhost)
 	{
+		mRandom.clear(); 
 		mSeed = rand();
+		mHUD->showGhost(false);
 	}
-
-	srand(mSeed);
+	else
+	{
+		mHUD->showGhost(true);
+	}
+	mInitialSeed = mSeed;
 
 	mLastCoinAddedSegment[0] = 0;
 	mLastCoinAddedSegment[1] = 0;
@@ -112,7 +145,7 @@ void World::setup(int seed /* = -1 */)
 }
 
 
-void World::reset(int seed /* -1 */)
+void World::reset(int seed /* -1 */, bool fromGhost /* = false */)
 {
 	delete mSawPowerup;
 	delete mCoins;
@@ -120,7 +153,7 @@ void World::reset(int seed /* -1 */)
 	delete trackPath;
 	mSceneManager->setSkyBox(true, "Skybox/Cloudy");
 
-	setup(seed);
+	setup(seed, fromGhost);
 }
 
 
@@ -257,7 +290,7 @@ void
 	int COINS_PER_SEGMENT = (int) (trackPath->pathLength(segmentToAdd) * 2 / 400);
 
 
-	float r =  rand() / (float) RAND_MAX;
+	float r =  worldRand() / (float) RAND_MAX;
 	r = r * 3;
 	r = (float) ((int) r);
 	r = r -1;
@@ -572,9 +605,6 @@ void
 		deltap3 + lastPoint,
 		segmentType);
 
-
-
-	bool barrier =  (rand() / (float) RAND_MAX > 0.3);
 	addTrackNodes(trackPath->NumSegments() - 1);
 }
 
@@ -620,7 +650,7 @@ void World::AddObjects(int segment, bool player)
 		float relY[6];
 		int numBlades = 0;
 
-		float b = (float) rand() /(float) RAND_MAX;
+		float b = (float) worldRand() /(float) RAND_MAX;
 		if (!mUseFrontBack)
 		{
 			b = b * 0.749f;
@@ -764,7 +794,7 @@ void World::AddObjects(int segment, bool player)
 		float relX;
 		float relY = 7;
 
-		float b = (float) rand() /(float) RAND_MAX;
+		float b = (float) worldRand() /(float) RAND_MAX;
 		if (b < 0.33)
 		{
 			relX = -width;
@@ -854,13 +884,13 @@ void
 	trackPath->getPointAndRotaionMatrix(trackPath->NumSegments()-1, 1,point,direction,right,up);
 
 
-	Ogre::Vector3 direction2 = direction + (((rand() / (float) RAND_MAX) * 2  - 1) * right)
-		+  (((rand() / (float) RAND_MAX) * 0.6f  - 0.3f) * up) ;
+	Ogre::Vector3 direction2 = direction + (((worldRand() / (float) RAND_MAX) * 2  - 1) * right)
+		+  (((worldRand() / (float) RAND_MAX) * 0.6f  - 0.3f) * up) ;
 
 	direction2.normalise();
 
-	Ogre::Vector3 direction3 = direction2 + (((rand() / (float) RAND_MAX)* 1  - 0.5f) * right)
-		+  (((rand() / (float) RAND_MAX) * 0.2f  - 0.1f) * up) ;
+	Ogre::Vector3 direction3 = direction2 + (((worldRand() / (float) RAND_MAX)* 1  - 0.5f) * right)
+		+  (((worldRand() / (float) RAND_MAX) * 0.2f  - 0.1f) * up) ;
 
 	direction = direction * 400;
 	direction2 = direction + direction2 * 400;
@@ -872,12 +902,12 @@ void
 	World::AddRandomSegment()
 {
 
-	float r = (rand() / (float) RAND_MAX);
+	float r = (worldRand() / (float) RAND_MAX);
 
 	if ((r < mObsFreq) && mLastObjSeg >= mObsGap)
 	{
 		mLastObjSeg = 0;
-		r = (rand() / (float) RAND_MAX);
+		r = (worldRand() / (float) RAND_MAX);
 		if (r < 0.25 && mUseFrontBack)
 		{
 			AddJump();
@@ -890,10 +920,10 @@ void
 	else
 	{
 		mLastObjSeg++;
-		r = (rand() / (float) RAND_MAX);
+		r = (worldRand() / (float) RAND_MAX);
 		if (r > 0.95)
 		{
-			float r2 = (rand() / float (RAND_MAX));
+			float r2 = (worldRand() / float (RAND_MAX));
 			if (r2 > 0.5f)
 			{
 				AddBarrierSegment(BezierPath::Kind::SHIELD);

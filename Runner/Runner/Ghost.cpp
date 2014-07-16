@@ -8,7 +8,7 @@
 
 Ghost::Ghost(World *w) : mWorld(w)
 {
-	mSampleLength = 0.3;
+	mSampleLength = 0.1f;
 	mPlayingBack= false;
 }
 
@@ -35,11 +35,16 @@ Ghost::~Ghost(void)
 
 void Ghost::think(float time)
 {
-	mCurrentTime += time;
+	// mCurrentTime += time;
 
-	if (mPlayingBack && mAlive)
+
+}
+
+void Ghost::updateGhost(float time)
+{
+	if (mAlive)
 	{
-		while (mDataindex < (int) mData.size() - 1 && mData[mDataindex+1].mTime <= mCurrentTime)
+		while (mDataindex < (int) mData.size() - 1 && mData[mDataindex+1].mTime <= time)
 		{
 			mDataindex++;
 		}
@@ -47,7 +52,13 @@ void Ghost::think(float time)
 		{
 			return;
 		}
-		float percent = (mCurrentTime - mData[mDataindex].mTime) / (mData[mDataindex+1].mTime - mData[mDataindex].mTime);
+
+		if (mData[mDataindex].mTime > time || mData[mDataindex+1].mTime < time)
+		{
+			mDataindex++;
+		}
+
+		float percent = (time - mData[mDataindex].mTime) / (mData[mDataindex+1].mTime - mData[mDataindex].mTime);
 		float segmentDelta =  (mData[mDataindex+1].mSegment + mData[mDataindex+1].mPercent) - 
 			                  ((mData[mDataindex].mSegment + mData[mDataindex].mPercent)) * percent;
 
@@ -70,6 +81,12 @@ void Ghost::think(float time)
 		Ogre::Vector3 forward;
 		Ogre::Vector3 right;
 		Ogre::Vector3 up;
+
+		// TODO:  REMOVE!!
+		segment = mData[mDataindex].mSegment;
+		segPercent = mData[mDataindex].mPercent;
+
+
 		mWorld->getWorldPositionAndMatrix(segment, segPercent, xPos, yPos, pos,forward, right, up, false);
 		Ogre::Quaternion q(-right,up,forward);
 
@@ -83,9 +100,12 @@ void Ghost::think(float time)
 		//mWorld->getHUD()->setCoins((int) (mData[mDataindex].mCoins + (mData[mDataindex+1].mCoins - mData[mDataindex].mCoins) * percent), true);
 		//mWorld->getHUD()->setDistance(dist, true);
 
-		mWorld->getHUD()->setCoins(mData[mDataindex].mXdelta*10, true);
-		mWorld->getHUD()->setDistance(mData[mDataindex+1].mXdelta*10, true);
-		mWorld->getHUD()->setSpeed(xPos*10, true);
+		mWorld->getHUD()->setCoins((int) segment, true);
+		mWorld->getHUD()->setDistance( (int) (segPercent * 100), true);
+		mWorld->getHUD()->setSpeed(time * 10, true);
+
+
+
 
 		//if (angle2 > Ogre::Degree(0) && mLeanEqualsDuck)
 		//{
@@ -97,12 +117,13 @@ void Ghost::think(float time)
 		mRunnerObject->roll(Ogre::Radian(Ogre::Degree(lean)));
 
 	}
-	else if (mPlayingBack)
+	else  // !mAlive 
 	{
 
-
 	}
+	
 }
+
 void  Ghost::record(float time, int segment, float percent, float xdelta, float ydelta, Ogre::Degree lean, Ogre::Degree upDown,
 					   int coins, int distance, int speed)
 {
@@ -114,6 +135,12 @@ void  Ghost::record(float time, int segment, float percent, float xdelta, float 
 			mData.push_back(GhostData(mLastRecordTime,segment,percent,xdelta,ydelta, lean, upDown, coins, distance, speed));
 		}
 				mCurrentTime = time;
+
+	}
+	else if (mPlayingBack)
+	{
+		updateGhost(time);
+
 
 	}
 }
