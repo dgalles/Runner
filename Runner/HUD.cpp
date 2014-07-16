@@ -35,16 +35,13 @@ HUD::HUD() : mArmorIndicator()
 
 	Ogre::String s = mScoreOverlay->getName();
 
-	mCoinsText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Coins");
-	mDistanceText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Distance");
-	mSpeedText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/ScorePanel/Speed");
+	mCoinsText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/Panel/Coins");
+	mDistanceText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/Panel/Distance");
+	mSpeedText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/Panel/Speed");
 
 	mGhostCoinsText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel/Coins");
 	mGhostDistanceText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel/Distance");
 	mGhostSpeedText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel/Speed");
-
-
-
 
 	int armorIndex =  1;
 	while (Ogre::OverlayManager::getSingleton().hasOverlayElement("HUD/Armor/" + std::to_string(armorIndex)))
@@ -57,6 +54,21 @@ HUD::HUD() : mArmorIndicator()
 
 }
 
+void HUD::showGhost(bool show)
+{
+	mShowGhostElements = show;
+	if (mShowGhostElements && mShowHUDElems)
+	{
+		Ogre::OverlayElement *ghost = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel");
+		ghost->show();
+
+	}
+	if (!mShowGhostElements)
+	{
+		Ogre::OverlayElement *ghost = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel");
+		ghost->hide();
+	}
+}
 
 void HUD::showHUDElements(bool show)
 {
@@ -64,6 +76,11 @@ void HUD::showHUDElements(bool show)
 	if (show)
 	{
 		mScoreOverlay->show();
+		if(mShowGhostElements)
+		{
+			Ogre::OverlayElement *ghost = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel");
+			ghost->show();
+		}
 	}
 	else
 	{

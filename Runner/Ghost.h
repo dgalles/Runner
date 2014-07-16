@@ -51,6 +51,8 @@ protected:
 
 	};
 
+	void updateGhost(float time);
+
 	bool mPlayingBack;
 	bool mRecording;
 	float mCurrentTime;
