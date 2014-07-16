@@ -12,7 +12,8 @@ public:
 	~Ghost(void);
 
 	void think(float time);
-	void record(float time, int segment, float percent, float xdelta, float ydelta, Ogre::Degree lean, Ogre::Degree upDown);
+	void record(float time, int segment, float percent, float xdelta, float ydelta, Ogre::Degree lean, Ogre::Degree upDown, 
+		        int coins, int distance, int speed);
 	void kill(float time);
 	void startRecording();
 	void stopRecording();
@@ -33,8 +34,8 @@ protected:
 	public:
 		GhostData();
 
-		GhostData(float time, int segment, float percent, float xdelta, float ydelta, Ogre::Degree lean, Ogre::Degree upDown):
-			mTime(time), mSegment(segment), mPercent(percent), mXdelta(xdelta), mYDelta(ydelta), mLean(lean), mUpDown(upDown) {}
+		GhostData(float time, int segment, float percent, float xdelta, float ydelta, Ogre::Degree lean, Ogre::Degree upDown, int coins, int distance, int speed):
+			mTime(time), mSegment(segment), mPercent(percent), mXdelta(xdelta), mYDelta(ydelta), mLean(lean), mUpDown(upDown), mCoins(coins), mDistance(distance), mSpeed(speed) {}
 
 		float mTime;
 		int mSegment;
@@ -43,6 +44,9 @@ protected:
 		float mYDelta;
 		Ogre::Degree mUpDown;
 		Ogre::Degree mLean;
+		int mCoins;
+		int mDistance;
+		int mSpeed;
 
 
 	};

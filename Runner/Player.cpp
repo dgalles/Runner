@@ -710,7 +710,7 @@ void
 		if (mGhost != NULL)
 		{
 
-			mGhost->record(mTime, mCurrentSegment, 	mSegmentPercent, mRelativeX, mRelativeY, angle, angle2);			
+			mGhost->record(mTime, mCurrentSegment, 	mSegmentPercent, mRelativeX, mRelativeY, angle, angle2, mCoinsCollected, (int) mDistance / 200, (int) mCurrentSpeed);			
 		}
 
 		// Collision with coins
@@ -719,6 +719,11 @@ void
 		coinCollision(newSegment, newPercent, newX);
 
 		mDistSinceMissedCoin+= distance;
+
+		/// TODO:: REMOVE!!!
+
+		mWorld->getHUD()->setSpeed(mRelativeX, false);
+
 
 
 		// Collision with walls & powerups (could kill player)
