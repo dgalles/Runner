@@ -8,7 +8,7 @@
 
 Ghost::Ghost(World *w) : mWorld(w)
 {
-	mSampleLength = 1;
+	mSampleLength = 0.3;
 	mPlayingBack= false;
 }
 
@@ -51,6 +51,13 @@ void Ghost::think(float time)
 		float segmentDelta =  (mData[mDataindex+1].mSegment + mData[mDataindex+1].mPercent) - 
 			                  ((mData[mDataindex].mSegment + mData[mDataindex].mPercent)) * percent;
 
+
+		float prev = mData[mDataindex].mSegment + mData[mDataindex].mPercent;
+		float next = mData[mDataindex+1].mSegment + mData[mDataindex+1].mPercent;
+
+		float totalDelta = next - prev;
+		segmentDelta = totalDelta * percent;
+
 		int segment = mData[mDataindex].mSegment + (int) (segmentDelta + mData[mDataindex].mPercent);
 		float segPercent = segmentDelta  +  mData[mDataindex].mPercent - (int) (segmentDelta  +  mData[mDataindex].mPercent);
 
@@ -69,6 +76,17 @@ void Ghost::think(float time)
 		mRunnerObject->setOrientation(q);
 		mRunnerObject->setPosition(pos);
 
+		int deltaDist = (int) ((mData[mDataindex+1].mDistance - mData[mDataindex].mDistance) * percent);
+		int dist = (int) (mData[mDataindex].mDistance + deltaDist);
+
+		//mWorld->getHUD()->setSpeed( (int) ( mData[mDataindex].mSpeed + ( mData[mDataindex+1].mSpeed - mData[mDataindex].mSpeed ) * percent), true);
+		//mWorld->getHUD()->setCoins((int) (mData[mDataindex].mCoins + (mData[mDataindex+1].mCoins - mData[mDataindex].mCoins) * percent), true);
+		//mWorld->getHUD()->setDistance(dist, true);
+
+		mWorld->getHUD()->setCoins(mData[mDataindex].mXdelta*10, true);
+		mWorld->getHUD()->setDistance(mData[mDataindex+1].mXdelta*10, true);
+		mWorld->getHUD()->setSpeed(xPos*10, true);
+
 		//if (angle2 > Ogre::Degree(0) && mLeanEqualsDuck)
 		//{
 		//	mPlayerObject->pitch(Ogre::Radian(-angle2));
@@ -76,7 +94,7 @@ void Ghost::think(float time)
 		//}
 
 
-		mRunnerObject->roll(Ogre::Radian(lean));
+		mRunnerObject->roll(Ogre::Radian(Ogre::Degree(lean)));
 
 	}
 	else if (mPlayingBack)
@@ -85,14 +103,15 @@ void Ghost::think(float time)
 
 	}
 }
-void  Ghost::record(float time, int segment, float percent, float xdelta, float ydelta, Ogre::Degree lean, Ogre::Degree upDown)
+void  Ghost::record(float time, int segment, float percent, float xdelta, float ydelta, Ogre::Degree lean, Ogre::Degree upDown,
+					   int coins, int distance, int speed)
 {
 	if (mRecording)
 	{
 		if (mLastRecordTime + mSampleLength <= time)
 		{
 			mLastRecordTime = time;
-			mData.push_back(GhostData(mLastRecordTime,segment,percent,xdelta,ydelta, lean, upDown));
+			mData.push_back(GhostData(mLastRecordTime,segment,percent,xdelta,ydelta, lean, upDown, coins, distance, speed));
 		}
 				mCurrentTime = time;
 

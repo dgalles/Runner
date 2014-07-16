@@ -158,7 +158,7 @@ HUD/Score
          left 0.02
          font_name Big
          char_height 0.04
-         colour 1 1 1
+         colour 1 1 1 0.5
          caption Coins = 0
 		}
 		element TextArea(HUD/Score/GhostPanel/Distance)
@@ -168,7 +168,7 @@ HUD/Score
          left 0.3
          font_name Big
          char_height 0.04
-         colour 1 1 1
+         colour 1 1 1 0.5
          caption Distance = 0 meters
 		}
 		
@@ -179,7 +179,7 @@ HUD/Score
          left 0.7
          font_name Big
          char_height 0.04
-         colour 1 1 1
+         colour 1 1 1 0.5
          caption Speed = 0 m / s
 		}
 

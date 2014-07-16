@@ -17,7 +17,7 @@ public:
 
 	void setCoins(int newScore, bool ghost = false);
     void setDistance(int distance, bool ghost = false);
-    void setSpeed(int speed, bool ghost = false;);
+    void setSpeed(int speed, bool ghost = false);
 
 	void update(float time);
     
