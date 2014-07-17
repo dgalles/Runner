@@ -50,7 +50,7 @@ public:
 	void setLevel(int level);
 
 	void setLeanEqualsDuck(bool val);
-
+	bool getLeanEqualsDuck() {return mLeanEqualsDuck; }
 	void setGhost(Ghost *g) { mGhost = g; }
 
 	int getTotalCoins() { return mTotalCoins; }

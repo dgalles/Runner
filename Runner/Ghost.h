@@ -27,6 +27,9 @@ public:
 
 	void setSampleLength(float newLength) {mSampleLength = newLength; }
 
+	void playerDead(int distance, int coins);
+	void setLeanEqualsDuck(bool led) { mLeanEqualsDuck = led; }
+
 protected:
 
 	class GhostData
@@ -63,6 +66,9 @@ protected:
 	float mSampleLength;
 	bool mAlive;
 	int mDataindex;
+
+	bool mLeanEqualsDuck;
+
 	std::vector<GhostData> mData;
 	World *mWorld;
 

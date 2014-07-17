@@ -21,7 +21,7 @@ public:
 	float pathLength(int pathIndex) { return mCurveDistance[pathIndex]; }
 	void getPointAndForward(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward, bool mirrored = false);
 	void getPointAndRotaionMatrix(int pathIndex, float percentage, Ogre::Vector3 &point, Ogre::Vector3 &forward, Ogre::Vector3 &right, Ogre::Vector3 &up,  bool mirrored = false);
-	int kind(int segmentIndex) { return mKind[segmentIndex]; }
+	Kind kind(int segmentIndex) { return mKind[segmentIndex]; }
 	bool getObjectPlaced(int segmentIndex) { return mBladesPlaced[segmentIndex]; }
 	void setObjectPlaced(int segmentIndex, bool bladeSet) {  mBladesPlaced[segmentIndex] = bladeSet;  }
 
