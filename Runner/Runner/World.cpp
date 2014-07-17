@@ -22,23 +22,11 @@
 static unsigned long next = 1;
 
 /* RAND_MAX assumed to be 32767 */
-int World::worldRand(void) 
+int World::worldRand(int seedIndex) 
 {
-    mSeed = mSeed * 1103515245 + 12345;
-	int retval = ((unsigned)(mSeed/65536) % RAND_MAX);
-	if (mGhosting)
-	{
-		if (randomIndex < mRandom.size() && retval != mRandom[randomIndex])
-		{
-			int y = 0;
-			y = y + 1;
-		}
-		randomIndex++;
-	}
-	else
-	{
-		mRandom.push_back(retval);
-	}
+    mSeeds[seedIndex] = mSeeds[seedIndex] * 1103515245 + 12345;
+	int retval = ((unsigned)(mSeeds[seedIndex]/65536) % RAND_MAX);
+
     return retval;
 }
 
@@ -73,21 +61,23 @@ void World::setup(int seed /* = -1 */, bool fromGhost /* = false */)
 	mTrackSceneNodes.clear();
 	mGhosting = fromGhost;
 
-	randomIndex = 0;
 	mLastObjSeg = 0;
 
-	mSeed = seed;
+	mSeeds[0] = seed;
+	mSeeds[1] = seed;
+	mSeeds[2] = seed;
 	if (!fromGhost)
 	{
-		mRandom.clear(); 
-		mSeed = rand();
+		mSeeds[0] = rand();
+		mSeeds[1] = mSeeds[0];
+		mSeeds[2] =  mSeeds[0];
 		mHUD->showGhost(false);
 	}
 	else
 	{
 		mHUD->showGhost(true);
 	}
-	mInitialSeed = mSeed;
+	mInitialSeed = mSeeds[0];
 
 	mLastCoinAddedSegment[0] = 0;
 	mLastCoinAddedSegment[1] = 0;
@@ -290,7 +280,7 @@ void
 	int COINS_PER_SEGMENT = (int) (trackPath->pathLength(segmentToAdd) * 2 / 400);
 
 
-	float r =  worldRand() / (float) RAND_MAX;
+	float r =  worldRand(2) / (float) RAND_MAX;
 	r = r * 3;
 	r = (float) ((int) r);
 	r = r -1;
@@ -650,7 +640,7 @@ void World::AddObjects(int segment, bool player)
 		float relY[6];
 		int numBlades = 0;
 
-		float b = (float) worldRand() /(float) RAND_MAX;
+		float b = (float) worldRand(1) /(float) RAND_MAX;
 		if (!mUseFrontBack)
 		{
 			b = b * 0.749f;
@@ -794,7 +784,7 @@ void World::AddObjects(int segment, bool player)
 		float relX;
 		float relY = 7;
 
-		float b = (float) worldRand() /(float) RAND_MAX;
+		float b = (float) worldRand(0) /(float) RAND_MAX;
 		if (b < 0.33)
 		{
 			relX = -width;
@@ -884,13 +874,13 @@ void
 	trackPath->getPointAndRotaionMatrix(trackPath->NumSegments()-1, 1,point,direction,right,up);
 
 
-	Ogre::Vector3 direction2 = direction + (((worldRand() / (float) RAND_MAX) * 2  - 1) * right)
-		+  (((worldRand() / (float) RAND_MAX) * 0.6f  - 0.3f) * up) ;
+	Ogre::Vector3 direction2 = direction + (((worldRand(0) / (float) RAND_MAX) * 2  - 1) * right)
+		+  (((worldRand(0) / (float) RAND_MAX) * 0.6f  - 0.3f) * up) ;
 
 	direction2.normalise();
 
-	Ogre::Vector3 direction3 = direction2 + (((worldRand() / (float) RAND_MAX)* 1  - 0.5f) * right)
-		+  (((worldRand() / (float) RAND_MAX) * 0.2f  - 0.1f) * up) ;
+	Ogre::Vector3 direction3 = direction2 + (((worldRand(0) / (float) RAND_MAX)* 1  - 0.5f) * right)
+		+  (((worldRand(0) / (float) RAND_MAX) * 0.2f  - 0.1f) * up) ;
 
 	direction = direction * 400;
 	direction2 = direction + direction2 * 400;
@@ -902,12 +892,15 @@ void
 	World::AddRandomSegment()
 {
 
-	float r = (worldRand() / (float) RAND_MAX);
+	float r = (worldRand(0) / (float) RAND_MAX);
+
+
+
 
 	if ((r < mObsFreq) && mLastObjSeg >= mObsGap)
 	{
 		mLastObjSeg = 0;
-		r = (worldRand() / (float) RAND_MAX);
+		r = (worldRand(0) / (float) RAND_MAX);
 		if (r < 0.25 && mUseFrontBack)
 		{
 			AddJump();
@@ -920,10 +913,10 @@ void
 	else
 	{
 		mLastObjSeg++;
-		r = (worldRand() / (float) RAND_MAX);
+		r = (worldRand(0) / (float) RAND_MAX);
 		if (r > 0.95)
 		{
-			float r2 = (worldRand() / float (RAND_MAX));
+			float r2 = (worldRand(0) / float (RAND_MAX));
 			if (r2 > 0.5f)
 			{
 				AddBarrierSegment(BezierPath::Kind::SHIELD);
@@ -951,6 +944,7 @@ void
 		}
 	}
 
+	BezierPath::Kind type = trackPath->kind(trackPath->NumSegments() - 1);
 }
 
 

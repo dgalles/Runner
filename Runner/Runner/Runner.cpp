@@ -367,6 +367,7 @@ void
 	mAchievements[0]->ResetActive(); 
 	//mAchievements[1]->ResetActive(); 
 	mPlayer[0]->startGame();
+	mGhost->setLeanEqualsDuck(mPlayer[0]->getLeanEqualsDuck());
 	//mPlayer[1]->startGame();
 	mGhost->startPlayback();
 	mLogger->StartSession();

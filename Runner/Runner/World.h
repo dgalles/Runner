@@ -106,7 +106,7 @@ protected:
 
 
 
-	int worldRand();
+	int worldRand(int seedIndex);
 
 	int mLeftCoinsMissed;
 	int mRightCoinsMissed;
@@ -155,11 +155,19 @@ protected:
 	int mBoostFreq;
 	int mMagnetFreq;
 
-	int mSeed;
+	int mSeeds[3];
 
 	bool mGhosting;
 	bool mDrawTrack;
 
-	std::vector<int> mRandom;
-	int randomIndex;
+	//TODO:: REMOVE  vvv
+	//std::vector<int> mRandom;
+	//int randomIndex;
+	//std::vector<BezierPath::Kind> mTrackType;
+	//std::vector<BezierPath::Kind> mTrackType2;
+	//int mTrackIndex;
+
+	//std::vector<int> randIndex;
+	//std::vector<int> randIndexGhost;
+
 };
