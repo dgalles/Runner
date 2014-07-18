@@ -45,9 +45,11 @@ void Player::resetToDefaults()
 
 	mMaxSpeed = 80;
 
+	mAutoAccel = 0;
 	mUseFrontBack = true;
 	mLeanEqualsDuck = true;
 	mWarningDelta = 1;
+	mManualAccel = 5;
 
 }
 
@@ -60,14 +62,14 @@ Player::Player(World *world, XInputManager *inputManager, Kinect *k, Achievement
 	resetToDefaults();
 }
 
-void Player::reset()
+void Player::reset(Ghost::GhostInfo *ghostInfo /* = NULL */)
 {
-	setup();
+	setup(ghostInfo);
 	mWorld->trackObject(this);
 
 }
 
-void Player::setup()
+void Player::setup(Ghost::GhostInfo *ghostInfo /* = NULL */)
 {
 	mPlayerObject = new RunnerObject(RunnerObject::PLAYER);
 	mPlayerObject->loadModel("car.mesh", mWorld->SceneManager());
@@ -88,7 +90,34 @@ void Player::setup()
 	mBoostsHit = 0;
 	mShieldsHit = 0;
 
-	mCurrentSpeed = mInitialSpeed;
+
+	if (ghostInfo == NULL)
+	{
+		mCurrInitialSpeed = mInitialSpeed;
+		mCurrInitialArmor = mInitialArmor;
+		mCurrManualAccel = mManualAccel;
+		mCurrAutoAccel = mAutoAccel;
+		mCurrMaxSpeed = mMaxSpeed;
+		mCurrMagnetDuration = mMagnetDuration;
+		mCurrShieldDuration = mShieldDuration;
+		mCurrBoostDuration = mBoostDuration;
+		mCurrLeanEqualsDuck = mLeanEqualsDuck;
+	}
+	else
+	{
+		mCurrInitialSpeed = ghostInfo->mInitialSpeed;
+		mCurrInitialArmor = ghostInfo->mInitialArmor;
+		mCurrManualAccel = ghostInfo->mManualAceelerateRate;
+		mCurrAutoAccel = ghostInfo->mAutoAceelerateRate;
+		mCurrMaxSpeed = ghostInfo->mMaxSpeed;
+		mCurrMagnetDuration = ghostInfo->mMagnetDuration;
+		mCurrShieldDuration = ghostInfo->mShieldDuration;
+		mCurrBoostDuration = ghostInfo->mBoostDuration;
+		mCurrLeanEqualsDuck = ghostInfo->mLeanEqualsDuck;
+	}
+
+	mCurrentSpeed = mCurrInitialSpeed;
+	mArmor = mCurrInitialArmor;
 
 	mPaused = true;
 	mDistanceWithoutCoins = 0.0f;
@@ -119,15 +148,29 @@ void Player::setup()
 	mPlayerObject->setOrientation(q);
 
 	float mTimeSinceSpeedIncrease = 0;
-	mAutoAccel = 0;
-	mManualAccel = 5;
-	mArmor = mInitialArmor;
 	mWorld->getHUD()->setArmorLevel(mArmor);
+	mWorld->getHUD()->setCoins(0);
+	mWorld->getHUD()->setDistance(0);
 	mTime = 0;
 }
 
 Ogre::Vector3 
 	Player::worldPosition() { return mPlayerObject->getPosition();}
+
+
+
+void Player::setGhostInfo(Ghost::GhostInfo *ghostInfo)
+{
+	ghostInfo->mInitialSpeed = 	mCurrInitialSpeed;
+	ghostInfo->mInitialArmor = mCurrInitialArmor;
+	ghostInfo->mManualAceelerateRate = mCurrManualAccel;
+	ghostInfo->mAutoAceelerateRate = mCurrAutoAccel;
+	ghostInfo->mMaxSpeed = mCurrMaxSpeed;
+	ghostInfo->mMagnetDuration = mCurrMagnetDuration;
+	ghostInfo->mShieldDuration = mCurrShieldDuration;
+	ghostInfo->mBoostDuration = mCurrBoostDuration;
+	ghostInfo->mLeanEqualsDuck = mCurrLeanEqualsDuck;
+}
 
 
 void
@@ -495,15 +538,15 @@ void
 		float newPercent = mSegmentPercent;
 
 		mTimeSinceSpeedIncrease  += time;
-		if (mTimeSinceSpeedIncrease > 1 && mLeanEqualsDuck)
+		if (mTimeSinceSpeedIncrease > 1 && mCurrLeanEqualsDuck)
 		{
 			mTimeSinceSpeedIncrease = 0;
-			mCurrentSpeed += mAutoAccel;
-			mCurrentSpeed = std::min(mCurrentSpeed, mMaxSpeed);
+			mCurrentSpeed += mCurrAutoAccel;
+			mCurrentSpeed = std::min(mCurrentSpeed, mCurrMaxSpeed);
 		}
 
 
-		if (mLeanEqualsDuck)
+		if (mCurrLeanEqualsDuck)
 		{
 			if (angle2 < Ogre::Degree(0))
 			{
@@ -520,15 +563,15 @@ void
 		{
 			if (angle2 < Ogre::Degree(-10))
 			{
-				mCurrentSpeed += mManualAccel * time;
-				mCurrentSpeed = std::min(mCurrentSpeed, mMaxSpeed);
+				mCurrentSpeed += mCurrManualAccel * time;
+				mCurrentSpeed = std::min(mCurrentSpeed, mCurrMaxSpeed);
 
 				mWorld->getHUD()->setShowIncreaseSpeed(true);
 				mWorld->getHUD()->setShowDecreaseSpeed(false);
 			}
 			else if (angle2 > Ogre::Degree(10))
 			{
-				mCurrentSpeed -= mManualAccel * time;
+				mCurrentSpeed -= mCurrManualAccel * time;
 				mCurrentSpeed = std::max(mCurrentSpeed, 5.0f);
 				mWorld->getHUD()->setShowIncreaseSpeed(false);
 				mWorld->getHUD()->setShowDecreaseSpeed(true);
@@ -697,7 +740,7 @@ void
 		mPlayerObject->setOrientation(q);
 		mPlayerObject->setPosition(pos);
 
-		if (angle2 > Ogre::Degree(0) && mLeanEqualsDuck)
+		if (angle2 > Ogre::Degree(0) && mCurrLeanEqualsDuck)
 		{
 			mPlayerObject->pitch(Ogre::Radian(-angle2));
 			mPlayerObject->setPosition(pos  + up *( - Ogre::Math::Sin(angle2) * mPlayerObject->minPointLocalScaled().z* 0.8f) + mDeltaY);

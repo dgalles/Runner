@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "RunnerObject.h"
 #include "Runner.h"
+#include "Ghost.h"
 #include <ctime>
 
 //Ogre::SceneManager *
@@ -54,29 +55,42 @@ World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useM
 	setup();
 }
 
-void World::setup(int seed /* = -1 */, bool fromGhost /* = false */)
+void World::setup(Ghost::GhostInfo *ghostData)
 {
 	// Global illumination for now.  Adding individual light sources will make you scene look more realistic
 	mSceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
 	mTrackSceneNodes.clear();
-	mGhosting = fromGhost;
+	mGhosting = ghostData != NULL;
 
 	mLastObjSeg = 0;
 
-	mSeeds[0] = seed;
-	mSeeds[1] = seed;
-	mSeeds[2] = seed;
-	if (!fromGhost)
+	if (mGhosting)
 	{
-		mSeeds[0] = rand();
+		mHUD->showGhost(true);
+		mSeeds[0] = ghostData->mSeed;
+		mSeeds[1] = ghostData->mSeed;
+		mSeeds[2] = ghostData->mSeed;
+		mCurrObjsGap = ghostData->mObsGap;
+		mCurrObjsFreq = ghostData->mObjsFreq;
+		mCurrMagnetFreq = ghostData->mMagnetFreq;
+		mCurrShieldFreq = ghostData->mShieldFreq;
+		mCurrBoostFreq = ghostData->mBoostFreq;
+	}
+	else
+	{
+		mCurrObjsGap = mObsGap;
+		mCurrObjsFreq = mObsFreq;
+		mCurrUseFrontBack = mUseFrontBack;
+		mCurrBoostFreq	= mBoostFreq;
+		mCurrShieldFreq = 	mShieldFreq;
+		mCurrMagnetFreq = mMagnetFreq;
+				mSeeds[0] = rand();
 		mSeeds[1] = mSeeds[0];
 		mSeeds[2] =  mSeeds[0];
 		mHUD->showGhost(false);
 	}
-	else
-	{
-		mHUD->showGhost(true);
-	}
+
+
 	mInitialSeed = mSeeds[0];
 
 	mLastCoinAddedSegment[0] = 0;
@@ -135,7 +149,18 @@ void World::setup(int seed /* = -1 */, bool fromGhost /* = false */)
 }
 
 
-void World::reset(int seed /* -1 */, bool fromGhost /* = false */)
+
+void  World::setGhostInfo(Ghost::GhostInfo *info)
+{
+	info->mBoostFreq = mCurrBoostFreq;
+	info->mMagnetFreq = mCurrMagnetFreq;
+	info->mObjsFreq = mCurrObjsFreq;
+	info->mObsGap = mCurrObjsGap;
+	info->mSeed = mInitialSeed;
+	info->mShieldFreq = mCurrShieldFreq;
+	info->mUseFrontBack = mCurrUseFrontBack;
+}
+void World::reset(Ghost::GhostInfo *ghostData /*  = NULL */)
 {
 	delete mSawPowerup;
 	delete mCoins;
@@ -143,7 +168,7 @@ void World::reset(int seed /* -1 */, bool fromGhost /* = false */)
 	delete trackPath;
 	mSceneManager->setSkyBox(true, "Skybox/Cloudy");
 
-	setup(seed, fromGhost);
+	setup(ghostData);
 }
 
 
@@ -641,7 +666,7 @@ void World::AddObjects(int segment, bool player)
 		int numBlades = 0;
 
 		float b = (float) worldRand(1) /(float) RAND_MAX;
-		if (!mUseFrontBack)
+		if (!mCurrUseFrontBack)
 		{
 			b = b * 0.749f;
 		}
@@ -897,11 +922,11 @@ void
 
 
 
-	if ((r < mObsFreq) && mLastObjSeg >= mObsGap)
+	if ((r < mCurrObjsFreq) && mLastObjSeg >= mCurrObjsGap)
 	{
 		mLastObjSeg = 0;
 		r = (worldRand(0) / (float) RAND_MAX);
-		if (r < 0.25 && mUseFrontBack)
+		if (r < 0.25 && mCurrUseFrontBack)
 		{
 			AddJump();
 		}

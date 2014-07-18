@@ -2,6 +2,7 @@
 #include "Bezier.h"
 #include <queue>
 #include "ItemQueue.h"
+#include "Ghost.h"
 
 namespace Ogre {
 	class SceneNode;
@@ -30,7 +31,7 @@ public:
 
 	void AddSegment(Ogre::Vector3 deltap1, Ogre::Vector3 deltap2, Ogre::Vector3 deltap3, BezierPath::Kind type = BezierPath::Kind::NORMAL);
 
-	void reset(int seed = -1, bool fromGhost = false);
+	void reset(Ghost::GhostInfo *ghostData = NULL);
 	void resetToDefaults();
 
 	void AddRandomSegment();
@@ -101,6 +102,7 @@ public:
 
 	int getSeed() { return mInitialSeed;}
 
+	void setGhostInfo(Ghost::GhostInfo *info);
 
 protected:
 
@@ -112,7 +114,7 @@ protected:
 	int mRightCoinsMissed;
 	int mMiddleCoinsMissed;
 
-	void setup(int seed = -1, bool fromGhost = false);
+	void setup(Ghost::GhostInfo *ghostData = NULL);
 
 	void clearBefore(ItemQueue<ItemQueueData> *queue, int segment, bool isCoins);
 
@@ -143,9 +145,12 @@ protected:
 	RunnerCamera *mCamera;
 
 	float mObsFreq;
+	float mCurrObjsFreq;
 	bool mUseFrontBack;
+	bool mCurrUseFrontBack;
 	int mLastObjSeg;
 	int mObsGap;
+	int mCurrObjsGap;
 
 	bool mSimpleMaterials;
 	int mInitialSeed;
@@ -155,19 +160,14 @@ protected:
 	int mBoostFreq;
 	int mMagnetFreq;
 
+		int mCurrShieldFreq;
+	int mCurrBoostFreq;
+	int mCurrMagnetFreq;
+
 	int mSeeds[3];
 
 	bool mGhosting;
 	bool mDrawTrack;
 
-	//TODO:: REMOVE  vvv
-	//std::vector<int> mRandom;
-	//int randomIndex;
-	//std::vector<BezierPath::Kind> mTrackType;
-	//std::vector<BezierPath::Kind> mTrackType2;
-	//int mTrackIndex;
-
-	//std::vector<int> randIndex;
-	//std::vector<int> randIndexGhost;
 
 };

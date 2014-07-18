@@ -156,11 +156,13 @@ void
 	//mWorld[1]->reset(); 
 	mPlayer[0]->reset(); 
 	//mPlayer[1]->reset(); 
+	mWorld->setGhostInfo(mGhost->getData());
+	mPlayer[0]->setGhostInfo(mGhost->getData());
+
 	mAchievements[0]->ResetActive(); 
 	//mAchievements[1]->ResetActive(); 
 	mPlayer[0]->startGame();
 	//mPlayer[1]->startGame();
-	mGhost->setSeed(mWorld->getSeed());
 	mGhost->startRecording();
 	mLogger->StartSession();
 	mKinect->StartSession();
@@ -360,14 +362,15 @@ void Runner::createStores(Menu *parent, std::vector<Store *> &stores)
 void 
 	Runner::replayGhost()
 {
-	mWorld->reset(mGhost->getSeed(), true); 
+	Ghost::GhostInfo *data = mGhost->getData();
+
+	mWorld->reset(data); 
 	//mWorld[1]->reset(); 
-	mPlayer[0]->reset(); 
+	mPlayer[0]->reset(data); 
 	//mPlayer[1]->reset(); 
 	mAchievements[0]->ResetActive(); 
 	//mAchievements[1]->ResetActive(); 
 	mPlayer[0]->startGame();
-	mGhost->setLeanEqualsDuck(mPlayer[0]->getLeanEqualsDuck());
 	//mPlayer[1]->startGame();
 	mGhost->startPlayback();
 	mLogger->StartSession();
@@ -387,6 +390,7 @@ Runner::setupMenus(bool loginRequired)
 	Achievements *a = mAchievements[0];
 	SoundBank *sb = SoundBank::getInstance();
 	LoginWrapper *lm = mLogin;
+	Ghost *ghost = mGhost;
 
     Menu *mainMenu = new Menu("Main Menu", "main", 0.05f, 0.1f);
     Menu *options = new Menu("Options", "options", 0.05f, 0.1f, 0.1f, mainMenu);
@@ -544,6 +548,7 @@ Runner::setupMenus(bool loginRequired)
 
 
 	endGameMenu->AddSelectElement("Replay Against Ghost", [this, endGameMenu]() {endGameMenu->disable(); this->replayGhost();});
+	endGameMenu->AddSelectElement("Save Ghost", [this, ghost]() {ghost->writeFile("test"); ghost->readFile("test"); });
     endGameMenu->AddSelectElement("Return to Main Menu", [endGameMenu,mainMenu, p, w, h, this]() {this->endGame(), h->showHUDElements(false); endGameMenu->disable();mainMenu->enable(); p->setPaused(true); });
 
 
