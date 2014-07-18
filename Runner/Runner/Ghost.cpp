@@ -4,12 +4,14 @@
 #include "OgreOverlayManager.h"
 #include "OgreOverlayContainer.h"
 #include <OgreTextAreaOverlayElement.h>
-
+#include <iostream>
+#include <fstream>
 
 Ghost::Ghost(World *w) : mWorld(w)
 {
 	mSampleLength = 0.1f;
 	mPlayingBack= false;
+	mGhostInfo = new Ghost::GhostInfo();
 }
 
 
@@ -104,13 +106,13 @@ void Ghost::updateGhost(float time)
 		mWorld->getHUD()->setDistance(dist, true);
 
 
-		if (lean2 > 0 && mLeanEqualsDuck)
+		if (lean2 > 0 && mGhostInfo->mLeanEqualsDuck)
 		{
 			mRunnerObject->pitch(Ogre::Radian(Ogre::Degree(-lean2)));
-			mRunnerObject->setPosition(pos  + up *( - Ogre::Math::Sin(lean2) * mRunnerObject->minPointLocalScaled().z* 0.8f) + yPos);
+			mRunnerObject->setPosition(pos  + up *( - Ogre::Math::Sin(Ogre::Degree(lean2)) * mRunnerObject->minPointLocalScaled().z* 0.8f) + yPos);
 		}
 
-		if (lean2 <  0 && mLeanEqualsDuck)
+		if (lean2 <  0 &&  mGhostInfo->mLeanEqualsDuck)
 		{
 			float diff = (lean2 / 10) + 6;
 			diff = std::max(diff, 0.5f);
@@ -174,11 +176,95 @@ void  Ghost::startPlayback()
 
 void  Ghost::readFile(std::string filename)
 {
+	std::ifstream myfile (filename, std::ios::in );
+
+
+	myfile >> mGhostInfo->mInitialSpeed;
+	myfile >> mGhostInfo->mInitialSpeed;
+	myfile >> mGhostInfo->mMaxSpeed;
+	myfile >> mGhostInfo->mUseFrontBack;
+	myfile >> mGhostInfo->mAutoAceelerateRate;
+	myfile >> mGhostInfo->mManualAceelerateRate;
+	myfile >> mGhostInfo->mInitialArmor;
+	myfile >> mGhostInfo->mBoostDuration;
+	myfile >> mGhostInfo->mShieldDuration;
+	myfile >> mGhostInfo->mMagnetDuration;
+	myfile >> mGhostInfo->mObsGap;
+	myfile >> mGhostInfo->mObjsFreq;
+	myfile >> mGhostInfo->mBoostFreq;
+	myfile >> mGhostInfo->mShieldFreq;
+	myfile >> mGhostInfo->mMagnetFreq;
+	myfile >> mGhostInfo->mSeed;
+	myfile >> mGhostInfo->mLeanEqualsDuck;
+
+	int size;
+	myfile >> size;
+
+	GhostData nextData;
+
+	mData.clear();
+
+	for (int i = 0; i < size; i++)
+	{
+		myfile >> nextData.mTime;
+		myfile >> nextData.mSegment;
+		myfile >> nextData.mPercent;
+		myfile >> nextData.mXdelta;
+		myfile >> nextData.mYDelta;
+		float upDown, lean;
+		myfile >> upDown;
+		myfile >> lean;
+		nextData.mUpDown = Ogre::Degree(upDown);
+		nextData.mLean = Ogre::Degree(lean);
+		myfile >> nextData.mCoins;
+		myfile >> nextData.mDistance;
+		myfile >> nextData.mSpeed;
+		
+		mData.push_back(nextData);
+	}
 
 }
 void  Ghost::writeFile(std::string filename)
 {
+	std::ofstream myfile (filename, std::ios::out | std::ios::trunc);
 
+
+	myfile << mGhostInfo->mInitialSpeed << " ";
+	myfile << mGhostInfo->mInitialSpeed << " ";
+	myfile << mGhostInfo->mMaxSpeed << " ";
+	myfile << mGhostInfo->mUseFrontBack << " ";
+	myfile << mGhostInfo->mAutoAceelerateRate << " ";
+	myfile << mGhostInfo->mManualAceelerateRate << " ";
+	myfile << mGhostInfo->mInitialArmor << " ";
+	myfile << mGhostInfo->mBoostDuration << " ";
+	myfile << mGhostInfo->mShieldDuration << " ";
+	myfile << mGhostInfo->mMagnetDuration << " ";
+	myfile << mGhostInfo->mObsGap << " ";
+	myfile << mGhostInfo->mObjsFreq << " ";
+	myfile << mGhostInfo->mBoostFreq << " ";
+	myfile << mGhostInfo->mShieldFreq << " ";
+	myfile << mGhostInfo->mMagnetFreq << " ";
+	myfile << mGhostInfo->mSeed << " ";
+	myfile << mGhostInfo-> mLeanEqualsDuck << " ";
+
+
+
+
+	myfile << mData.size() << " ";
+
+	for (int i = 0; i < mData.size(); i++)
+	{
+		myfile << mData[i].mTime << " ";
+		myfile << mData[i].mSegment << " ";
+		myfile << mData[i].mPercent << " ";
+		myfile << mData[i].mXdelta << " ";
+		myfile << mData[i].mYDelta << " ";
+		myfile << mData[i].mUpDown.valueDegrees() << " ";
+		myfile << mData[i].mLean.valueDegrees() << " ";
+		myfile << mData[i].mCoins << " ";
+		myfile << mData[i].mDistance << " ";
+		myfile << mData[i].mSpeed << " ";
+	}
 
 }
 

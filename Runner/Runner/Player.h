@@ -102,7 +102,7 @@ public:
 
 	void addPlayerListener(PlyrDataMsgr *listener) { mLogger.push_back(listener); }
 
-	void reset();
+	void reset(Ghost::GhostInfo *ghostInfo = NULL);
 
 
 	int getBoostDuration() { return mBoostDuration; }
@@ -117,6 +117,7 @@ public:
 	int getMagnetDuration() { return mMagnetDuration; }
 	void setMagnetDuration(int n) { mMagnetDuration = n; }
 
+	void setGhostInfo(Ghost::GhostInfo *ghostInfo);
 
 protected:
 	void updateAchievements();
@@ -124,7 +125,7 @@ protected:
 	void updateAnglesFromControls(Ogre::Degree &angle, Ogre::Degree &angle2);
 
 	void kill();
-	void setup();
+	void setup(Ghost::GhostInfo *ghostInfo = NULL);
 	void startArrows(int newSegment);
 	void stopArrows(int segment, float percent);
 	void moveExplosion(float time);
@@ -157,6 +158,7 @@ protected:
 
 	float mCurrentSpeed;
 	float mInitialSpeed;
+	float mCurrInitialSpeed;
 
 	int mCoinsCollected;
 	bool mAlive;
@@ -183,9 +185,12 @@ protected:
 
 	int mArmor;
 	int mInitialArmor;
+	int mCurrInitialArmor;
 
 	int mAutoAccel;
+	int mCurrAutoAccel;
 	int mManualAccel;
+	int mCurrManualAccel;
 
 	Achievements *mAchievements;
 	static const float SPEED_MULTIPLYER;
@@ -212,7 +217,9 @@ protected:
 	float mMagnetTime;
 	float mMagnetActive;
 	bool mLeanEqualsDuck;
+	bool mCurrLeanEqualsDuck;
 	float mMaxSpeed;
+	float mCurrMaxSpeed;
 
 	int mLeftCoinsCollected;
 	int mRightCoinsCollected;
@@ -221,4 +228,9 @@ protected:
 	int mShieldDuration;
 	int mBoostDuration;
 	int mMagnetDuration;
+
+	int mCurrShieldDuration;
+	int mCurrBoostDuration;
+	int mCurrMagnetDuration;
+
 };

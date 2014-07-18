@@ -19,8 +19,7 @@ public:
 	void stopRecording();
 	void startPlayback();
 	void stopPlayback();
-	void setSeed(int seed) { mSeed = seed;}
-	int getSeed() { return mSeed; }
+
 
 	void readFile(std::string filename);
 	void writeFile(std::string filename);
@@ -28,14 +27,36 @@ public:
 	void setSampleLength(float newLength) {mSampleLength = newLength; }
 
 	void playerDead(int distance, int coins);
-	void setLeanEqualsDuck(bool led) { mLeanEqualsDuck = led; }
 
+
+	class GhostInfo
+	{
+	public:
+		float mInitialSpeed;
+		float mMaxSpeed;
+		bool mUseFrontBack;
+		int mAutoAceelerateRate;
+		int mManualAceelerateRate;
+		int mInitialArmor;
+		int mBoostDuration;
+		int mShieldDuration;
+		int mMagnetDuration;
+		int mObsGap;
+		float mObjsFreq;
+		int mBoostFreq;
+		int mShieldFreq;
+		int mMagnetFreq;
+		int mSeed;
+		bool mLeanEqualsDuck;
+	};
+
+	GhostInfo *getData() { return mGhostInfo; }
 protected:
 
 	class GhostData
 	{
 	public:
-		GhostData();
+		GhostData() {}
 
 		GhostData(float time, int segment, float percent, float xdelta, float ydelta, Ogre::Degree lean, Ogre::Degree upDown, int coins, int distance, int speed):
 			mTime(time), mSegment(segment), mPercent(percent), mXdelta(xdelta), mYDelta(ydelta), mLean(lean), mUpDown(upDown), mCoins(coins), mDistance(distance), mSpeed(speed) {}
@@ -67,7 +88,7 @@ protected:
 	bool mAlive;
 	int mDataindex;
 
-	bool mLeanEqualsDuck;
+	Ghost::GhostInfo *mGhostInfo;
 
 	std::vector<GhostData> mData;
 	World *mWorld;
