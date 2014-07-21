@@ -16,6 +16,8 @@ namespace Ogre
 class InputHandler;
 
 
+
+
 class Menu 
 {
 
@@ -54,7 +56,7 @@ public:
 	std::string getMenuConfig();
 	void setMenuConfig(std::string configString);
 
-	void handleKeypress(const OIS::KeyEvent &e);
+	virtual void handleKeypress(const OIS::KeyEvent &e);
 protected:
 	class MenuItem;
 
@@ -85,7 +87,6 @@ protected:
 	void moveSelectUp();
 	void moveSelectDown();
 	std::map<std::string, int> mNameToIndexMap;
-
 
 	class MenuItem 
 	{
@@ -241,6 +242,24 @@ protected:
 	};
 
 
+
+};
+
+
+
+class ScrollSelectMenu : public Menu
+{
+public:
+
+	ScrollSelectMenu(Ogre::String header, Ogre::String name,float xPos, float yPos, float ydelta, Menu *parent);
+	~ScrollSelectMenu();
+	void handleKeypress(const OIS::KeyEvent &e);
+	void reset(std::vector<Ogre::String> items,  std::function<void(Ogre::String)> callback);
+
+protected:
+	std::vector<Ogre::TextAreaOverlayElement *> mElems;
+	std::vector<Ogre::String> mNames;
+	std::function<void(Ogre::String)> mSelectCallback;
 
 };
 

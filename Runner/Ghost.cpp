@@ -12,6 +12,7 @@ Ghost::Ghost(World *w) : mWorld(w)
 	mSampleLength = 0.1f;
 	mPlayingBack= false;
 	mGhostInfo = new Ghost::GhostInfo();
+	mRecording = false;
 }
 
 
@@ -158,6 +159,12 @@ void  Ghost::startRecording()
 	mCurrentTime = 0;
 	mLastRecordTime = -3;
 	mRecording = true;
+
+	time_t timeStamp;
+	time(&timeStamp);
+
+	strftime(mTimeBuf, sizeof mTimeBuf, "%Y_%m_%d_%H_%M_%S", localtime(&timeStamp));
+
 }
 void  Ghost::startPlayback()
 {
@@ -171,6 +178,7 @@ void  Ghost::startPlayback()
 	//mRunnerObject->setAlpha(0.0);
 	//mRunnerObject->setAlpha(0.3f);
 	mPlayingBack = true;
+	mRecording = false;
 	mAlive = true;
 }
 
@@ -224,6 +232,17 @@ void  Ghost::readFile(std::string filename)
 	}
 
 }
+
+
+
+void  Ghost::writeFile()
+{
+	std::string filename = std::string(mTimeBuf) + ".ghost";
+	writeFile(filename);
+	writeFile("test2");
+	writeFile("test2.ghost");
+}
+
 void  Ghost::writeFile(std::string filename)
 {
 	std::ofstream myfile (filename, std::ios::out | std::ios::trunc);

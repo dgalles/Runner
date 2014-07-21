@@ -359,6 +359,55 @@ void Runner::createStores(Menu *parent, std::vector<Store *> &stores)
 }
 
 
+
+void Runner::loadGhost()
+{
+	Ghost *ghost = mGhost;
+
+	WIN32_FIND_DATA fileData;
+   HANDLE hFindFile = INVALID_HANDLE_VALUE;
+   DWORD dwError=0;
+
+	  hFindFile = FindFirstFile("*.ghost", &fileData);
+   
+	std::vector<Ogre::String> filenames;
+
+	if (INVALID_HANDLE_VALUE != hFindFile) 
+	{
+		do
+		{
+			//Skip directories
+			if (FILE_ATTRIBUTE_DIRECTORY & fileData.dwFileAttributes)
+				continue;
+
+			Ogre::String filename = fileData.cFileName;
+			filenames.push_back(filename);
+		} while(FindNextFile(hFindFile, &fileData));
+
+		FindClose(hFindFile);
+	}    
+
+	if (filenames.size() == 0)
+	{
+		
+	}
+	else
+	{
+		MenuManager *manager = MenuManager::getInstance();
+		ScrollSelectMenu *ghostMenu = (ScrollSelectMenu *) manager->getMenu("ghostSelect");
+		ghostMenu->reset(filenames,  [ghostMenu, ghost, this](Ogre::String filename) { 
+			 ghostMenu->disable();
+			 ghost->readFile(filename); 
+			 this->replayGhost(); 
+		});
+
+		ghostMenu->enable();
+	}
+
+   // List all the files in the directory with some info about them.
+
+}
+
 void 
 	Runner::replayGhost()
 {
@@ -402,8 +451,12 @@ Runner::setupMenus(bool loginRequired)
     Menu *pauseMenu = new Menu("Pause Menu", "pause", 0.05f, 0.1f);
     Menu *obstacleMenu = new Menu("Obstacle Options", "obstacle", 0.05f, 0.1f, 0.1f, options);
     Menu *confirmMenu = new Menu("Confirm Profile Reset", "profleReset", 0.1f, 0.1f, 0.1f, advancedOptions);
-
 	Menu *endGameMenu = new Menu("Game Over!", "gameOver", 0.1f, 0.1f, 0.1f, NULL);
+	Menu *awkGhostSave  = new Menu("Ghost Saved", "ghostSaved", 0.1f, 0.1f, 0.1f, NULL);
+	Menu *ghostSelect = new ScrollSelectMenu("Select Ghost Run", "ghostSelect", 0.05f, 0.1f, 0.1f, mainMenu);
+
+
+
 	std::vector<Store *> stores;
 	createStores(mainMenu, stores);
 	for (unsigned int i = 0; i < stores.size(); i++)
@@ -426,11 +479,22 @@ Runner::setupMenus(bool loginRequired)
 	menus->addMenu(obstacleMenu);
 	menus->addMenu(endGameMenu);
 	menus->addMenu(confirmMenu);
+	menus->addMenu(awkGhostSave);
+	menus->addMenu(ghostSelect);
+	
+
+
+	/////////////////////////////////////////////////
+	// Login Menu 
+	//////////////////////////////////////////////////
 
 	login->AddChooseString("Username",[lm](Ogre::String s) {lm->changeUsername(s); },"",15,false);
 	login->AddChooseString("Password",[lm, this](Ogre::String s) {this->setFromConfigString(lm->changePassword(s));},"",15,true);
 	login->AddSelectElement("Return to Main Menu", [login, mainMenu]() {login->disable(); mainMenu->enable();});
 	
+	/////////////////////////////////////////////////
+	// Options Menu 
+	//////////////////////////////////////////////////
 
     options->AddSelectElement("Control Options", [options, controlOptions]() {options->disable(); controlOptions->enable();});
     options->AddSelectElement("Gameplay Options", [options, gameplayOptions]() {options->disable(); gameplayOptions->enable();});
@@ -439,7 +503,11 @@ Runner::setupMenus(bool loginRequired)
 	options->AddSelectElement("Return to Main Menu", [options, mainMenu]() {options->disable(); mainMenu->enable();});
 
 
-    obstacleMenu->AddChooseFloat("Obstacle Frequency", [w](float x) {w->setObstacleFrequency(x); }, 0.0f, 1.0f,w->getObstacleFrequency(), 0.1f, true);
+	/////////////////////////////////////////////////
+	// Options Submenu: Gameplay /  Obstacle 
+	//////////////////////////////////////////////////
+
+	obstacleMenu->AddChooseFloat("Obstacle Frequency", [w](float x) {w->setObstacleFrequency(x); }, 0.0f, 1.0f,w->getObstacleFrequency(), 0.1f, true);
     obstacleMenu->AddChooseInt("Minimum Obstacle Separation", [w](int x) {w->setObstacleSeparation(x); }, 0, 15, w->getObstacleSeparation(), 1, true);
 	 obstacleMenu->AddChooseBool("Arrow Indicators", [h](bool show) {h->showArrows(show);}, h->arrowsShown(), true);
 	std::vector<Ogre::String> namesArrowDist;
@@ -470,6 +538,10 @@ Runner::setupMenus(bool loginRequired)
 	obstacleMenu->AddChooseEnum("Blade Texture Type",namesTexture,callbackTexture,w->getUsingSimpleMaterials() ? 1 : 0, true);	
 	obstacleMenu->AddSelectElement("Return to Gameplay Options", [obstacleMenu,gameplayOptions]() {obstacleMenu->disable(); gameplayOptions->enable();});
 
+	
+	/////////////////////////////////////////////////
+	// Options Submenu:  Gameplay 
+	//////////////////////////////////////////////////
 
    
     gameplayOptions->AddSelectElement("Obstacle Options", [gameplayOptions,obstacleMenu]() {gameplayOptions->disable(); obstacleMenu->enable();});
@@ -495,9 +567,10 @@ Runner::setupMenus(bool loginRequired)
 
 
 
-
-
-
+	
+	/////////////////////////////////////////////////
+	// Options Submenu:  Controls 
+	//////////////////////////////////////////////////
 
     controlOptions->AddChooseBool("Callibrate Kinect Every Game", [p](bool x) {p->setAutoCallibrate(x); }, p->getAutoCallibrate(), true);
     controlOptions->AddChooseFloat("Kinect Sensitivity Left / Right", [p](float x) {p->setKinectSentitivityLR(x); }, 0.7f, 1.5f, 1.f, 0.1f, true);
@@ -511,11 +584,14 @@ Runner::setupMenus(bool loginRequired)
 
     controlOptions->AddSelectElement("Return to Options Menu", [controlOptions,options]() {controlOptions->disable(); options->enable();});
 
+	/////////////////////////////////////////////////
+	// Options Submenu:  Sounds 
+	//////////////////////////////////////////////////
 
     soundOptions->AddChooseBool("Enalbe Sound", [sb](bool x) {sb->setEnableSound(x); }, sb->getEnableSound(), true);
 	soundOptions->AddChooseInt("Volume", [sb](int x) {sb->setVolume(x); }, 0, 128, sb->getVolume(), 5, true);
 
-		std::vector<Ogre::String> namesSoundType;
+	std::vector<Ogre::String> namesSoundType;
 	std::vector<std::function<void()>> callbacksSoundType;
 	namesSoundType.push_back("Realistic (blades)");
 	callbacksSoundType.push_back([sb]() {sb->setCurrentIndex(0); });
@@ -523,76 +599,81 @@ Runner::setupMenus(bool loginRequired)
 	namesSoundType.push_back("Representational (tones)");
 	callbacksSoundType.push_back([sb]() {sb->setCurrentIndex(1); });
 
-		soundOptions->AddChooseEnum("Sound Type",namesSoundType,callbacksSoundType,0, true);	
+	soundOptions->AddChooseEnum("Sound Type",namesSoundType,callbacksSoundType,0, true);	
+	soundOptions->AddSelectElement("Return to Options Menu", [soundOptions,options]() {soundOptions->disable(); options->enable();});
+
+	/////////////////////////////////////////////////
+	// Main Menu 
+	//////////////////////////////////////////////////
 
 
-
-    soundOptions->AddSelectElement("Return to Options Menu", [soundOptions,options]() {soundOptions->disable(); options->enable();});
-
-
-    mainMenu->AddSelectElement("Start Game", [mainMenu,this]() { mainMenu->disable(); this->startGame(); });
-
-    mainMenu->AddSelectElement("Login", [mainMenu, login]() {mainMenu->disable(); login->enable();});
-    mainMenu->AddSelectElement("Show Goals", [mainMenu, a]() {a-> ShowAllAchievements(true); mainMenu->disable();});
-
-    mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
-
-	 mainMenu->AddSelectElement("Store", [store, mainMenu]() {store->enable(); mainMenu->disable();});
-
-	
+	mainMenu->AddSelectElement("Start Game", [mainMenu,this]() { mainMenu->disable(); this->startGame(); });
+	mainMenu->AddSelectElement("Play Against Saved Ghost", [mainMenu,this]() { mainMenu->disable(); this->loadGhost(); });
+	mainMenu->AddSelectElement("Login", [mainMenu, login]() {mainMenu->disable(); login->enable();});
+	mainMenu->AddSelectElement("Show Goals", [mainMenu, a]() {a-> ShowAllAchievements(true); mainMenu->disable();});
+	mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
+	mainMenu->AddSelectElement("Store", [store, mainMenu]() {store->enable(); mainMenu->disable();});
 	mainMenu->AddSelectElement("Quit", [l, this]() {this->writeConfigStr(); l->quit();});
+
+	/////////////////////////////////////////////////
+	// Pause Menu 
+	//////////////////////////////////////////////////
+
 
     pauseMenu->AddSelectElement("Continue", [pauseMenu, p]() {pauseMenu->disable(); p->setPaused(false); });
     pauseMenu->AddSelectElement("End Game (Return to Main Menu)", [pauseMenu,mainMenu, p, w, h, this]() {this->endGame(), h->showHUDElements(false); pauseMenu->disable();mainMenu->enable(); p->setPaused(true); });
     pauseMenu->AddSelectElement("Quit (Close Program)", [this, l]() {this->writeConfigStr();l->quit();});
 
+	/////////////////////////////////////////////////
+	// End Game / Ghost Menu 
+	//////////////////////////////////////////////////
+
 
 	endGameMenu->AddSelectElement("Replay Against Ghost", [this, endGameMenu]() {endGameMenu->disable(); this->replayGhost();});
-	endGameMenu->AddSelectElement("Save Ghost", [this, ghost]() {ghost->writeFile("test"); ghost->readFile("test"); });
+	endGameMenu->AddSelectElement("Save Ghost", [ghost, awkGhostSave, endGameMenu]() {endGameMenu->disable(); ghost->writeFile(); awkGhostSave->enable();  });
     endGameMenu->AddSelectElement("Return to Main Menu", [endGameMenu,mainMenu, p, w, h, this]() {this->endGame(), h->showHUDElements(false); endGameMenu->disable();mainMenu->enable(); p->setPaused(true); });
+
+	awkGhostSave->AddSelectElement("OK", [endGameMenu, awkGhostSave]() {endGameMenu->enable(); awkGhostSave->disable();});
+
+
+
+
+	/////////////////////////////////////////////////
+	// Options Submenu:  Advanced 
+	//////////////////////////////////////////////////
 
 
 	std::vector<Ogre::String> namesResolution;
 	std::vector<std::function<void()>> callbacksResolution;
 	namesResolution.push_back("Very Low");
 	callbacksResolution.push_back([w]() { w->setUnitsPerPathLength(0.005f); });
-
 	namesResolution.push_back("Low");
 	callbacksResolution.push_back([w]() { w->setUnitsPerPathLength(0.01f); });
-
 	namesResolution.push_back("Medium");
 	callbacksResolution.push_back([w]() { w->setUnitsPerPathLength(0.05f); });
-
-
 	namesResolution.push_back("High");
 	callbacksResolution.push_back([w]() { w->setUnitsPerPathLength(0.1f); });
-
 	advancedOptions->AddChooseEnum("Track Resolution",namesResolution,callbacksResolution,3, true);	
-
-
 	advancedOptions->AddChooseInt("Track View Distance (segments)", [p](int x) {p->setTrackLookahed(x);}, 10, 200,  p->getTrackLookahead(), 5, true);
 	    advancedOptions->AddSelectElement("Send Profile to Server", [this]() {this->writeConfigStr();});
     advancedOptions->AddSelectElement("Get Profile from Server", [this]() {this->readConfigStr();});
-
-
     advancedOptions->AddSelectElement("Reset Profile", [advancedOptions, confirmMenu]() {advancedOptions->disable();confirmMenu->enable();});
-
-
 	advancedOptions->AddSelectElement("Return to Options Menu", [advancedOptions, options]() {advancedOptions->disable(); options->enable();});
-
-
-
     confirmMenu->AddSelectElement("Reset Profile (Cannot be undone!)", [this, p, w, a, advancedOptions, confirmMenu, menus]() {p->resetToDefaults();
 																											   w->resetToDefaults(); 
 																											   a->ResetAll();
 																											   menus->resetMenus();
 																											   this->setupMenus(false);});
-
     confirmMenu->AddSelectElement("Cancel Profile Reset", [advancedOptions, confirmMenu]() {advancedOptions->enable();confirmMenu->disable();});
 
 
 
-		if (loginRequired)
+	/////////////////////////////////////////////////
+	// End of Menu Code
+	//////////////////////////////////////////////////
+
+
+	if (loginRequired)
 	{
 		login->enable();
 	}

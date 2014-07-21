@@ -325,6 +325,117 @@ Menu::~Menu()
 }
 
 
+ScrollSelectMenu::ScrollSelectMenu(Ogre::String header, Ogre::String name,  
+								    float xPos, float yPos, float ydelta, Menu *parent)
+	: Menu(header, name, xPos, yPos, ydelta, parent, false), mNames()
+{
+
+
+}
+
+void ScrollSelectMenu::reset(std::vector<Ogre::String> items,  std::function<void(Ogre::String)> callback)
+{
+
+	mSelectCallback = callback;
+	mNames = items;
+
+	Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
+
+
+	for (int i = 0; i < mElems.size(); i++)
+	{
+		mElems[i]->setCaption("");
+	}
+	for (int i = mElems.size(); i < items.size(); i++)
+	{
+
+		Ogre::TextAreaOverlayElement* textArea = static_cast<Ogre::TextAreaOverlayElement*>(
+			overlayManager.createOverlayElement("TextArea", mName + "_" + std::to_string(i)));
+
+		textArea->setCaption("");
+		textArea->setCharHeight(mItemHeight * 1.5f);
+		textArea->setFontName("Big");
+		mPanelText->addChild(textArea);
+		mElems.push_back(textArea);
+	}
+	for (int i = 0; i < items.size(); i++)
+	{
+		mElems[i]->setCaption(items[i]);
+		float x = mStartingX;
+		float y = mStartingY + (i + 1.5f) * mItemSpacing; 
+		mElems[i]->setPosition(x, y);
+		mElems[i]->setColour(mUnHighlightColor);
+	}
+	mCurrentMenuItem = 0;
+	mNumMenuItems = items.size();
+	mElems[mCurrentMenuItem]->setColour(mHighlightColor);	
+	mMenuHighlight->setPosition(0, mStartingY + (mCurrentMenuItem + 1.5f) * mItemSpacing -mItemHeight * 0.5f / 2.0f);
+	float height = (mNumMenuItems + 1.5f) * mItemSpacing + mItemHeight + mStartingY;
+	mPanel->setHeight(height);
+}
+
+
+void ScrollSelectMenu::handleKeypress(const OIS::KeyEvent &e)
+{
+	if (e.key == OIS::KC_DOWN)
+	{
+		mElems[mCurrentMenuItem]->setColour(mUnHighlightColor);
+		mCurrentMenuItem++;
+		mCurrentMenuItem = std::min(mCurrentMenuItem, mNumMenuItems - 1);
+		mElems[mCurrentMenuItem]->setColour(mHighlightColor);
+		mMenuHighlight->setPosition(0, mStartingY + (mCurrentMenuItem + 1.5f) * mItemSpacing -mItemHeight * 0.5f / 2.0f);
+
+		float bottomPos = 2 * mStartingY + (mCurrentMenuItem +1.5f) * mItemSpacing + mItemSpacing;
+		if 	 (bottomPos > 0.95f)
+		{
+			mMenuOverlay->setScroll(0, (bottomPos- 1) *  3);
+		}
+		else 
+		{
+			mMenuOverlay->setScroll(0,0);
+		}
+	}
+	else if (e.key == OIS::KC_UP)
+	{
+		mElems[mCurrentMenuItem]->setColour(mUnHighlightColor);
+		mCurrentMenuItem--;
+		mCurrentMenuItem = std::max(mCurrentMenuItem, 0);
+		mElems[mCurrentMenuItem]->setColour(mHighlightColor);
+		mMenuHighlight->setPosition(0, mStartingY + (mCurrentMenuItem + 1.5f) * mItemSpacing-mItemHeight * 0.5f / 2.0f);
+
+		float bottomPos = mStartingY + (mCurrentMenuItem + 2.5f) * mItemSpacing;
+		if 	 (bottomPos > 1)
+		{
+			mMenuOverlay->setScroll(0, bottomPos + 0.1f - 1);
+		}
+		else 
+		{
+			mMenuOverlay->setScroll(0,0);
+		}
+	}
+	else if (e.key == OIS::KC_RETURN)
+	{
+		mSelectCallback(mNames[mCurrentMenuItem]);
+	}
+	else if (e.key == OIS::KC_ESCAPE)
+	{
+		if (mParent != NULL)
+		{
+			disable();
+			mParent->enable();
+
+		}
+	}
+}
+
+ScrollSelectMenu::~ScrollSelectMenu()
+{
+
+
+}
+
+
+
 Menu::Menu(Ogre::String header, Ogre::String name, float xPos, float yPos, float ydelta, Menu *parent, bool beginEnabled)
 	: mHighlightColor(1.0f,0.0f, 0.0f), mUnHighlightColor(1.0f, 1.0f, 1.0f)
 {
