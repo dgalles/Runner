@@ -81,6 +81,8 @@ protected:
 	void createFrameListener(void);
 
 
+	void loadGhost();
+
 	void startGame();
     void setupMenus(bool login = true) ;
 	void createStores(Menu *parent, std::vector<Store *> &stores);

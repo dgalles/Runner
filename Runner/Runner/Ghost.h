@@ -23,6 +23,7 @@ public:
 
 	void readFile(std::string filename);
 	void writeFile(std::string filename);
+	void writeFile();
 
 	void setSampleLength(float newLength) {mSampleLength = newLength; }
 
@@ -89,6 +90,7 @@ protected:
 	int mDataindex;
 
 	Ghost::GhostInfo *mGhostInfo;
+	char mTimeBuf[sizeof "2011_10_08_07_07_09"];
 
 	std::vector<GhostData> mData;
 	World *mWorld;
