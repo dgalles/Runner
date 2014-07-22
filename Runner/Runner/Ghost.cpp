@@ -271,7 +271,7 @@ void  Ghost::writeFile(std::string filename)
 
 	myfile << mData.size() << " ";
 
-	for (int i = 0; i < mData.size(); i++)
+	for (unsigned int i = 0; i < mData.size(); i++)
 	{
 		myfile << mData[i].mTime << " ";
 		myfile << mData[i].mSegment << " ";

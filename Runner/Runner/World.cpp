@@ -39,6 +39,8 @@ void World::resetToDefaults()
 	mDrawTrack = true;
 	mObsFreq = 0.15f;
 	mUseFrontBack = true;
+	mUseJumpDuck = true;
+
 	mObsGap = 3;
 	mSimpleMaterials = false;
 	mBoostFreq = 1;
@@ -49,9 +51,35 @@ void World::resetToDefaults()
 World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useMirror)   : mSceneManager(sceneManager), mTrackSceneNodes(), 
 	width(20.0f), mHUD(hud), mBase(base), mUseMirror(useMirror)
 {
+	// TODO:  READ THESE FROM A FILE!!
+	mBoostFreqValues = new float[6];
+	mShieldFreqValues = new float[6];
+	mMagnetFreqValues = new float[6];
+
+	mBoostFreqValues[0] = 0;
+	mBoostFreqValues[1] = 0.01f;
+	mBoostFreqValues[2] = 0.015f;
+	mBoostFreqValues[3] = 0.02f;
+	mBoostFreqValues[4] = 0.025f;
+	mBoostFreqValues[5] = 0.03f;
+
+	mShieldFreqValues[0] = 0;
+	mShieldFreqValues[1] = 0.01f;
+	mShieldFreqValues[2] = 0.015f;
+	mShieldFreqValues[3] = 0.02f;
+	mShieldFreqValues[4] = 0.025f;
+	mShieldFreqValues[5] = 0.03f;
+
+	mMagnetFreqValues[0] = 0;
+	mMagnetFreqValues[1] = 0.01f;
+	mMagnetFreqValues[2] = 0.015f;
+	mMagnetFreqValues[3] = 0.02f;
+	mMagnetFreqValues[4] = 0.025f;
+	mMagnetFreqValues[5] = 0.03f;
+
 	mMeshIDIndex = 0;
 	resetToDefaults();
-	srand(time(NULL));
+	srand((unsigned int) time(NULL));
 	setup();
 }
 
@@ -75,6 +103,7 @@ void World::setup(Ghost::GhostInfo *ghostData)
 		mCurrMagnetFreq = ghostData->mMagnetFreq;
 		mCurrShieldFreq = ghostData->mShieldFreq;
 		mCurrBoostFreq = ghostData->mBoostFreq;
+		mCurrUseJumpDuck = ghostData->mLeanEqualsDuck;
 	}
 	else
 	{
@@ -88,6 +117,7 @@ void World::setup(Ghost::GhostInfo *ghostData)
 		mSeeds[1] = mSeeds[0];
 		mSeeds[2] =  mSeeds[0];
 		mHUD->showGhost(false);
+		mCurrUseJumpDuck = mUseJumpDuck;
 	}
 
 
@@ -666,7 +696,7 @@ void World::AddObjects(int segment, bool player)
 		int numBlades = 0;
 
 		float b = (float) worldRand(1) /(float) RAND_MAX;
-		if (!mCurrUseFrontBack)
+		if (!mCurrUseFrontBack || !mCurrUseJumpDuck)
 		{
 			b = b * 0.749f;
 		}
@@ -926,7 +956,7 @@ void
 	{
 		mLastObjSeg = 0;
 		r = (worldRand(0) / (float) RAND_MAX);
-		if (r < 0.25 && mCurrUseFrontBack)
+		if (r < 0.25 && mCurrUseFrontBack && mCurrUseJumpDuck)
 		{
 			AddJump();
 		}
@@ -939,21 +969,18 @@ void
 	{
 		mLastObjSeg++;
 		r = (worldRand(0) / (float) RAND_MAX);
-		if (r > 0.95)
+		if (r < mBoostFreqValues[mBoostFreq])
 		{
-			float r2 = (worldRand(0) / float (RAND_MAX));
-			if (r2 > 0.5f)
-			{
-				AddBarrierSegment(BezierPath::Kind::SHIELD);
-			}
-			else if (r2 >= 0.0f)
-			{
 				AddBarrierSegment(BezierPath::Kind::BOOST);
-			}
-			else
-			{
+
+		} 
+		else if (r < mBoostFreqValues[mBoostFreq] + mShieldFreqValues[mShieldFreq])
+		{
+				AddBarrierSegment(BezierPath::Kind::SHIELD);
+		}
+		else if (r < mBoostFreqValues[mBoostFreq] + mShieldFreqValues[mShieldFreq] + mMagnetFreqValues[mMagnetFreq])
+		{
 				AddBarrierSegment(BezierPath::Kind::MAGNET);
-			}
 		}
 		else if (r > 0.88)
 		{

@@ -1,5 +1,5 @@
 #pragma once
-// #define KINECT_AVAILABLE
+#define KINECT_AVAILABLE
 #include <windows.h>
 #include <ole2.h>
 

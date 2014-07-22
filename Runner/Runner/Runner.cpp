@@ -140,7 +140,7 @@ Runner::createScene()
 
 	mLogin = new LoginWrapper();
 	mLogger = new Logger(mLogin);
-	// mLogger->Connect();
+	mLogger->Connect();
 	mGhost = new Ghost(mWorld);
 
 	mPlayer[0]->setGhost(mGhost);
@@ -335,10 +335,10 @@ void Runner::createStores(Menu *parent, std::vector<Store *> &stores)
 
 	std::vector<int> prices;
 	prices.push_back(100);
-	prices.push_back(200);
-	prices.push_back(300);
-	prices.push_back(400);
 	prices.push_back(500);
+	prices.push_back(1000);
+	prices.push_back(2000);
+	prices.push_back(4000);
 
 	store->AddStoreElem("Armor", [p]() { return p->getInitialArmor();}, [p](int x) { p->setInitialArmor(x); },1, 5, prices);
 	store->AddStoreElem("Boost Duration", [p]() { return p->getBoostDuration();}, [p](int x) { p->setBoostDuration(x); },1, 5, prices);
@@ -453,7 +453,7 @@ Runner::setupMenus(bool loginRequired)
     Menu *confirmMenu = new Menu("Confirm Profile Reset", "profleReset", 0.1f, 0.1f, 0.1f, advancedOptions);
 	Menu *endGameMenu = new Menu("Game Over!", "gameOver", 0.1f, 0.1f, 0.1f, NULL);
 	Menu *awkGhostSave  = new Menu("Ghost Saved", "ghostSaved", 0.1f, 0.1f, 0.1f, NULL);
-	Menu *ghostSelect = new ScrollSelectMenu("Select Ghost Run", "ghostSelect", 0.05f, 0.1f, 0.1f, mainMenu);
+	Menu *ghostSelect = new ScrollSelectMenu("Select Ghost Run", "ghostSelect", 0.05f, 0.1f, 0.08f, mainMenu);
 
 
 
@@ -545,7 +545,7 @@ Runner::setupMenus(bool loginRequired)
 
    
     gameplayOptions->AddSelectElement("Obstacle Options", [gameplayOptions,obstacleMenu]() {gameplayOptions->disable(); obstacleMenu->enable();});
-    gameplayOptions->AddChooseInt("Starting Armor", [p](int x) {p->setInitialArmor(x); }, 1, 8, p->getInitialArmor(), 1, true);
+   // gameplayOptions->AddChooseInt("Starting Armor", [p](int x) {p->setInitialArmor(x); }, 1, 8, p->getInitialArmor(), 1, true);
 	gameplayOptions->AddChooseBool("Use Forward / Backward Leaning", [w, p](bool use) {w->setUseFrontBack(use); p->setUseFrontBack(use);} , p->getUseFrontBack(), true);
     gameplayOptions->AddChooseInt("Initial Speed", [p](int x) {p->setInitialSpeed(x); }, 5, 100, p->getInitialSpeed(), 5, true);
     gameplayOptions->AddChooseInt("Max Speed", [p](int x) {p->setMaxSpeed(x); }, 30, 100, p->getMaxSpeed(), 5, true);
@@ -554,10 +554,10 @@ Runner::setupMenus(bool loginRequired)
 	std::vector<Ogre::String> namesDuckLean;
 	std::vector<std::function<void()>> callbacksDuckLean;
 	namesDuckLean.push_back("Duck / Lean");
-	callbacksDuckLean.push_back([p, w]() { p->setLeanEqualsDuck(true); w->setUseFrontBack(p->getUseFrontBack()); });
+	callbacksDuckLean.push_back([p, w]() { p->setLeanEqualsDuck(true); w->setUseJumpDuck(true); });
 	
 	namesDuckLean.push_back("Change Speed");
-	callbacksDuckLean.push_back([p,w]() {  p->setLeanEqualsDuck(false); w->setUseFrontBack(false); });
+	callbacksDuckLean.push_back([p,w]() {  p->setLeanEqualsDuck(false); w->setUseJumpDuck(false); });
 
 	gameplayOptions->AddChooseEnum("Forward / Back Controls",namesDuckLean,callbacksDuckLean,0, true);	
 
