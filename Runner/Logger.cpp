@@ -352,6 +352,7 @@ void
 int
 	Logger::Connect(void)
 {
+
 	int res[12];
 	res[0] = DB_Connect(mHost, mPort, mScoreSock);
 	res[1] = DB_Connect(mHost, mPort, mLRSock);

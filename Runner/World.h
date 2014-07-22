@@ -67,6 +67,9 @@ public:
 	void setUseFrontBack(bool ufb) {mUseFrontBack = ufb; }
 	bool getUseFrontBack() { return  mUseFrontBack; }
 
+	void setUseJumpDuck(bool ujd) {mUseJumpDuck = ujd; }
+	bool getUseJumpDuck() { return  mUseJumpDuck; }
+
 	void setObstacleFrequency(float freq) {mObsFreq = freq; }
 	float getObstacleFrequency() { return  mObsFreq; }
 
@@ -146,6 +149,9 @@ protected:
 
 	float mObsFreq;
 	float mCurrObjsFreq;
+	bool mUseJumpDuck;
+	bool mCurrUseJumpDuck;
+
 	bool mUseFrontBack;
 	bool mCurrUseFrontBack;
 	int mLastObjSeg;
@@ -168,6 +174,10 @@ protected:
 
 	bool mGhosting;
 	bool mDrawTrack;
+
+	float *mBoostFreqValues;
+	float *mShieldFreqValues;
+	float *mMagnetFreqValues;
 
 
 };

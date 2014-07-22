@@ -189,8 +189,10 @@ void Store::StoreItem::Decrease()
 void Store::StoreItem::Enter()
 {
 	int current = mGetValue();
-	if (current < mMaxValue) // And you have the money!
+	int currentCoins = ((Store *)mParent)->mGetCoins();
+	if (current < mMaxValue && currentCoins <= mPrices[current]) 
 	{
+
 		((Store *) mParent)->changeBank(-mPrices[current]);
 		current++;
 		mSetValue(current);

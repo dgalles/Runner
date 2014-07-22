@@ -20,6 +20,7 @@ const float Player::SPEED_MULTIPLYER = 20;
 
 void Player::resetToDefaults()
 {
+
 	mKinectSensitivityLR = 1.0f;
 	mKinectSensitivityFB = 1.0f;
 	mInitialSpeed = 30;
@@ -41,7 +42,7 @@ void Player::resetToDefaults()
 	mBoostDuration = 1;
 	mMagnetDuration = 1;
 
-	mInitialArmor = 3;
+	mInitialArmor = 1;
 
 	mMaxSpeed = 80;
 
@@ -59,6 +60,31 @@ Player::Player(World *world, XInputManager *inputManager, Kinect *k, Achievement
 	//Player::Player(World *world, XInputManager *inputManager) : mWorld(world), mInputManager(inputManager)
 {
 	mGhost = NULL;
+	// TODO:  Place this in a data file!
+
+	mBoostDurationValues = new float[6];
+	mBoostDurationValues[0] = 0;
+	mBoostDurationValues[1] = 2;
+	mBoostDurationValues[2] = 2.3f;
+	mBoostDurationValues[3] = 2.7f;
+	mBoostDurationValues[4] = 3.0f;
+	mBoostDurationValues[5] = 3.3f;
+
+	mShieldDurationValues = new float[6];
+	mShieldDurationValues[0] = 0;
+	mShieldDurationValues[1] = 3;
+	mShieldDurationValues[2] = 4;
+	mShieldDurationValues[3] = 5;
+	mShieldDurationValues[4] = 6;
+	mShieldDurationValues[5] = 7;
+
+	mMagnetDurationValues = new float[6];
+	mMagnetDurationValues[0] = 0;
+	mMagnetDurationValues[1] = 3;
+	mMagnetDurationValues[2] = 4;
+	mMagnetDurationValues[3] = 5;
+	mMagnetDurationValues[4] = 6;
+	mMagnetDurationValues[5] = 7;
 	resetToDefaults();
 }
 
@@ -239,10 +265,52 @@ void
 
 
 void
-	Player::coinCollision(int newSegment, float newPercent, float newX)
+	Player::coinCollision(int newSegment, float newPercent, float newX, float time)
 {
 	if (mWorld->Coins()->size() > 0)
 	{
+		if (mMagnetActive)
+		{
+			float MAGNET_DISTANCE_SQUARED = 800 * 800;
+			Ogre::Vector3 playerPos = mPlayerObject->getPosition();
+			for (int i = 0; i < mWorld->Coins()->size(); i++)
+			{
+				ItemQueueData d = mWorld->Coins()->atRelativeIndex(i);
+				Ogre::Vector3 coinPos = d.object->getPosition();
+				if (d.segmentIndex > newSegment + 8)
+				{
+					break;
+				}
+				if (d.object->getScale().x > 0)
+				{
+					float squaredDist = coinPos.squaredDistance(playerPos) ;
+					if (squaredDist < MAGNET_DISTANCE_SQUARED)
+					{
+						float dist = time * mCurrentSpeed * 20;
+						if (mBoosting)
+						{
+							dist *= 5;
+						}
+						if (dist * dist > squaredDist)
+						{
+							d.object->setPosition(playerPos);
+						}
+						else
+						{
+							Ogre::Vector3 delta = (playerPos - coinPos);
+							delta.normalise();
+							d.object->setPosition(coinPos + delta * dist);
+						}
+					}
+				}
+
+			}
+
+
+
+
+		}
+
 		for (int i = 0; i < mWorld->Coins()->size(); i++)
 		{
 			ItemQueueData d = mWorld->Coins()->atRelativeIndex(i);
@@ -334,8 +402,8 @@ bool
 
 					mBoosting = true;
 					mShielded = true;
-					mShieldTime = 5;
-					mBoostTime = 3;
+					mShieldTime = mBoostDurationValues[mBoostDuration] + 2;
+					mBoostTime = mBoostDurationValues[mBoostDuration];
 					mWorld->getCamera()->SetFollowType(RunnerCamera::CLOSE);
 				}
 				else if (d.object->type() == RunnerObject::SHEILD)
@@ -358,7 +426,7 @@ bool
 					mPlayerObject->setAlpha(0.4f);
 
 					mShielded = true;
-					mShieldTime = std::max(mShieldTime, 5.0f);;
+					mShieldTime = std::max(mShieldTime, mShieldDurationValues[mShieldDuration]);;
 				}
 				else if (d.object->type() == RunnerObject::MAGNET)
 				{
@@ -375,7 +443,7 @@ bool
 
 						mMagnetNode->setPosition(0,3,0);
 					}
-					mMagnetTime = std::max(mMagnetTime, 5.0f);
+					mMagnetTime = mMagnetDurationValues[mMagnetDuration];
 
 				}
 			}
@@ -468,10 +536,16 @@ void Player::SendData(float time)
 	mTimeSinceLastLog += time;
 	if(mTimeSinceLastLog >= 1.0)
 	{
+
+		float speed = mCurrentSpeed;
+		if (mBoosting)
+		{
+			speed *= 5;
+		}
 		for (std::vector<PlyrDataMsgr *>::iterator it = mLogger.begin(); it != mLogger.end(); it++)
 		{
 			(*it)->ReceivePlyrData(new PlyrData("", mLeftCoinsCollected,mRightCoinsCollected,mMiddleCoinsCollected,
-				mWorld->getCoinsMissedLeft(), mWorld->getCoinsMissedRight(), mWorld->getCoinsMissedMiddle(), mCurrentSpeed));
+				mWorld->getCoinsMissedLeft(), mWorld->getCoinsMissedRight(), mWorld->getCoinsMissedMiddle(), speed));
 		} 
 		mTimeSinceLastLog = 0.0;
 	}
@@ -487,19 +561,20 @@ void
 		return;
 	}
 
+	// Send data to our logger
 	SendData(time);
+
 
 	if (mAlive)
 	{
+		// Deal with timed powerups
+		//  (Boost, Shield, Magnet)
 
 		if (mBoostTime  > 0 && mBoostTime <= time)
 		{
 			mBoostTime = 0;
 			mBoosting = false;
 			mWorld->getCamera()->SetFollowType(RunnerCamera::NORMAL);
-
-			// mPlayerObject->restoreOriginalMaterial();
-
 		}
 		else
 		{
@@ -526,10 +601,12 @@ void
 			mMagnetTime -= time;
 		}
 
+
+
+		// Get new angles from the controler(s)
+
 		Ogre::Degree angle = Ogre::Degree(0);
-
 		Ogre::Degree angle2 = Ogre::Degree(0);
-
 		updateAnglesFromControls(angle, angle2);
 
 
@@ -603,7 +680,15 @@ void
 		mDistance += distance;
 		mTotalMeters += distance;
 		mWorld->getHUD()->setDistance((int) mDistance / 200);
-		mWorld->getHUD()->setSpeed((int) mCurrentSpeed);
+		{
+			int speed = (int) mCurrentSpeed;
+			if (mBoosting)
+			{
+				speed *= 5;
+			}
+			mWorld->getHUD()->setSpeed(speed);
+		}
+
 		while (distance < 0 && -distance > mWorld->trackPath->pathLength(newSegment)*newPercent)
 		{
 			distance +=  mWorld->trackPath->pathLength(newSegment)*newPercent;
@@ -719,7 +804,6 @@ void
 		/// Arrow detection
 
 		stopArrows(newSegment, newPercent);
-
 		startArrows(newSegment);
 
 		Ogre::Vector3 pos;
@@ -751,13 +835,18 @@ void
 		mTime += time;
 		if (mGhost != NULL)
 		{
+			int speed = (int) mCurrentSpeed;
+			if (mBoosting)
+			{
+				speed *= 5;
+			}
 			mGhost->record(mTime, mCurrentSegment, 	mSegmentPercent, mRelativeX, mRelativeY, angle, angle2, mCoinsCollected, (int) mDistance / 200, (int) mCurrentSpeed);			
 		}
 
 		// Collision with coins
 
 		mDistanceWithoutCoins += distance;
-		coinCollision(newSegment, newPercent, newX);
+		coinCollision(newSegment, newPercent, newX, time);
 
 		mDistSinceMissedCoin+= distance;
 

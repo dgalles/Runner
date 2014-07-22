@@ -130,7 +130,7 @@ protected:
 	void stopArrows(int segment, float percent);
 	void moveExplosion(float time);
 	bool detectCollision(int newSegment, float newPercent, float newX);
-	void coinCollision(int newSegment, float newPercent, float newX);
+	void coinCollision(int newSegment, float newPercent, float newX, float time);
 	World *mWorld;
 	Kinect *mKinect;
 	XInputManager *mXInputManager;
@@ -197,6 +197,9 @@ protected:
 
 	float mTime;
 
+	float *mBoostDurationValues;
+	float *mShieldDurationValues;
+	float *mMagnetDurationValues;
 
 	int mWarningDelta;
 	int mLifetimeCoins;
