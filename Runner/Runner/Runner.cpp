@@ -441,7 +441,7 @@ Runner::setupMenus(bool loginRequired)
 	LoginWrapper *lm = mLogin;
 	Ghost *ghost = mGhost;
 
-    Menu *mainMenu = new Menu("Main Menu", "main", 0.05f, 0.1f);
+    Menu *mainMenu = new Menu("Main Menu", "main", 0.05f, 0.1f, 0.08f);
     Menu *options = new Menu("Options", "options", 0.05f, 0.1f, 0.1f, mainMenu);
     Menu *controlOptions = new Menu("Control Options", "controloptions", 0.05f, 0.1f, 0.07f, options);
     Menu *gameplayOptions = new Menu("Gameplay Options", "gameplayoptions", 0.05f, 0.05f, 0.07f, options);
