@@ -346,7 +346,7 @@ void ScrollSelectMenu::reset(std::vector<Ogre::String> items,  std::function<voi
 	{
 		mElems[i]->setCaption("");
 	}
-	for (int i = mElems.size(); i < items.size(); i++)
+	for (int i = mElems.size(); i < items.size()+1; i++)
 	{
 
 		Ogre::TextAreaOverlayElement* textArea = static_cast<Ogre::TextAreaOverlayElement*>(
@@ -355,19 +355,23 @@ void ScrollSelectMenu::reset(std::vector<Ogre::String> items,  std::function<voi
 		textArea->setCaption("");
 		textArea->setCharHeight(mItemHeight * 1.5f);
 		textArea->setFontName("Big");
+		textArea->setCharHeight(mItemHeight);
 		mPanelText->addChild(textArea);
 		mElems.push_back(textArea);
 	}
 	for (int i = 0; i < items.size(); i++)
 	{
-		mElems[i]->setCaption(items[i]);
+		mElems[i+1]->setCaption(items[i]);
 		float x = mStartingX;
-		float y = mStartingY + (i + 1.5f) * mItemSpacing; 
-		mElems[i]->setPosition(x, y);
-		mElems[i]->setColour(mUnHighlightColor);
+		float y = mStartingY + ((i+1) + 1.5f) * mItemSpacing; 
+		mElems[i+1]->setPosition(x, y);
+		mElems[i+1]->setColour(mUnHighlightColor);
 	}
+	mElems[0]->setCaption("Cancel Loading Ghost");
+	mElems[0]->setPosition(mStartingX, mStartingY + 1.5f * mItemSpacing);
+
 	mCurrentMenuItem = 0;
-	mNumMenuItems = items.size();
+	mNumMenuItems = items.size()+1;
 	mElems[mCurrentMenuItem]->setColour(mHighlightColor);	
 	mMenuHighlight->setPosition(0, mStartingY + (mCurrentMenuItem + 1.5f) * mItemSpacing -mItemHeight * 0.5f / 2.0f);
 	float height = (mNumMenuItems + 1.5f) * mItemSpacing + mItemHeight + mStartingY;
@@ -380,15 +384,21 @@ void ScrollSelectMenu::handleKeypress(const OIS::KeyEvent &e)
 	if (e.key == OIS::KC_DOWN)
 	{
 		mElems[mCurrentMenuItem]->setColour(mUnHighlightColor);
+		mElems[mCurrentMenuItem]->setCharHeight(mItemHeight);
+		mElems[mCurrentMenuItem]->setPosition(mStartingX, mStartingY + ((i+1) + 1.5f) * mItemSpacing);
+		
 		mCurrentMenuItem++;
 		mCurrentMenuItem = std::min(mCurrentMenuItem, mNumMenuItems - 1);
 		mElems[mCurrentMenuItem]->setColour(mHighlightColor);
+				//mItemText->setPosition(mX, mY - mParent->mItemHeight * 0.5f / 2.0f);
+	mElems[mCurrentMenuItem]->setCharHeight(mItemHeight * 1.5f);
+
 		mMenuHighlight->setPosition(0, mStartingY + (mCurrentMenuItem + 1.5f) * mItemSpacing -mItemHeight * 0.5f / 2.0f);
 
 		float bottomPos = 2 * mStartingY + (mCurrentMenuItem +1.5f) * mItemSpacing + mItemSpacing;
 		if 	 (bottomPos > 0.95f)
 		{
-			mMenuOverlay->setScroll(0, (bottomPos- 1) *  3);
+			mMenuOverlay->setScroll(0, (bottomPos- .95) *  2);
 		}
 		else 
 		{
@@ -398,15 +408,19 @@ void ScrollSelectMenu::handleKeypress(const OIS::KeyEvent &e)
 	else if (e.key == OIS::KC_UP)
 	{
 		mElems[mCurrentMenuItem]->setColour(mUnHighlightColor);
+		mElems[mCurrentMenuItem]->setColour(mUnHighlightColor);
+		mElems[mCurrentMenuItem]->setCharHeight(mItemHeight);
+		mElems[mCurrentMenuItem]->setPosition(mStartingX, mStartingY + ((i+1) + 1.5f) * mItemSpacing);
+
 		mCurrentMenuItem--;
 		mCurrentMenuItem = std::max(mCurrentMenuItem, 0);
 		mElems[mCurrentMenuItem]->setColour(mHighlightColor);
 		mMenuHighlight->setPosition(0, mStartingY + (mCurrentMenuItem + 1.5f) * mItemSpacing-mItemHeight * 0.5f / 2.0f);
 
-		float bottomPos = mStartingY + (mCurrentMenuItem + 2.5f) * mItemSpacing;
+		float bottomPos = 2 * mStartingY + (mCurrentMenuItem +1.5f) * mItemSpacing + mItemSpacing;
 		if 	 (bottomPos > 1)
 		{
-			mMenuOverlay->setScroll(0, bottomPos + 0.1f - 1);
+			mMenuOverlay->setScroll(0, (bottomPos- .95) *  2);
 		}
 		else 
 		{
@@ -415,7 +429,20 @@ void ScrollSelectMenu::handleKeypress(const OIS::KeyEvent &e)
 	}
 	else if (e.key == OIS::KC_RETURN)
 	{
-		mSelectCallback(mNames[mCurrentMenuItem]);
+		if (mCurrentMenuItem == 0)
+		{
+			disable();
+			if (mParent != NULL)
+			{
+				mParent->enable();
+			}
+
+		}
+		else
+		{
+			mSelectCallback(mNames[mCurrentMenuItem - 1]);
+
+		}
 	}
 	else if (e.key == OIS::KC_ESCAPE)
 	{
