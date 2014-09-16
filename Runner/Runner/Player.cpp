@@ -30,7 +30,6 @@ void Player::resetToDefaults()
 	mEnableKinect = true;
 	mInvertControls = false;
 	mTrackLookahead =100;
-	setup();
 
 	mTotalCoins = 0;
 	mTotalMeters = 0;
@@ -51,6 +50,11 @@ void Player::resetToDefaults()
 	mLeanEqualsDuck = true;
 	mWarningDelta = 1;
 	mManualAccel = 5;
+
+
+	mRaceGoal = 20;
+	mRaceType = TOTALCOINS;
+	mRacing = false;
 
 }
 
@@ -86,6 +90,7 @@ Player::Player(World *world, XInputManager *inputManager, Kinect *k, Achievement
 	mMagnetDurationValues[4] = 6;
 	mMagnetDurationValues[5] = 7;
 	resetToDefaults();
+	setup();
 }
 
 void Player::reset(Ghost::GhostInfo *ghostInfo /* = NULL */)
@@ -128,6 +133,9 @@ void Player::setup(Ghost::GhostInfo *ghostInfo /* = NULL */)
 		mCurrShieldDuration = mShieldDuration;
 		mCurrBoostDuration = mBoostDuration;
 		mCurrLeanEqualsDuck = mLeanEqualsDuck;
+		mCurrRaceGoal = mRaceGoal;
+		mCurrRacing = mRacing;
+		mCurrRaceType = mRaceType;
 	}
 	else
 	{
@@ -140,8 +148,14 @@ void Player::setup(Ghost::GhostInfo *ghostInfo /* = NULL */)
 		mCurrShieldDuration = ghostInfo->mShieldDuration;
 		mCurrBoostDuration = ghostInfo->mBoostDuration;
 		mCurrLeanEqualsDuck = ghostInfo->mLeanEqualsDuck;
+		mCurrRaceGoal = ghostInfo->mRaceGoal;
+		mCurrRacing = ghostInfo->mRacing;
+		mCurrRaceType = (Player::RaceType) ghostInfo->mRaceType;
+
 	}
 
+
+	mWonRace = false;
 	mCurrentSpeed = mCurrInitialSpeed;
 	mArmor = mCurrInitialArmor;
 
@@ -152,6 +166,7 @@ void Player::setup(Ghost::GhostInfo *ghostInfo /* = NULL */)
 	mLeftCoinsCollected = 0;
 	mRightCoinsCollected = 0;
 	mMiddleCoinsCollected = 0;
+	mConsecutiveCoins = 0;
 
 	mCurrentSegment = 0;
 	mSegmentPercent = 0.3f;
@@ -178,6 +193,26 @@ void Player::setup(Ghost::GhostInfo *ghostInfo /* = NULL */)
 	mWorld->getHUD()->setCoins(0);
 	mWorld->getHUD()->setDistance(0);
 	mTime = 0;
+	if (mRacing)
+	{
+		Ogre::String message = "Goal = ";
+		message.append(std::to_string(mRaceGoal));
+		if (mRaceType == RaceType::CONCECUTIVECOINS)
+		{
+			message.append(" Conscecutive Coins");
+		}
+		else
+		{
+			message.append(" Totals Coins");
+		}
+		mWorld->getHUD()->setRacingMesssage(message);
+		mWorld->getHUD()->showRacingOverlay(true);
+	}
+	else
+	{
+		mWorld->getHUD()->showRacingOverlay(false);
+	}
+
 }
 
 Ogre::Vector3 
@@ -204,6 +239,8 @@ void
 {
 	mWorld->getHUD()->stopAllArrows();
 	mWorld->getHUD()->showHUDElements(true);
+	mWorld->getHUD()->showRaceOver(false);
+
 	mAchievements->ResetActive();
 
 	if (mAutoCallibrate)
@@ -311,6 +348,7 @@ void
 
 		}
 
+		bool missedCoin = false;
 		for (int i = 0; i < mWorld->Coins()->size(); i++)
 		{
 			ItemQueueData d = mWorld->Coins()->atRelativeIndex(i);
@@ -337,17 +375,46 @@ void
 				d.object->setScale(Ogre::Vector3::ZERO);
 				d.object->setPosition(Ogre::Vector3(0,0,0));
 				mCoinsCollected++;
+				mConsecutiveCoins++;
 				mTotalCoins++;
 				mLifetimeCoins++;
 				SoundBank::getInstance()->play("coin");
 				mMaxDistWithoutCoins = std::max(mMaxDistWithoutCoins, mDistanceWithoutCoins);
 				mDistanceWithoutCoins = 0.0f;
-				mWorld->getHUD()->setCoins(mCoinsCollected);
-			}
-			if (d.object->getScale() != Ogre::Vector3::ZERO && d.segmentIndex == newSegment && d.segmentPercent < newPercent)
-			{
-				mDistSinceMissedCoin = 0;
+				if (mRacing && mRaceType == RaceType::CONCECUTIVECOINS)
+				{
+					mWorld->getHUD()->setCoins(mConsecutiveCoins,false,true);
+					if (mConsecutiveCoins >= mRaceGoal)
+					{
+						mWonRace = true;
+					}
+				}
+				else if(mRacing && mRaceType == RaceType::TOTALCOINS)
+				{
+					mWorld->getHUD()->setCoins(mCoinsCollected,false,false);
+					if (mCoinsCollected >= mRaceGoal)
+					{
+						mWonRace = true;
+					}
 
+				}
+				else
+				{
+					mWorld->getHUD()->setCoins(mCoinsCollected);
+				}
+			}
+			if (d.segmentIndex == newSegment && d.segmentPercent < newPercent )
+			{
+				missedCoin = (d.object->getScale() != Ogre::Vector3::ZERO);	
+			}
+		}
+		if (missedCoin)
+		{
+			mDistSinceMissedCoin = 0;
+			mConsecutiveCoins = 0;
+			if (mRacing && mRaceType == RaceType::CONCECUTIVECOINS)
+			{
+				mWorld->getHUD()->setCoins(mConsecutiveCoins,false,true);
 			}
 		}
 
@@ -833,6 +900,8 @@ void
 		mPlayerObject->roll(Ogre::Radian(angle));
 
 		mTime += time;
+
+		mWorld->getHUD()->setTime(mTime);
 		if (mGhost != NULL)
 		{
 			int speed = (int) mCurrentSpeed;
@@ -854,6 +923,11 @@ void
 		// Collision with walls & powerups (could kill player)
 
 		bool collide = detectCollision(newSegment, newPercent, newX);
+
+		if (mRacing && mWonRace)
+		{
+			finishRace();
+		}
 
 
 	}
@@ -965,6 +1039,27 @@ void
 
 }
 
+
+void Player::finishRace()
+{
+	mAlive = false;
+	mLongestRun = std::max(mLongestRun, (int) mDistance);
+	mMostCoins = std::max(mMostCoins, mCoinsCollected);
+	mWorld->getHUD()->stopAllArrows();
+	mWorld->getHUD()->setShowDecreaseSpeed(false);
+	mWorld->getHUD()->setShowIncreaseSpeed(false);
+	char buf[50];
+	sprintf(buf, "Time = %.2f", mTime);
+	mWorld->getHUD()->setFinalRaceTime(Ogre::String(buf), false);
+	mWorld->getHUD()->showRaceOver(true);
+	if (mGhost != NULL)
+	{
+		mGhost->playerDead((int) mDistance / 200, mCoinsCollected);
+		mGhost->stopRecording(true);
+	}
+	mWorld->endGame();
+
+}
 
 void 
 	Player::kill()

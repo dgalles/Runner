@@ -84,6 +84,7 @@ protected:
 	void loadGhost();
 
 	void startGame();
+	void startRace();
     void setupMenus(bool login = true) ;
 	void createStores(Menu *parent, std::vector<Store *> &stores);
 

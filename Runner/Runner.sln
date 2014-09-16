@@ -5,14 +5,22 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Runner", "Runner\Runner.vcx
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
 		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|ARM = Release|ARM
 		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{15FB84FE-5992-4A36-AE99-41D57E7BDA9C}.Debug|ARM.ActiveCfg = Debug|Win32
 		{15FB84FE-5992-4A36-AE99-41D57E7BDA9C}.Debug|Win32.ActiveCfg = Debug|Win32
 		{15FB84FE-5992-4A36-AE99-41D57E7BDA9C}.Debug|Win32.Build.0 = Debug|Win32
+		{15FB84FE-5992-4A36-AE99-41D57E7BDA9C}.Debug|x64.ActiveCfg = Debug|Win32
+		{15FB84FE-5992-4A36-AE99-41D57E7BDA9C}.Release|ARM.ActiveCfg = Release|Win32
 		{15FB84FE-5992-4A36-AE99-41D57E7BDA9C}.Release|Win32.ActiveCfg = Release|Win32
 		{15FB84FE-5992-4A36-AE99-41D57E7BDA9C}.Release|Win32.Build.0 = Release|Win32
+		{15FB84FE-5992-4A36-AE99-41D57E7BDA9C}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

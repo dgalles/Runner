@@ -2,125 +2,157 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="AIManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="Bezier.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="HUD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InputHandler.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="MainListener.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="Runner.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="World.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="ItemQueue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Kinect.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="Player.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="XInputManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Menu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CollisionManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="RunnerObject.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound.cpp">
+      <Filter>Game Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Store.cpp">
+      <Filter>Game Source</Filter>
     </ClCompile>
     <ClCompile Include="Achievements.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Library Source</Filter>
     </ClCompile>
-    <ClCompile Include="Sound.cpp" />
-    <ClCompile Include="LoginWrapper.cpp" />
-    <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="JsonUtils.cpp" />
-    <ClCompile Include="Ghost.cpp" />
-    <ClCompile Include="Store.cpp" />
+    <ClCompile Include="CollisionManager.cpp">
+      <Filter>Library Source</Filter>
+    </ClCompile>
+    <ClCompile Include="InputHandler.cpp">
+      <Filter>Library Source</Filter>
+    </ClCompile>
+    <ClCompile Include="JsonUtils.cpp">
+      <Filter>Library Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Kinect.cpp">
+      <Filter>Library Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Library Source</Filter>
+    </ClCompile>
+    <ClCompile Include="LoginWrapper.cpp">
+      <Filter>Library Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Library Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Ghost.cpp">
+      <Filter>Game Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AIManager.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="Bezier.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="HUD.h">
-      <Filter>Header File</Filter>
-    </ClInclude>
-    <ClInclude Include="InputHandler.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="MainListener.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="Runner.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="World.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="ItemQueue.h">
-      <Filter>Header File</Filter>
-    </ClInclude>
-    <ClInclude Include="Kinect.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="Player.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="XInputManager.h">
-      <Filter>Header File</Filter>
-    </ClInclude>
-    <ClInclude Include="Menu.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="RunnerObject.h">
-      <Filter>Header File</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionManager.h">
-      <Filter>Header File</Filter>
+      <Filter>Game Headers</Filter>
     </ClInclude>
     <ClInclude Include="Achievements.h">
-      <Filter>Header File</Filter>
+      <Filter>Library Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Sound.h" />
-    <ClInclude Include="LoginWrapper.h" />
-    <ClInclude Include="Logger.h" />
-    <ClInclude Include="Receivers.h" />
-    <ClInclude Include="JsonUtils.h" />
-    <ClInclude Include="Ghost.h" />
-    <ClInclude Include="Store.h" />
+    <ClInclude Include="CollisionManager.h">
+      <Filter>Library Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="InputHandler.h">
+      <Filter>Library Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Kinect.h">
+      <Filter>Library Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>Library Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="JsonUtils.h">
+      <Filter>Library Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Library Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="LoginWrapper.h">
+      <Filter>Library Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Receivers.h">
+      <Filter>Library Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Store.h">
+      <Filter>Library Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound.h">
+      <Filter>Library Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Ghost.h">
+      <Filter>Game Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Header File">
+    <Filter Include="Library Headers">
+      <UniqueIdentifier>{aa153858-cc32-4a9b-85ef-562398bb3817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Library Source">
+      <UniqueIdentifier>{9817b4cc-38f7-473d-b413-451ca6892e9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Headers">
       <UniqueIdentifier>{154022e6-a24d-46da-9dc7-5badcebec162}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files">
+    <Filter Include="Game Source">
       <UniqueIdentifier>{dbf2b21e-8ed6-4aa6-942a-9851bbbc9e0a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>

@@ -32,6 +32,8 @@ class Player : public TrackableObject
 public:
 	Player(World *world, XInputManager *inputManager, Kinect *k, Achievements *ach, bool isSecond = false);
 
+		enum RaceType {TOTALCOINS = 0, CONCECUTIVECOINS = 1};
+
 
 	void resetToDefaults();
 
@@ -104,10 +106,17 @@ public:
 
 	void reset(Ghost::GhostInfo *ghostInfo = NULL);
 
+	void setRacing(bool racing) { mRacing = racing; }
+	bool getRacing() { return mRacing; } 
 
 	int getBoostDuration() { return mBoostDuration; }
 	void setBoostDuration(int n) { mBoostDuration = n; }
 
+		void setRaceType(RaceType raceType) {mRaceType = raceType; }
+	RaceType getRaceType() { return mRaceType; }
+
+	void setRaceGoal(int goal) { mRaceGoal = goal; }
+	int getRaceGoal() { return mRaceGoal; }
 
 
 
@@ -125,6 +134,7 @@ protected:
 	void updateAnglesFromControls(Ogre::Degree &angle, Ogre::Degree &angle2);
 
 	void kill();
+	void finishRace();
 	void setup(Ghost::GhostInfo *ghostInfo = NULL);
 	void startArrows(int newSegment);
 	void stopArrows(int segment, float percent);
@@ -139,9 +149,11 @@ protected:
 	bool mPaused;
 	bool mAutoCallibrate;
 	bool mIsSecondPlayer;
+	bool mWonRace;
 
 	Ogre::SceneNode *mMagnetNode;
 
+	int mConsecutiveCoins;
 	Ghost *mGhost;
 
 	float mVelocity;
@@ -235,5 +247,15 @@ protected:
 	int mCurrShieldDuration;
 	int mCurrBoostDuration;
 	int mCurrMagnetDuration;
+
+
+		bool mRacing;
+	bool mCurrRacing;
+
+	RaceType mCurrRaceType;
+	int mCurrRaceGoal;
+
+	RaceType mRaceType;
+	int mRaceGoal;
 
 };

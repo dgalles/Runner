@@ -21,6 +21,8 @@ HUD::HUD() : mArmorIndicator()
 	mArrowOverlay[HUD::down] =om.getByName("HUD/DownArrow");
 	mArrowOverlay[HUD::up] =om.getByName("HUD/UpArrow");
 
+
+	mRacingOverlay = om.getByName("HUD/Racing");
 	mSpeedUpOverlay = om.getByName("HUD/SpeedUp");
 	mSlowDownOverlay = om.getByName("HUD/SlowDown");
 	for (int i = HUD::none + 1; i < HUD::last; i++)
@@ -43,6 +45,13 @@ HUD::HUD() : mArmorIndicator()
 	mGhostDistanceText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel/Distance");
 	mGhostSpeedText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Score/GhostPanel/Speed");
 
+	mTimeText = Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Racing/Panel/Time");
+	mRacingMessage =  Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Racing/Panel/Message");
+
+	mRacingDone = Ogre::OverlayManager::getSingleton().getByName("HUD/Racing/Done");
+
+	mRacingDone->hide();
+
 	int armorIndex =  1;
 	while (Ogre::OverlayManager::getSingleton().hasOverlayElement("HUD/Armor/" + std::to_string(armorIndex)))
 	{
@@ -50,7 +59,32 @@ HUD::HUD() : mArmorIndicator()
 		mArmorIndicator.push_back(armor);
 		armorIndex++;
 	}
+	mRacingOverlay->hide();
+}
 
+
+void setRacingFinalMessage(Ogre::String message, bool isGhost = false)
+{
+
+
+}
+
+
+void HUD::setRacingMesssage(Ogre::String message)
+{
+	mRacingMessage->setCaption(message);
+}
+
+void HUD::showRacingOverlay(bool show)
+{
+	if (show)
+	{
+		mRacingOverlay->show();
+	}
+	else
+	{
+		mRacingOverlay->hide();
+	}
 
 }
 
@@ -98,14 +132,22 @@ void
 }
 
 
-void HUD::setCoins(int newScore, bool ghost)
+void HUD::setCoins(int newScore, bool ghost /* = false */, bool consec /* = false */)
 {
-	std::string score = "Coins = ";
+	std::string score;
+	if (consec)
+	{
+	 score = "Consecutive Coins = ";
+	}
+	else 
+	{
+	  score = "Coins = ";
+	}
 	score.append(std::to_string((long long)newScore));
 
 	if (ghost)
 	{
-		mGhostCoinsText->setCaption(score);
+		mGhostCoinsText->setCaption(("Ghost: " + score));
 	}
 	else
 	{
@@ -147,7 +189,7 @@ void HUD::setSpeed(int speed, bool ghost)
 	score.append(" m / s");
 	if (ghost)
 	{
-		mGhostSpeedText->setCaption(score);
+		mGhostSpeedText->setCaption(("Ghost: " + score));
 	}
 	else
 	{
@@ -174,6 +216,22 @@ void HUD::setArmorLevel(int level)
 }
 
 
+
+void  HUD::setTime(float newTime)
+{
+	char buf[100];
+
+	sprintf(buf, "%.2f", newTime);
+
+		std::string time = "Time = ";
+		time.append(buf);
+		mTimeText->setCaption(time);
+
+
+
+}
+
+
 void HUD::setDistance(int newScore, bool ghost)
 {
 	std::string score = "Distance = ";
@@ -181,7 +239,7 @@ void HUD::setDistance(int newScore, bool ghost)
 	score.append(" meters");
 	if (ghost)
 	{
-		mGhostDistanceText->setCaption(score);
+		mGhostDistanceText->setCaption("Ghost: " + score);
 	}
 	else
 	{
@@ -223,6 +281,36 @@ void HUD::update(float time)
 
 
 }
+
+void HUD::setFinalRaceTime(Ogre::String message, bool isGhost /* = false */)
+{
+	if (isGhost)
+	{
+		Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Racing/Done/Panel/Ghost/Time")->setCaption(message);
+	}
+	else
+	{
+		Ogre::OverlayManager::getSingleton().getOverlayElement("HUD/Racing/Done/Panel/Player/Time")->setCaption(message);
+	}
+
+
+
+
+}
+
+
+void HUD::showRaceOver(bool show)
+{
+	if (show)
+	{
+		mRacingDone->show();
+	}
+	else
+	{
+		mRacingDone->hide();
+	}
+}
+
 
 void HUD::stopArrow(Kind type)
 {

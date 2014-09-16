@@ -16,10 +16,9 @@ public:
 		        int coins, int distance, int speed);
 	void kill(float time);
 	void startRecording();
-	void stopRecording();
+	void stopRecording(bool finishedRace = false);
 	void startPlayback();
 	void stopPlayback();
-
 
 	void readFile(std::string filename);
 	void writeFile(std::string filename);
@@ -49,6 +48,9 @@ public:
 		int mMagnetFreq;
 		int mSeed;
 		bool mLeanEqualsDuck;
+		bool mRacing;
+		int mRaceGoal;
+		int mRaceType;
 	};
 
 	GhostInfo *getData() { return mGhostInfo; }
@@ -78,6 +80,8 @@ protected:
 
 	void updateGhost(float time);
 
+	float mFinalTime;
+	bool mFinishedRace;
 	bool mPlayingBack;
 	bool mRecording;
 	float mCurrentTime;

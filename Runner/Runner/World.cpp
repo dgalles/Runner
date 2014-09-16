@@ -46,6 +46,7 @@ void World::resetToDefaults()
 	mBoostFreq = 1;
 	mShieldFreq = 1;
 	mMagnetFreq = 1;
+
 }
 
 World::World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useMirror)   : mSceneManager(sceneManager), mTrackSceneNodes(), 

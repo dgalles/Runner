@@ -21,6 +21,7 @@ class World
 {
 public:
 
+
 	World(Ogre::SceneManager *sceneManager, HUD *hud, Runner *base, bool useMirror = false);
 
 	// You'll want various methods to access & change your world here
@@ -178,6 +179,8 @@ protected:
 	float *mBoostFreqValues;
 	float *mShieldFreqValues;
 	float *mMagnetFreqValues;
+
+
 
 
 };

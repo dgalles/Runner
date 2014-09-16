@@ -17,15 +17,32 @@ Ghost::Ghost(World *w) : mWorld(w)
 
 
 
-void Ghost::stopRecording()
+void Ghost::stopRecording(bool finished)
 {
 	mRecording = false;
+	mFinishedRace = finished;
+	mFinalTime = mData[mData.size() - 1].mTime;
 }
+
 void Ghost::stopPlayback()
 {
 	mPlayingBack = false;
+	if (mFinishedRace)
+	{
+		char buf[30];
+		sprintf(buf, "%.2f", mFinalTime);
+		std::string message = "Time =";
+		message.append(buf);
+		mWorld->getHUD()->setFinalRaceTime(Ogre::String(message), true);
+	}
+	else
+	{
+		mWorld->getHUD()->setFinalRaceTime("Ghost Failed", true);
+	}
 	mRunnerObject->setAlpha(0);
 }
+
+
 
 Ghost::~Ghost(void)
 {
@@ -39,8 +56,6 @@ void Ghost::kill(float time)
 void Ghost::think(float time)
 {
 	// mCurrentTime += time;
-
-
 }
 
 void Ghost::updateGhost(float time)
@@ -103,7 +118,8 @@ void Ghost::updateGhost(float time)
 		int dist = (int) (mData[mDataindex].mDistance + deltaDist);
 
 		mWorld->getHUD()->setSpeed( (int) ( mData[mDataindex].mSpeed + ( mData[mDataindex+1].mSpeed - mData[mDataindex].mSpeed ) * percent), true);
-		mWorld->getHUD()->setCoins((int) (mData[mDataindex].mCoins + (mData[mDataindex+1].mCoins - mData[mDataindex].mCoins) * percent), true);
+		bool consec = mGhostInfo->mRacing && mGhostInfo->mRaceType != 0;
+		mWorld->getHUD()->setCoins((int) (mData[mDataindex].mCoins + (mData[mDataindex+1].mCoins - mData[mDataindex].mCoins) * percent), true, consec);
 		mWorld->getHUD()->setDistance(dist, true);
 
 

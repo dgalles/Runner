@@ -140,7 +140,7 @@ Runner::createScene()
 
 	mLogin = new LoginWrapper();
 	mLogger = new Logger(mLogin);
-	mLogger->Connect();
+//	mLogger->Connect();
 	mGhost = new Ghost(mWorld);
 
 	mPlayer[0]->setGhost(mGhost);
@@ -154,6 +154,26 @@ void
 {
 	mWorld->reset(); 
 	//mWorld[1]->reset(); 
+	mPlayer[0]->setRacing(false);
+	mPlayer[0]->reset(); 
+	//mPlayer[1]->reset(); 
+	mWorld->setGhostInfo(mGhost->getData());
+	mPlayer[0]->setGhostInfo(mGhost->getData());
+
+	mAchievements[0]->ResetActive(); 
+	//mAchievements[1]->ResetActive(); 
+	mPlayer[0]->startGame();
+	//mPlayer[1]->startGame();
+	mGhost->startRecording();
+	mLogger->StartSession();
+	mKinect->StartSession();
+}
+
+void Runner::startRace()
+{
+	mWorld->reset(); 
+	//mWorld[1]->reset(); 
+	mPlayer[0]->setRacing(true);
 	mPlayer[0]->reset(); 
 	//mPlayer[1]->reset(); 
 	mWorld->setGhostInfo(mGhost->getData());
@@ -454,7 +474,7 @@ Runner::setupMenus(bool loginRequired)
 	Menu *endGameMenu = new Menu("Game Over!", "gameOver", 0.1f, 0.1f, 0.1f, NULL);
 	Menu *awkGhostSave  = new Menu("Ghost Saved", "ghostSaved", 0.1f, 0.1f, 0.1f, NULL);
 	Menu *ghostSelect = new ScrollSelectMenu("Select Ghost Run", "ghostSelect", 0.05f, 0.1f, 0.08f, mainMenu);
-
+	Menu *raceMenu = new Menu("Race For Coins","coinRace", 0.1f, 0.1f, 0.1f, mainMenu);
 
 
 	std::vector<Store *> stores;
@@ -481,7 +501,7 @@ Runner::setupMenus(bool loginRequired)
 	menus->addMenu(confirmMenu);
 	menus->addMenu(awkGhostSave);
 	menus->addMenu(ghostSelect);
-	
+	menus->addMenu(raceMenu);
 
 
 	/////////////////////////////////////////////////
@@ -607,13 +627,36 @@ Runner::setupMenus(bool loginRequired)
 	//////////////////////////////////////////////////
 
 
-	mainMenu->AddSelectElement("Start Game", [mainMenu,this]() { mainMenu->disable(); this->startGame(); });
+	mainMenu->AddSelectElement("Start Standard Game", [mainMenu,this]() { mainMenu->disable(); this->startGame(); });
+	mainMenu->AddSelectElement("Start Race Game", [mainMenu,raceMenu]() { mainMenu->disable(); raceMenu->enable(); });
 	mainMenu->AddSelectElement("Play Against Saved Ghost", [mainMenu,this]() { mainMenu->disable(); this->loadGhost(); });
 	mainMenu->AddSelectElement("Login", [mainMenu, login]() {mainMenu->disable(); login->enable();});
 	mainMenu->AddSelectElement("Show Goals", [mainMenu, a]() {a-> ShowAllAchievements(true); mainMenu->disable();});
 	mainMenu->AddSelectElement("Options", [options, mainMenu]() {options->enable(); mainMenu->disable();});
 	mainMenu->AddSelectElement("Store", [store, mainMenu]() {store->enable(); mainMenu->disable();});
 	mainMenu->AddSelectElement("Quit", [l, this]() {this->writeConfigStr(); l->quit();});
+
+	/////////////////////////////////////////////////
+	// Race Menu 
+	//////////////////////////////////////////////////
+
+	raceMenu->AddSelectElement("Start Race", [raceMenu, this]() { raceMenu->disable(); this->startRace(); } );
+
+	std::vector<Ogre::String> raceTypeNames;
+	std::vector<std::function<void()>> callbacksRaceType;
+	raceTypeNames.push_back("Total Coins");
+	callbacksRaceType.push_back([p]() {p->setRaceType(Player::RaceType::TOTALCOINS); });
+
+	raceTypeNames.push_back("Concecutive Coins");
+	callbacksRaceType.push_back([p]() {p->setRaceType(Player::RaceType::CONCECUTIVECOINS); });
+
+	raceMenu->AddChooseEnum("Race For",raceTypeNames,callbacksRaceType,0, true);	
+
+	raceMenu->AddChooseInt("Race Goal (Coins)", [p](int x) {p->setRaceGoal(x);}, 5, 150, p->getRaceGoal(), 1);
+
+	raceMenu->AddSelectElement("Return to Main Menu", [raceMenu,mainMenu]() {raceMenu->disable(); mainMenu->enable();});
+
+
 
 	/////////////////////////////////////////////////
 	// Pause Menu 
