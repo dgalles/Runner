@@ -93,6 +93,8 @@ HUD/Score
 
 	}
 	
+
+	
     container Panel(HUD/Score/Panel)
     {
       metrics_mode relative
@@ -188,6 +190,9 @@ HUD/Score
 	
 }
 
+
+
+
 HUD/LeftArrow
 {
     zorder 200
@@ -246,6 +251,100 @@ HUD/UpArrow
 	  material UpArrow
     }   
 }
+
+
+HUD/Racing/Done
+{
+	container Panel(HUD/Racing/Done/Panel)
+	{
+	   left 0.1
+	   top 0.3
+	   width 0.7
+	   height 0.08
+	   
+	   material blueSemiTrans
+
+		element TextArea(HUD/Racing/Done/Panel/Player)
+		{
+		metrics_mode relative
+		
+         left 0.01
+		 top 0.02
+         font_name Big
+         char_height 0.04
+         colour 1 1 1
+         caption Race Complete
+		}
+		
+		element TextArea(HUD/Racing/Done/Panel/Player/Time)
+		{
+		metrics_mode relative
+		
+         left 0.01
+		 top 0.02
+         font_name Big
+         char_height 0.04
+         colour 1 1 1
+         caption Time = 
+		}	   
+		
+		element TextArea(HUD/Racing/Done/Panel/Ghost/Time)
+		{
+		metrics_mode relative
+		
+         left 0.01
+		 top 0.02
+         font_name Big
+         char_height 0.04
+         colour 1 1 1
+         caption Time = 
+		}	   
+
+	}	
+
+}
+
+HUD/Racing
+{
+	container Panel(HUD/Racing/Panel)
+	{
+	   left 0.02
+	   top 0.03
+	   width 0.7
+	   height 0.08
+	   
+	   material blueSemiTrans
+
+		element TextArea(HUD/Racing/Panel/Time)
+		{
+		metrics_mode relative
+		
+         left 0.01
+		 top 0.02
+         font_name Big
+         char_height 0.04
+         colour 1 1 1
+         caption Time = 0
+		}
+		
+		element TextArea(HUD/Racing/Panel/Message)
+		{
+		metrics_mode relative
+		
+         left 0.4
+		 top 0.02
+         font_name Big
+         char_height 0.04
+         colour 1 1 1
+         caption Racing to xx Coins
+		}
+
+	   
+	}
+
+}
+
+
 
 HUD/SpeedUp
 {
