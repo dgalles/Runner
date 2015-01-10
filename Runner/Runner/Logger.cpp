@@ -3,28 +3,273 @@
 #include <iostream>
 #include <fstream>
 
+
+#include <assert.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <winsock2.h>
+
+#include <openssl/rand.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
+#pragma comment(lib, "wsock32.lib")
+
 #include "Logger.h"
 #include "LoginWrapper.h"
 #define DEFAULT_PORT "8080"
 #define DEFAULT_HOST "creamstout.cs.usfca.edu"
 
-/* A ServerCom struct contains all the necessary pieces for a socket connection */
-struct ServerCom
-{
-	WSADATA wsaData;
-	SOCKET ConnectSocket;// = INVALID_SOCKET;
-	int iResult;
-	struct addrinfo *result;// = NULL,
-	struct addrinfo *ptr;// = NULL,
-	struct addrinfo hints;
 
-	ServerCom()
+
+#define SERVER "localhost"
+#define PORT 8080
+
+SOCKET tcpConnect() 
+{
+	int error;
+	SOCKET handle;
+	struct hostent *host;
+	struct sockaddr_in server;
+
+	host = gethostbyname(SERVER);
+	handle = socket(AF_INET, SOCK_STREAM, 0);
+	struct timeval timeout;      
+	timeout.tv_sec = 10;
+	timeout.tv_usec = 0;
+	if (setsockopt (handle, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+		sizeof(timeout)) < 0) { perror("setsockopt failed\n"); }
+	if (handle == INVALID_SOCKET)
 	{
-		ConnectSocket = INVALID_SOCKET;
-		result = NULL;
-		ptr = NULL;
+		perror("Socket");
+		handle = 0;
+	} 
+	else 
+	{
+		server.sin_family = AF_INET;
+		server.sin_port = htons(PORT);
+		server.sin_addr = *((struct in_addr *) host->h_addr);
+		memset(&(server.sin_zero), 0, 8);
+
+		error = connect(handle, (struct sockaddr *) &server,
+			sizeof(struct sockaddr));
+
+		if (error == -1)
+		{
+			perror("Connect");
+			handle = 0;
+		}
 	}
-};
+	return handle;
+}
+
+connection * sslConnect(void) 
+{
+	connection *c;
+
+	c = (connection *) malloc(sizeof(connection));
+	c->sslHandle = NULL;
+	c->sslContext = NULL;
+
+	c->socket = tcpConnect();
+	if (c->socket) {
+		SSL_load_error_strings();
+		SSL_library_init();
+
+		c->sslContext = SSL_CTX_new(TLSv1_method());
+		if (c->sslContext == NULL) {
+			ERR_print_errors_fp (stderr);
+		}
+
+
+		c->sslHandle = SSL_new(c->sslContext);
+		if (c->sslHandle == NULL) {
+			ERR_print_errors_fp(stderr);
+		}
+		if (!SSL_set_fd(c->sslHandle, c->socket)) {
+			ERR_print_errors_fp (stderr);
+		}
+		int err= SSL_connect (c->sslHandle);
+		if (err != 1) {
+			int err2  = SSL_get_error(c->sslHandle,err);
+			ERR_print_errors_fp (stdout);
+		}
+	} else {
+		perror("Connect failed");
+	}
+	return c;
+}
+
+void sslDisconnect (connection * c)
+{
+	if (c->socket) {
+		closesocket(c->socket);
+	}
+	if (c->sslHandle) {
+		SSL_shutdown (c->sslHandle);
+		SSL_free (c->sslHandle);
+	}
+	if (c->sslContext) {
+		SSL_CTX_free (c->sslContext);
+	}
+	free(c);
+}
+
+int sslRead (connection * c, char *buffer, int readSize)
+{
+	// const int readSize = 1024;
+	// char *rc = NULL;
+	//  int received, count = 0;
+	//  char buffer[1024];
+
+	int received = 0;
+	int iter = 0;
+
+	memset(buffer, 0, readSize * sizeof(char));
+	bool read = false;
+	while (!read && iter < 100)
+	{
+		received = SSL_read(c->sslHandle, buffer, readSize);
+		read = received >= 0; // If we didn't get anything at all, we'll try again
+		iter++;
+	}
+
+	return received;
+}
+
+
+
+
+int sslWrite(connection * c, const char * text)
+{
+	if (c == NULL)
+	{
+		return -1;
+	}
+
+	int totalWritten = 0;
+	if (c) 
+	{
+		int lengthToWrite = strlen(text);
+		while (lengthToWrite > 0)
+		{
+			int written_bytes = SSL_write (c->sslHandle, text, lengthToWrite);
+			if (written_bytes > 0)
+			{
+				lengthToWrite -= written_bytes;
+				totalWritten += written_bytes;
+			}
+			else
+			{
+				return written_bytes;  // Returning error code from SSL_write
+			}
+		}
+	}
+	return totalWritten;
+}
+
+
+int sendDataAndGetAwk(connection *c, const char *text)
+{
+	int bytesSent = sslWrite(c, text);
+	if (bytesSent <= 0)
+	{
+		return bytesSent;
+	}
+	char buffer[10];
+
+	int bytes_read = sslRead(c, buffer, 10);
+	if (bytes_read <= 0 || strcmp(buffer, "1") != 0)
+	{
+		return -1;
+	}
+	return bytesSent;
+}
+
+Ogre::String MakeOKForFilename(Ogre::String str)
+{
+	str = Ogre::StringUtil::replaceAll(str,":","_");
+	str = Ogre::StringUtil::replaceAll(str,"|", "_");
+	return str;
+
+
+}
+
+connection * init(const char * ID, const char *  timestamp)
+{
+	connection * c;
+	char * cert;
+	FILE *fd;
+	char buffer[10];
+
+
+	Ogre::String IDandTS(ID);
+	IDandTS = IDandTS +  "|" + MakeOKForFilename(timestamp) + "\n";
+
+	c = sslConnect();
+
+	int bytes_read = sslRead(c, buffer, 10);
+	printf("response is: %s\n", buffer);
+	cert = (char *)malloc(sizeof(char) * 4097);
+	if (strcmp(buffer, "1") != 0) {
+		printf("check 1 failed\n");
+		goto error;
+	}
+	memset(cert, 0, 4097);
+	assert(cert[4096] == '\0');
+	int err;
+	if( (err  = fopen_s( &fd, "game_cert", "r" )) !=0 )
+	{
+		printf("Error: %d", err);
+
+	}
+	fread(cert, sizeof(char), 4096, fd);
+	printf("%s\n", cert);
+	sslWrite(c, cert);
+	bytes_read = sslRead(c, buffer, 10);
+	if (strcmp(buffer, "1") != 0) {
+		printf("check 2 failed\n");
+		goto error;
+	}
+	sslWrite(c, IDandTS.c_str());
+	bytes_read = sslRead(c, buffer, 10);
+	if (strcmp(buffer, "1") != 0) {
+		printf("check 3 failed\n");
+		goto error;
+	}
+	free(cert);
+	return c;
+error:
+	free(cert);
+	sslDisconnect(c);
+	return NULL;
+}
+
+
+/* A ServerCom struct contains all the necessary pieces for a socket connection */
+//struct ServerCom
+//{
+//	WSADATA wsaData;
+//	SOCKET ConnectSocket;// = INVALID_SOCKET;
+//	int iResult;
+//	struct addrinfo *result;// = NULL,
+//	struct addrinfo *ptr;// = NULL,
+//	struct addrinfo hints;
+//
+//	ServerCom()
+//	{
+//		ConnectSocket = INVALID_SOCKET;
+//		result = NULL;
+//		ptr = NULL;
+//	}
+//};
 
 Logger::Logger(LoginWrapper *login) : mPlyrData(), mSkelLock(), mPlyrLock(), mDbLock()
 {
@@ -32,23 +277,24 @@ Logger::Logger(LoginWrapper *login) : mPlyrData(), mSkelLock(), mPlyrLock(), mDb
 	mMinutes = 0;
 	mSeconds2 = 0;
 	mMinutes2 = 0;
-	mSock = new ServerCom();
-	mScoreSock = new ServerCom();
-	mLRSock = new ServerCom();
-	mLRTrueSock = new ServerCom();
-	mFBSock = new ServerCom();
-	mCoinsLeftSock = new ServerCom();
-	mCoinsLeftMissedSock = new ServerCom();
-	mCoinsMiddleMissedSock = new ServerCom();
-	mCoinsMiddleSock = new ServerCom();
-	mCoinsRightSock = new ServerCom();
-	mCoinsRightMissedSock = new ServerCom();
-	mSpeedSock = new ServerCom();
+	//mSock = new ServerCom();
+	//mScoreSock = new ServerCom();
+	//mLRSock = new ServerCom();
+	//mLRTrueSock = new ServerCom();
+	//mFBSock = new ServerCom();
+	//mCoinsLeftSock = new ServerCom();
+	//mCoinsLeftMissedSock = new ServerCom();
+	//mCoinsMiddleMissedSock = new ServerCom();
+	//mCoinsMiddleSock = new ServerCom();
+	//mCoinsRightSock = new ServerCom();
+	//mCoinsRightMissedSock = new ServerCom();
+	//mSpeedSock = new ServerCom();
 	mHost = DEFAULT_HOST;
 	mPort = DEFAULT_PORT;
 	mLogin = login;
 	mSessionStarted = false;
 	mSessionEnded = false;
+	mSecureConnection = NULL;
 }
 
 Logger::~Logger()
@@ -78,19 +324,26 @@ void
 	mSessionStarted = true;
 	mSessionEnded = false;
 
+	mSecureConnection = init(mCurrentID.c_str(), mBegBuf);
 	Connect();
 
 	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "db.patients.insert({\"patient_id\":%s, \"timestamp\":\"%s\"})", 
+	sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "db.patients.insert({\"patient_id\":%s, \"timestamp\":\"%s\"})\n", 
 		mCurrentID.c_str(), mBegBuf);
 
-	if(DB_Send(mPlyrBuf, DEFAULT_BUFSIZE, mSock) == 1)
+	int sent = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
+
+	if (sent <= 0)
 	{
-		printf("DB_Send failed.\n");
+		WriteToLog("Failed to insert patient_it / timestamp.\n", DEFAULT_BUFSIZE);
 	}
+
+
 	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
 	sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "In StartSession, starting daemon.\n");
 	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
+
+	mConnected = true;
 
 	mDaemon = std::thread(&Logger::daemonFunc, this);
 }
@@ -107,8 +360,14 @@ void
 		sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "In EndSession, daemon has joined.\n");
 		WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
 
-		Disconnect();
 	}
+	if (mSecureConnection)
+	{
+		sslDisconnect(mSecureConnection);
+		mSecureConnection = NULL;
+	}
+	mSessionEnded = true;
+	mConnected = false;
 }
 
 void
@@ -161,93 +420,93 @@ void
 
 }
 
+
+
+
+int Logger::LogAndSend(const char *attribName, float value)
+{
+	if (!mSecureConnection)
+	{
+		return -1;
+	}
+	int sentBytes;
+	memset(mPlyrBuf,0,DEFAULT_BUFSIZE);
+	sprintf_s(mPlyrBuf, 
+		DEFAULT_BUFSIZE,
+		"db.patiens.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"%s.%d.%d\":%f}})\n",
+		mCurrentID.c_str(), mBegBuf, attribName, mMinutes, mSeconds % 60, value);
+
+
+	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
+
+	sentBytes = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
+
+	char buffer[10];
+	int bytes_read = sslRead(mSecureConnection,buffer, 10);
+
+	if (sentBytes <= 0)
+	{
+		WriteToLog("sslWrite failed.\n", 18);
+	}
+	if (bytes_read <= 0)
+	{
+		WriteToLog("ssl write not acknowledged\n", 18);
+		// TODO:  Try to restart connection?
+		return -1;
+	}
+
+	return sentBytes;
+}
+
+
+int Logger::LogAndSend(const char *attribName, int value)
+{
+	if (!mSecureConnection)
+	{
+		return -1;
+	}
+	int sentBytes;
+	memset(mPlyrBuf,0,DEFAULT_BUFSIZE);
+	sprintf_s(mPlyrBuf, 
+		DEFAULT_BUFSIZE,
+		"db.patiens.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"%s.%d.%d\":%d}})\n",
+		mCurrentID.c_str(), mBegBuf, attribName, mMinutes, mSeconds % 60, value);
+
+
+	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
+
+	sentBytes = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
+
+	char buffer[10];
+	int bytes_read = sslRead(mSecureConnection,buffer, 10);
+
+	if (sentBytes <= 0)
+	{
+		WriteToLog("sslWrite failed.\n", 18);
+	}
+	if (bytes_read <= 0)
+	{
+		WriteToLog("ssl write not acknowledged\n", 18);
+		// TODO:  Try to restart connection?
+		return -1;
+	}
+
+	return sentBytes;
+}
+
 void
 	Logger::daemonSendPlyrData(PlyrData *pdata)
 {
 	mSeconds++;
 	mMinutes = mSeconds / 60;
+	int sentBytes = 0;
 
-	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, 
-		DEFAULT_BUFSIZE, 
-		"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"CoinsL.%d.%d\":%d}})", 
-		mCurrentID.c_str(), 
-		mBegBuf, 
-		mMinutes, 
-		mSeconds % 60, 
-		pdata->leftCoinsCollected);
-	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
-	if(DB_Send(mPlyrBuf, strlen(mPlyrBuf), mCoinsLeftSock) == 1)
-		WriteToLog("DB_Send failed.\n", 18);
-
-	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, 
-		DEFAULT_BUFSIZE, 
-		"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"CoinsR.%d.%d\":%d}})", 
-		mCurrentID.c_str(), 
-		mBegBuf, 
-		mMinutes, 
-		mSeconds % 60, 
-		pdata->rightCoinsCollected);
-	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
-	if(DB_Send(mPlyrBuf, strlen(mPlyrBuf), mCoinsRightSock) == 1)
-		WriteToLog("DB_Send failed.\n", 18);
-
-	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, 
-		DEFAULT_BUFSIZE, 
-		"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"CoinsM.%d.%d\":%d}})", 
-		mCurrentID.c_str(), 
-		mBegBuf, 
-		mMinutes, 
-		mSeconds % 60, 
-		pdata->middleCoinsCollected);
-	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
-	if(DB_Send(mPlyrBuf, strlen(mPlyrBuf), mCoinsMiddleSock) == 1)
-		WriteToLog("DB_Send failed.\n", 18);
-
-
-	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, 
-		DEFAULT_BUFSIZE, 
-		"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"CoinsMissL.%d.%d\":%d}})", 
-		mCurrentID.c_str(), 
-		mBegBuf, 
-		mMinutes, 
-		mSeconds % 60, 
-		pdata->leftCoinsMissed);
-	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
-	if(DB_Send(mPlyrBuf, strlen(mPlyrBuf), mCoinsLeftMissedSock) == 1)
-		WriteToLog("DB_Send failed.\n", 18);
-
-	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, 
-		DEFAULT_BUFSIZE, 
-		"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"CoinsMissR.%d.%d\":%d}})", 
-		mCurrentID.c_str(), 
-		mBegBuf, 
-		mMinutes, 
-		mSeconds % 60, 
-		pdata->rightCoinsMissed);
-	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
-	if(DB_Send(mPlyrBuf, strlen(mPlyrBuf), mCoinsRightMissedSock) == 1)
-		WriteToLog("DB_Send failed.\n", 18);
-
-	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, 
-		DEFAULT_BUFSIZE, 
-		"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"CoinsNissM.%d.%d\":%d}})", 
-		mCurrentID.c_str(), 
-		mBegBuf, 
-		mMinutes, 
-		mSeconds % 60, 
-		pdata->middleCoinsMissed);
-	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
-	if(DB_Send(mPlyrBuf, strlen(mPlyrBuf), mCoinsMiddleMissedSock) == 1)
-		WriteToLog("DB_Send failed.\n", 18);
-
-
-
+	LogAndSend("CoinsL", pdata->leftCoinsCollected);
+	LogAndSend("CoinsR", pdata->rightCoinsCollected);
+	LogAndSend("CoinsM", pdata->middleCoinsCollected);
+	LogAndSend("CoinsMissL", pdata->leftCoinsMissed);
+	LogAndSend("CoinsMissR", pdata->rightCoinsMissed);
+	LogAndSend("CoinsMissM", pdata->middleCoinsCollected);
 }
 
 void
@@ -256,44 +515,24 @@ void
 	mSeconds2++;
 	mMinutes2 = mSeconds2 / 60;
 
-	memset(mKinBuf1, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mKinBuf1, 
-		DEFAULT_BUFSIZE, 
-		"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"skel_lr.%d.%d\":%f}})", 
-		mCurrentID.c_str(), 
-		mBegBuf, 
-		mMinutes2, 
-		mSeconds2 % 60, 
-		sdata->lrAngle);
-	WriteToLog(mKinBuf1, DEFAULT_BUFSIZE);
-	if(DB_Send(mKinBuf1, strlen(mKinBuf1), mLRSock) == 1)
-		WriteToLog("DB_Send failed.\n", 18);
+	LogAndSend("skel_lr", sdata->lrAngle);
+	LogAndSend("skel_lr_true", sdata->lrAngleTrue);
+	LogAndSend("skel_fb", sdata->fbAngle);
 
-	memset(mKinBuf1, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mKinBuf1, 
-		DEFAULT_BUFSIZE, 
-		"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"skel_lr_true.%d.%d\":%f}})", 
-		mCurrentID.c_str(), 
-		mBegBuf, 
-		mMinutes2, 
-		mSeconds2 % 60, 
-		sdata->lrAngleTrue);
-	WriteToLog(mKinBuf1, DEFAULT_BUFSIZE);
-	if(DB_Send(mKinBuf1, strlen(mKinBuf1), mLRTrueSock) == 1)
-		WriteToLog("DB_Send failed.\n", 18);
+	//memset(mKinBuf1, 0, DEFAULT_BUFSIZE);
+	//sprintf_s(mKinBuf1, 
+	//	DEFAULT_BUFSIZE, 
+	//	"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"skel_lr.%d.%d\":%f}})", 
+	//	mCurrentID.c_str(), 
+	//	mBegBuf, 
+	//	mMinutes2, 
+	//	mSeconds2 % 60, 
+	//	sdata->lrAngle);
+	//WriteToLog(mKinBuf1, DEFAULT_BUFSIZE);
+	//if(DB_Send(mKinBuf1, strlen(mKinBuf1), mLRSock) == 1)
+	//	WriteToLog("DB_Send failed.\n", 18);
 
-	memset(mKinBuf2, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mKinBuf2, 
-		DEFAULT_BUFSIZE, 
-		"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"skel_fb.%d.%d\":%f}})", 
-		mCurrentID.c_str(), 
-		mBegBuf, 
-		mMinutes2, 
-		mSeconds2 % 60, 
-		sdata->fbAngle);
-	WriteToLog(mKinBuf2, DEFAULT_BUFSIZE);
-	if(DB_Send(mKinBuf2, strlen(mKinBuf2), mFBSock) == 1)
-		WriteToLog("DB_Send failed.\n", 18);
+
 }
 
 /*------------------------------------------------------------------------------
@@ -349,46 +588,6 @@ void
 	outfile.close();
 }
 
-int
-	Logger::Connect(void)
-{
-
-	int res[12];
-	res[0] = DB_Connect(mHost, mPort, mScoreSock);
-	res[1] = DB_Connect(mHost, mPort, mLRSock);
-	res[2] = DB_Connect(mHost, mPort, mFBSock);
-	res[3] = DB_Connect(mHost, mPort, mLRTrueSock);
-	res[4] = DB_Connect(mHost, mPort, mSock);
-
-	res[5] = DB_Connect(mHost, mPort, mCoinsLeftSock);
-	res[6] = DB_Connect(mHost, mPort, mCoinsRightSock);
-	res[7] = DB_Connect(mHost, mPort, mCoinsMiddleSock);
-	res[8] = DB_Connect(mHost, mPort, mCoinsLeftMissedSock);
-	res[9] = DB_Connect(mHost, mPort, mCoinsRightMissedSock);
-	res[10] = DB_Connect(mHost, mPort, mCoinsMiddleMissedSock);
-	res[11] = DB_Connect(mHost, mPort, mSpeedSock);
-
-	return (res[0] && res[1] && res[2] && res[3] && res[4] && res[5] && 
-		res[6] && res[7] && res[8] && res[9] && res[10] && res[111]);
-
-}
-
-void
-	Logger::Disconnect(void)
-{
-	DB_Disconnect(mScoreSock);
-	DB_Disconnect(mLRSock);
-	DB_Disconnect(mFBSock);
-	DB_Disconnect(mLRTrueSock);
-	DB_Disconnect(mSock);
-	DB_Disconnect(mCoinsLeftSock);
-	DB_Disconnect(mCoinsRightSock);
-	DB_Disconnect(mCoinsMiddleSock);
-	DB_Disconnect(mCoinsLeftMissedSock);
-	DB_Disconnect(mCoinsRightMissedSock);
-	DB_Disconnect(mCoinsMiddleMissedSock);
-	DB_Disconnect(mSpeedSock);
-}
 
 
 /*
@@ -402,58 +601,58 @@ int
 {
 
 
-	// Initialize Winsock
-	com->iResult = WSAStartup(MAKEWORD(2,2), &com->wsaData);
-	if (com->iResult != 0) {
-		printf("WSAStartup failed with error: %d\n", com->iResult);
-		return 1;
-	}
+	//// Initialize Winsock
+	//com->iResult = WSAStartup(MAKEWORD(2,2), &com->wsaData);
+	//if (com->iResult != 0) {
+	//	printf("WSAStartup failed with error: %d\n", com->iResult);
+	//	return 1;
+	//}
 
-	ZeroMemory( &com->hints, sizeof(com->hints) );
-	com->hints.ai_family = AF_UNSPEC;
-	com->hints.ai_socktype = SOCK_STREAM;
-	com->hints.ai_protocol = IPPROTO_TCP;
+	//ZeroMemory( &com->hints, sizeof(com->hints) );
+	//com->hints.ai_family = AF_UNSPEC;
+	//com->hints.ai_socktype = SOCK_STREAM;
+	//com->hints.ai_protocol = IPPROTO_TCP;
 
-	// Resolve the server address and port
-	com->iResult = getaddrinfo(hostname, port, &com->hints, &com->result);
+	//// Resolve the server address and port
+	//com->iResult = getaddrinfo(hostname, port, &com->hints, &com->result);
 
-	if ( com->iResult != 0 ) {
-		printf("getaddrinfo failed with error: %d\n", com->iResult);
-		WSACleanup();
-		return 2;
-	}
+	//if ( com->iResult != 0 ) {
+	//	printf("getaddrinfo failed with error: %d\n", com->iResult);
+	//	WSACleanup();
+	//	return 2;
+	//}
 
-	// Attempt to connect to an address until one succeeds
-	for(com->ptr=com->result; com->ptr != NULL ;com->ptr=com->ptr->ai_next) {
+	//// Attempt to connect to an address until one succeeds
+	//for(com->ptr=com->result; com->ptr != NULL ;com->ptr=com->ptr->ai_next) {
 
-		// Create a SOCKET for connecting to server
-		com->ConnectSocket = socket(com->ptr->ai_family, com->ptr->ai_socktype, 
-			com->ptr->ai_protocol);
-		if (com->ConnectSocket == INVALID_SOCKET) 
-		{
-			printf("socket failed with error: %ld\n", WSAGetLastError());
-			WSACleanup();
-			return 3;
-		}
+	//	// Create a SOCKET for connecting to server
+	//	com->ConnectSocket = socket(com->ptr->ai_family, com->ptr->ai_socktype, 
+	//		com->ptr->ai_protocol);
+	//	if (com->ConnectSocket == INVALID_SOCKET) 
+	//	{
+	//		printf("socket failed with error: %ld\n", WSAGetLastError());
+	//		WSACleanup();
+	//		return 3;
+	//	}
 
-		// Connect to server.
-		com->iResult = connect( com->ConnectSocket, com->ptr->ai_addr, (int)com->ptr->ai_addrlen);
-		if (com->iResult == SOCKET_ERROR) {
-			closesocket(com->ConnectSocket);
-			com->ConnectSocket = INVALID_SOCKET;
-			continue;
-		}
-		break;
-	}
+	//	// Connect to server.
+	//	com->iResult = connect( com->ConnectSocket, com->ptr->ai_addr, (int)com->ptr->ai_addrlen);
+	//	if (com->iResult == SOCKET_ERROR) {
+	//		closesocket(com->ConnectSocket);
+	//		com->ConnectSocket = INVALID_SOCKET;
+	//		continue;
+	//	}
+	//	break;
+	//}
 
-	freeaddrinfo(com->result);
+	//freeaddrinfo(com->result);
 
-	if (com->ConnectSocket == INVALID_SOCKET) {
-		printf("Unable to connect to server!\n");
-		WSACleanup();
-		return 4;
-	}
-	mConnected = true;
+	//if (com->ConnectSocket == INVALID_SOCKET) {
+	//	printf("Unable to connect to server!\n");
+	//	WSACleanup();
+	//	return 4;
+	//}
+	//mConnected = true;
 	return 0;
 }
 
@@ -461,43 +660,44 @@ int
 	Logger::DB_Disconnect(ServerCom *com)
 {
 	// shutdown the connection since no more data will be sent
-	com->iResult = shutdown(com->ConnectSocket, SD_SEND);
-
-	if (com->iResult == SOCKET_ERROR) {
-		printf("shutdown failed with error: %d\n", WSAGetLastError());
-		closesocket(com->ConnectSocket);
-		WSACleanup();
-		return 1;
-	}
+	//	com->iResult = shutdown(com->ConnectSocket, SD_SEND);
+	//
+	//	if (com->iResult == SOCKET_ERROR) {
+	//		printf("shutdown failed with error: %d\n", WSAGetLastError());
+	//		closesocket(com->ConnectSocket);
+	//		WSACleanup();
+	//		return 1;
+	//	}
 	return 0;
+
 }
 
 int
 	Logger::DB_Send(char *buf, size_t buflen, ServerCom *com)
 {
-	if(!mConnected || com->ConnectSocket == INVALID_SOCKET)
-		return 1;
+	//if(!mConnected || com->ConnectSocket == INVALID_SOCKET)
+	//	return 1;
 
-	com->iResult = send(com->ConnectSocket, buf, buflen, 0);
+	//com->iResult = send(com->ConnectSocket, buf, buflen, 0);
 
-	if (com->iResult == SOCKET_ERROR) {
-		printf("send failed with error: %d\n", WSAGetLastError());
-		closesocket(com->ConnectSocket);
-		WSACleanup();
-		return 2;
-	}
+	//if (com->iResult == SOCKET_ERROR) {
+	//	printf("send failed with error: %d\n", WSAGetLastError());
+	//	closesocket(com->ConnectSocket);
+	//	WSACleanup();
+	//	return 2;
+	//}
 	return 0;
 }
 
 int 
 	Logger::DB_CreateEntry()
 {
-	sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "db.patients.insert({\"patient_id\":%s})",mCurrentID.c_str());
+	//sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "db.patients.insert({\"patient_id\":%s})",mCurrentID.c_str());
 
-	if(DB_Send(mPlyrBuf, DEFAULT_BUFSIZE, mSock) == 1)
-	{
-		printf("DB_Send failed.\n");
-		return 1;
-	}
+	//if(DB_Send(mPlyrBuf, DEFAULT_BUFSIZE, mSock) == 1)
+	//{
+	//	printf("DB_Send failed.\n");
+	//	return 1;
+	//}
 	return 0;
 }

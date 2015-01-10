@@ -1,5 +1,32 @@
  	
+ServerConnection/Failure
+{
+    zorder 400
+	
+	container Panel(ServerConnection/Failure/Panel)
+    {
 
+		left 0
+		top 0.005
+		width 1
+		height 0.005
+		material simpleRed
+		
+		element TextArea(ServerConnection/Failure/Text)
+		{
+		metrics_mode relative
+		
+         left 0.5
+		 top 0.015
+         font_name Big
+         char_height 0.02
+         colour 1 0 0 
+         caption Not Connected To Server
+		}
+	}
+}
+	
+	
 // The name of the overlay comes first
 Login/Failure
 {

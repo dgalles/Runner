@@ -17,6 +17,8 @@
 #include "Menu.h"
 #include "Store.h"
 #include "OgreOverlaySystem.h"
+#include "OgreOverlayManager.h"
+#include "OgreOverlayElement.h"
 #include "OgreFontManager.h"
 #include "SDL.h"
 #include "SDL_mixer.h"
@@ -24,7 +26,6 @@
 #include "LoginWrapper.h"
 #include "Logger.h"
 #include "Ghost.h"
-
 #include "JsonUtils.h"
 
 #include <iostream>
@@ -138,9 +139,18 @@ Runner::createScene()
 	//mRunnerCamera[1]->TrackObject(mPlayer[1]);
 	mWorld->addCamera(mRunnerCamera[0]);
 
+
+	Ogre::OverlayManager::getSingleton().getByName("ServerConnection/Failure")->show();
+
 	mLogin = new LoginWrapper();
 	mLogger = new Logger(mLogin);
-//	mLogger->Connect();
+
+	if (mLogger == 0)
+	{
+	Ogre::OverlayManager::getSingleton().getByName("ServerConnection/Failure")->hide();
+
+	}
+	
 	mGhost = new Ghost(mWorld);
 
 	mPlayer[0]->setGhost(mGhost);
@@ -193,6 +203,7 @@ void Runner::endGame()
 {
 	mLogger->EndSession();
 	mKinect->EndSession();
+	mGhost->stopPlayback();
 }
 
 
@@ -702,6 +713,7 @@ Runner::setupMenus(bool loginRequired)
     advancedOptions->AddSelectElement("Get Profile from Server", [this]() {this->readConfigStr();});
     advancedOptions->AddSelectElement("Reset Profile", [advancedOptions, confirmMenu]() {advancedOptions->disable();confirmMenu->enable();});
 	advancedOptions->AddSelectElement("Return to Options Menu", [advancedOptions, options]() {advancedOptions->disable(); options->enable();});
+	advancedOptions->AddSelectElement("Add Coins", [p]() {p->setTotalCoins(p->getTotalCoins() + 100);});
     confirmMenu->AddSelectElement("Reset Profile (Cannot be undone!)", [this, p, w, a, advancedOptions, confirmMenu, menus]() {p->resetToDefaults();
 																											   w->resetToDefaults(); 
 																											   a->ResetAll();

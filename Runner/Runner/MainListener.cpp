@@ -10,6 +10,7 @@
 #include "Menu.h"
 #include "Achievements.h"
 #include "Ghost.h"
+#include "FrameCounter.h"
 #include <stdio.h>
 
 
@@ -25,6 +26,7 @@ mRenderWindow(window), mAIManager(aiManager), mGamepad(gamepad), mHUD(hud),  mKi
 	}
 	mPaused = false;
 	mQuit = false;
+	mFrameCounter = new FrameCounter();
 	//mInputHandler->setFrameListener(this);
 }
 
@@ -44,7 +46,7 @@ bool
  	mKinect->update(evt.timeSinceLastFrame);
 	mHUD->update(time);
 	InputHandler::getInstance()->Think(time);
-
+	mFrameCounter->update(time);
 	if (!mPaused)
 	{
 		mAIManager->Think(time);

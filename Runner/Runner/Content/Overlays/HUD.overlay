@@ -178,12 +178,6 @@ HUD/Score
          colour 1 1 1 0.5
          caption Speed = 0 m / s
 		}
-
-		
-	
-		
-		
-		
 		
     }
 	
@@ -258,9 +252,9 @@ HUD/Racing/Done
 	container Panel(HUD/Racing/Done/Panel)
 	{
 	   left 0.1
-	   top 0.3
+	   top 0.2
 	   width 0.7
-	   height 0.08
+	   height 0.48
 	   
 	   material blueSemiTrans
 
@@ -271,7 +265,7 @@ HUD/Racing/Done
          left 0.01
 		 top 0.02
          font_name Big
-         char_height 0.04
+         char_height 0.07
          colour 1 1 1
          caption Race Complete
 		}
@@ -281,9 +275,9 @@ HUD/Racing/Done
 		metrics_mode relative
 		
          left 0.01
-		 top 0.02
+		 top 0.12
          font_name Big
-         char_height 0.04
+         char_height 0.07
          colour 1 1 1
          caption Time = 
 		}	   
@@ -293,12 +287,24 @@ HUD/Racing/Done
 		metrics_mode relative
 		
          left 0.01
-		 top 0.02
+		 top 0.22
          font_name Big
-         char_height 0.04
+         char_height 0.07
          colour 1 1 1
-         caption Time = 
-		}	   
+         caption Ghost Time = (no ghost)
+		}	  
+
+		element TextArea(HUD/Racing/Done/Panel/Continue)
+		{
+		metrics_mode relative
+		
+         left 0.01
+		 top 0.32
+         font_name Big
+         char_height 0.07
+         colour .2 1 .2
+         caption Press Space to continue
+		}			
 
 	}	
 
@@ -338,7 +344,6 @@ HUD/Racing
          colour 1 1 1
          caption Racing to xx Coins
 		}
-
 	   
 	}
 

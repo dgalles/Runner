@@ -34,6 +34,7 @@ class Store;
 class Menu;
 class Ghost;
 
+
 class Runner :  public Ogre::WindowEventListener
 {
 public:

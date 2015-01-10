@@ -26,20 +26,22 @@ void Ghost::stopRecording(bool finished)
 
 void Ghost::stopPlayback()
 {
-	mPlayingBack = false;
-	if (mFinishedRace)
+	if (mPlayingBack)
 	{
-		char buf[30];
-		sprintf(buf, "%.2f", mFinalTime);
-		std::string message = "Time =";
-		message.append(buf);
-		mWorld->getHUD()->setFinalRaceTime(Ogre::String(message), true);
+		mPlayingBack = false;
+		if (mFinishedRace)
+		{
+			char buf[30];
+			sprintf(buf, "%.2f", mFinalTime);
+			std::string message = "Ghost Time = ";
+			message.append(buf);
+			mWorld->getHUD()->setFinalRaceTime(Ogre::String(message), true);
+		}
+		else
+		{
+			mWorld->getHUD()->setFinalRaceTime("Ghost Failed", true);
+		}
 	}
-	else
-	{
-		mWorld->getHUD()->setFinalRaceTime("Ghost Failed", true);
-	}
-	mRunnerObject->setAlpha(0);
 }
 
 
