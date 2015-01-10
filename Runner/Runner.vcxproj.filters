@@ -37,9 +37,6 @@
     <ClCompile Include="RunnerObject.cpp">
       <Filter>Game Source</Filter>
     </ClCompile>
-    <ClCompile Include="Sound.cpp">
-      <Filter>Game Source</Filter>
-    </ClCompile>
     <ClCompile Include="Store.cpp">
       <Filter>Game Source</Filter>
     </ClCompile>
@@ -68,6 +65,12 @@
       <Filter>Library Source</Filter>
     </ClCompile>
     <ClCompile Include="Ghost.cpp">
+      <Filter>Game Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound.cpp">
+      <Filter>Library Source</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameCounter.cpp">
       <Filter>Game Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -139,6 +142,9 @@
       <Filter>Library Headers</Filter>
     </ClInclude>
     <ClInclude Include="Ghost.h">
+      <Filter>Game Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameCounter.h">
       <Filter>Game Headers</Filter>
     </ClInclude>
   </ItemGroup>

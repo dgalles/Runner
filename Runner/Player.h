@@ -141,6 +141,7 @@ protected:
 	void moveExplosion(float time);
 	bool detectCollision(int newSegment, float newPercent, float newX);
 	void coinCollision(int newSegment, float newPercent, float newX, float time);
+	void handleTimers(float time);
 	World *mWorld;
 	Kinect *mKinect;
 	XInputManager *mXInputManager;
@@ -150,6 +151,10 @@ protected:
 	bool mAutoCallibrate;
 	bool mIsSecondPlayer;
 	bool mWonRace;
+
+	// HACK!! TODO:  REMOVE/REFACTOR
+	bool mWaitingOnKey;
+
 
 	Ogre::SceneNode *mMagnetNode;
 

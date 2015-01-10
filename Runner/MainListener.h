@@ -13,6 +13,7 @@ class HUD;
 class MenuManager;
 class Achievements;
 class Ghost;
+class FrameCounter;
 
 namespace Ogre
 {
@@ -46,4 +47,5 @@ protected:
 	MenuManager *mMenus;
     bool mQuit;
 	Ghost *mGhost;
+	FrameCounter *mFrameCounter;
 };

@@ -13,11 +13,24 @@
 #include <mutex>
 #include <thread>
 
+
+#include <openssl/rand.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #define DEFAULT_BUFSIZE 256
 
 struct ServerCom;
 
 class LoginWrapper;
+
+typedef struct 
+{
+    SOCKET socket;
+    SSL *sslHandle;
+    SSL_CTX *sslContext;
+} connection;
+
 
 class Logger : public PlyrDataMsgr, 
                public KinectSkelMsgr, 
@@ -33,8 +46,6 @@ public:
 
   /* DBMsgr inherited functions */
   virtual bool IsConnected(void) { return mConnected; }
-  virtual int Connect(void);
-  virtual void Disconnect(void);
 
   /* PlyrDataMsgr inherited functions */
   virtual void ReceivePlyrData(PlyrData *data);
@@ -44,21 +55,25 @@ public:
   virtual void EndSession();
 
 protected:
-  ServerCom *mSock;
-  ServerCom *mLRTrueSock;
-  ServerCom *mScoreSock;
-  ServerCom *mLRSock;
-  ServerCom *mFBSock;
 
-  ServerCom *mCoinsLeftSock;
-  ServerCom *mCoinsRightSock;
-  ServerCom *mCoinsMiddleSock;
-  ServerCom *mCoinsLeftMissedSock;
-  ServerCom *mCoinsRightMissedSock;
-  ServerCom *mCoinsMiddleMissedSock;
-  ServerCom *mSpeedSock;
+  int LogAndSend(const char* attribName, int value);
+  int LogAndSend(const char* attribName, float value);
 
+  //ServerCom *mSock;
+  //ServerCom *mLRTrueSock;
+  //ServerCom *mScoreSock;
+  //ServerCom *mLRSock;
+  //ServerCom *mFBSock;
 
+  //ServerCom *mCoinsLeftSock;
+  //ServerCom *mCoinsRightSock;
+  //ServerCom *mCoinsMiddleSock;
+  //ServerCom *mCoinsLeftMissedSock;
+  //ServerCom *mCoinsRightMissedSock;
+  //ServerCom *mCoinsMiddleMissedSock;
+  //ServerCom *mSpeedSock;
+
+  connection *mSecureConnection;
 
   char mPlyrBuf[DEFAULT_BUFSIZE];
   char mKinBuf1[DEFAULT_BUFSIZE];

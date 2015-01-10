@@ -51,7 +51,6 @@ void Player::resetToDefaults()
 	mWarningDelta = 1;
 	mManualAccel = 5;
 
-
 	mRaceGoal = 20;
 	mRaceType = TOTALCOINS;
 	mRacing = false;
@@ -237,6 +236,7 @@ void Player::setGhostInfo(Ghost::GhostInfo *ghostInfo)
 void
 	Player::startGame()
 {
+	mWaitingOnKey = false;
 	mWorld->getHUD()->stopAllArrows();
 	mWorld->getHUD()->showHUDElements(true);
 	mWorld->getHUD()->showRaceOver(false);
@@ -550,6 +550,12 @@ void Player::updateAnglesFromControls(Ogre::Degree &angle, Ogre::Degree &angle2)
 
 	if (mEnableKeyboard)
 	{
+		if (InputHandler::getInstance()->KeyPressedThisFrame(OIS::KC_Q))
+		{
+
+			mPlayerObject->setMaterial("simpleOrange");
+		}
+
 		if (InputHandler::getInstance()->KeyPressedThisFrame(OIS::KC_R))
 		{
 			mWorld->getCamera()->setReview(!mWorld->getCamera()->getReview());
@@ -929,14 +935,29 @@ void
 			finishRace();
 		}
 
-
 	}
-	else if (mExplodeTimer > 0)
+	handleTimers(time);
+
+
+}
+
+void
+	Player::handleTimers(float time)
+{
+	if (!mAlive &&  (mExplodeTimer > 0))
 	{
 		moveExplosion(time);
 	}
-
+    if (mWaitingOnKey)
+	{
+		if (InputHandler::getInstance()->IsKeyDown(OIS::KC_SPACE))
+		{
+			MenuManager::getInstance()->getMenu("gameOver")->enable();
+			mWorld->getHUD()->showRaceOver(false);
+		}
+	}
 }
+
 
 void
 	Player::updateAchievements()
@@ -1024,7 +1045,6 @@ void
 	{
 		mExplodeTimer = -200;
 		MenuManager::getInstance()->getMenu("gameOver")->enable();
-
 	}
 	debris[0]->translate(-mExplosionforward * time * 100);
 	debris[0]->roll(Ogre::Degree(time * 600));
@@ -1050,6 +1070,7 @@ void Player::finishRace()
 	mWorld->getHUD()->setShowIncreaseSpeed(false);
 	char buf[50];
 	sprintf(buf, "Time = %.2f", mTime);
+	mWorld->endGame();
 	mWorld->getHUD()->setFinalRaceTime(Ogre::String(buf), false);
 	mWorld->getHUD()->showRaceOver(true);
 	if (mGhost != NULL)
@@ -1057,7 +1078,8 @@ void Player::finishRace()
 		mGhost->playerDead((int) mDistance / 200, mCoinsCollected);
 		mGhost->stopRecording(true);
 	}
-	mWorld->endGame();
+	mWaitingOnKey = true;
+//	MenuManager::getInstance()->getMenu("gameOver")->enable();
 
 }
 

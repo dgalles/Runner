@@ -11,7 +11,7 @@ namespace Ogre
 class LoginWrapper
 {
 public:
-	LoginWrapper(void);
+	LoginWrapper(Ogre::String server = "");
 	void changeUsername(Ogre::String username);
 	std::string changePassword(Ogre::String password);
 	bool loggedIn();
@@ -25,6 +25,7 @@ public:
 
 	Ogre::String getUsername() { return mCurrentUsername;} 
 	~LoginWrapper(void);
+	std::string getServer() { return mServerAddress; }
 
 protected:
 
@@ -33,6 +34,7 @@ protected:
 	Ogre::String mCurrentPassword;
 
 
+	Ogre::String mServerAddress;
 	Ogre::Overlay *mSuccessOverlay;
 	Ogre::Overlay *mFailureOverlay;
 	bool mLoggedIn;

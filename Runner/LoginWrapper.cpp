@@ -5,8 +5,14 @@
 #include "JsonUtils.h"
 
 
-LoginWrapper::LoginWrapper(void) : mLoggedIn(false)
+#define DEFAULT_SERVER "creamstout.cs.usfca.edu"
+
+LoginWrapper::LoginWrapper(Ogre::String server) : mLoggedIn(false)
 {
+	if (server == "")
+	{
+		server = DEFAULT_SERVER;
+	}
 	Ogre::OverlayManager& om = Ogre::OverlayManager::getSingleton();
 	mSuccessOverlay = om.getByName("Login/Success");
 	mFailureOverlay = om.getByName("Login/Failure");
@@ -130,7 +136,8 @@ bool LoginWrapper::Login()
 
 	if (mCurl) 
 	{
-		curl_easy_setopt(mCurl, CURLOPT_URL, "https://creamstout.cs.usfca.edu/login");
+		Ogre::String loginString = "https://" + mServerAddress + "/login";
+		curl_easy_setopt(mCurl, CURLOPT_URL, loginString.c_str());
 		curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYPEER, 0L);
 		curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYHOST, 0L);
 		curl_easy_setopt(mCurl, CURLOPT_HTTPPOST, formpost);
@@ -216,7 +223,8 @@ std::string LoginWrapper::getProfileData()
 	{
 		data = std::string("");
 		curl_easy_setopt(mCurl, CURLOPT_WRITEFUNCTION, get_profile_callback);
-		curl_easy_setopt(mCurl, CURLOPT_URL, "https://creamstout.cs.usfca.edu/profile");
+		std::string url = "https://" + mServerAddress + "/profile";
+		curl_easy_setopt(mCurl, CURLOPT_URL,url.c_str());
 		curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYPEER, 0L);
 		curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYHOST, 0L);
 		curl_easy_setopt(mCurl, CURLOPT_POST, 1);
@@ -262,7 +270,9 @@ void  LoginWrapper::sendProfileData(std::string data)
 	headers = curl_slist_append(headers, "Content-Type: application/json");
 
 	curl_easy_setopt(mCurl, CURLOPT_HTTPHEADER, headers); 
-	curl_easy_setopt(mCurl, CURLOPT_URL,"https://creamstout.cs.usfca.edu/profile");  
+	std::string url = "https://" + mServerAddress + "/profile";
+
+	curl_easy_setopt(mCurl, CURLOPT_URL,url.c_str());  
 	curl_easy_setopt(mCurl, CURLOPT_CUSTOMREQUEST, "PUT"); 
 	curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYPEER, 0L);
 	curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYHOST, 0L);
