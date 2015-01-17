@@ -5,7 +5,15 @@
 #include "JsonUtils.h"
 
 
-#define DEFAULT_SERVER "creamstout.cs.usfca.edu"
+#define DEFAULT_SERVER "guinness.cs.usfca.edu"
+#define PORT 8080
+
+
+// #define DEFAULT_SERVER "creamstout.cs.usfca.edu"
+
+
+
+
 
 LoginWrapper::LoginWrapper(Ogre::String server) : mLoggedIn(false)
 {
@@ -58,32 +66,32 @@ int debug_callback(CURL *handle,
 
 }
 
-size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
-{
-	return nmemb * size;
-}
-
-
-bool loginSuccess;
-
-size_t check_password(char *ptr, size_t size, size_t nmemb, void *userdata)
-{
-	std::string contents(ptr);
-
-	std::string::size_type t = contents.find("Log In Required");
-
-	if (t != std::string::npos)
-	{
-		loginSuccess = false;
-	}
-	else
-	{
-		loginSuccess = true;
-	}
-
-	return nmemb * size;
-
-}
+//size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
+//{
+//	return nmemb * size;
+//}
+//
+//
+//bool loginSuccess;
+//
+//size_t check_password(char *ptr, size_t size, size_t nmemb, void *userdata)
+//{
+//	std::string contents(ptr);
+//
+//	std::string::size_type t = contents.find("Log In Required");
+//
+//	if (t != std::string::npos)
+//	{
+//		loginSuccess = false;
+//	}
+//	else
+//	{
+//		loginSuccess = true;
+//	}
+//
+//	return nmemb * size;
+//
+//}
 
 
 void LoginWrapper::Logout()
@@ -104,68 +112,68 @@ void LoginWrapper::Logout()
 
 bool LoginWrapper::Login()
 {
-	if (mLoggedIn && mCurl != NULL)
-	{
-		curl_easy_cleanup(mCurl);
-		mCurl = NULL;
-	}
+	//if (mLoggedIn && mCurl != NULL)
+	//{
+	//	curl_easy_cleanup(mCurl);
+	//	mCurl = NULL;
+	//}
 
 
-	struct curl_httppost *formpost=NULL;
-    struct curl_httppost *lastptr=NULL;
-    
-    curl_global_init(CURL_GLOBAL_ALL);
+	//struct curl_httppost *formpost=NULL;
+ //   struct curl_httppost *lastptr=NULL;
+ //   
+ //   curl_global_init(CURL_GLOBAL_ALL);
 
-    curl_formadd(&formpost, &lastptr,
-                 CURLFORM_COPYNAME, "username",
-				 CURLFORM_COPYCONTENTS, mCurrentUsername.c_str(),
-				 CURLFORM_END);
+ //   curl_formadd(&formpost, &lastptr,
+ //                CURLFORM_COPYNAME, "username",
+	//			 CURLFORM_COPYCONTENTS, mCurrentUsername.c_str(),
+	//			 CURLFORM_END);
 
-	curl_formadd(&formpost, &lastptr,
-		CURLFORM_COPYNAME, "password",
-		CURLFORM_COPYCONTENTS, mCurrentPassword.c_str(),
-		CURLFORM_END);
+	//curl_formadd(&formpost, &lastptr,
+	//	CURLFORM_COPYNAME, "password",
+	//	CURLFORM_COPYCONTENTS, mCurrentPassword.c_str(),
+	//	CURLFORM_END);
 
-	mCurl = curl_easy_init();
-	curl_easy_setopt(mCurl, CURLOPT_VERBOSE, 1);
+	//mCurl = curl_easy_init();
+	//curl_easy_setopt(mCurl, CURLOPT_VERBOSE, 1);
 
-	curl_easy_setopt(mCurl, CURLOPT_DEBUGFUNCTION,
-		debug_callback);
+	//curl_easy_setopt(mCurl, CURLOPT_DEBUGFUNCTION,
+	//	debug_callback);
 
-	curl_easy_setopt(mCurl, CURLOPT_WRITEFUNCTION, check_password);
+	//curl_easy_setopt(mCurl, CURLOPT_WRITEFUNCTION, check_password);
 
-	if (mCurl) 
-	{
-		Ogre::String loginString = "https://" + mServerAddress + "/login";
-		curl_easy_setopt(mCurl, CURLOPT_URL, loginString.c_str());
-		curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYPEER, 0L);
-		curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYHOST, 0L);
-		curl_easy_setopt(mCurl, CURLOPT_HTTPPOST, formpost);
-		curl_easy_setopt(mCurl, CURLOPT_COOKIEFILE, "");
-		curl_easy_perform(mCurl);
-		curl_easy_reset(mCurl);
-		curl_formfree(formpost);
+	//if (mCurl) 
+	//{
+	//	Ogre::String loginString = "https://" + mServerAddress + "/login";
+	//	curl_easy_setopt(mCurl, CURLOPT_URL, loginString.c_str());
+	//	curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYPEER, 0L);
+	//	curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYHOST, 0L);
+	//	curl_easy_setopt(mCurl, CURLOPT_HTTPPOST, formpost);
+	//	curl_easy_setopt(mCurl, CURLOPT_COOKIEFILE, "");
+	//	curl_easy_perform(mCurl);
+	//	curl_easy_reset(mCurl);
+	//	curl_formfree(formpost);
 
-	}
+	//}
 
-	if (loginSuccess)
-	{
-		mFailureOverlay->hide();
-		mSuccessOverlay->show();
+	//if (loginSuccess)
+	//{
+	//	mFailureOverlay->hide();
+	//	mSuccessOverlay->show();
 
-		Ogre::OverlayElement *userNameView = Ogre::OverlayManager::getSingleton().getOverlayElement("Login/Success/Text");
-		mLoggedIn = true;
-		userNameView->setCaption("Logged in as: " + mCurrentUsername);
-	}
-	else
-	{
-		mFailureOverlay->show();
-		mSuccessOverlay->hide();
-		mLoggedIn = false;
-	}
+	//	Ogre::OverlayElement *userNameView = Ogre::OverlayManager::getSingleton().getOverlayElement("Login/Success/Text");
+	//	mLoggedIn = true;
+	//	userNameView->setCaption("Logged in as: " + mCurrentUsername);
+	//}
+	//else
+	//{
+	//	mFailureOverlay->show();
+	//	mSuccessOverlay->hide();
+	//	mLoggedIn = false;
+	//}
 
-	return mLoggedIn;
-
+	//return mLoggedIn;
+	return false;
 }
 
 
