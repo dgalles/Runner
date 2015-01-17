@@ -23,7 +23,6 @@
 #include "SDL.h"
 #include "SDL_mixer.h"
 #include "Sound.h"
-#include "LoginWrapper.h"
 #include "Logger.h"
 #include "Ghost.h"
 #include "JsonUtils.h"
@@ -142,8 +141,7 @@ Runner::createScene()
 
 	Ogre::OverlayManager::getSingleton().getByName("ServerConnection/Failure")->show();
 
-	mLogin = new LoginWrapper();
-	mLogger = new Logger(mLogin);
+	mLogger = new Logger();
 
 	if (mLogger == 0)
 	{
@@ -217,7 +215,7 @@ void Runner::writeConfigStr(int player)
 
 //	configFile << result;
 //	configFile.close();
-	mLogin->sendProfileData(result);
+	mLogger->sendProfileData(result);
 
 }
 
@@ -345,7 +343,7 @@ void Runner::readConfigStr(int player)
 {
 	MenuManager *menus = MenuManager::getInstance();
 
-	std::string config = mLogin->getProfileData();
+	std::string config = mLogger->getProfileData();
 	
 	if (config.size() > 0)
 	{
@@ -469,8 +467,9 @@ Runner::setupMenus(bool loginRequired)
     Kinect *k = mKinect;
 	Achievements *a = mAchievements[0];
 	SoundBank *sb = SoundBank::getInstance();
-	LoginWrapper *lm = mLogin;
 	Ghost *ghost = mGhost;
+	Logger *lm = mLogger;
+
 
     Menu *mainMenu = new Menu("Main Menu", "main", 0.05f, 0.1f, 0.08f);
     Menu *options = new Menu("Options", "options", 0.05f, 0.1f, 0.1f, mainMenu);
@@ -788,6 +787,9 @@ Runner::setup(void)
 
 
 	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
+
+	WSADATA wsa_data;
+	if (WSAStartup (MAKEWORD(2,2), &wsa_data) != 0) 
 
     return true;
 

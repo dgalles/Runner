@@ -28,7 +28,6 @@ class Player;
 class HUD;
 class MenuManager;
 class Achievements;
-class LoginWrapper;
 class Logger;
 class Store;
 class Menu;
@@ -100,7 +99,6 @@ protected:
 	Player *mPlayer[2];
 	HUD *mHUD;
 	Achievements *mAchievements[2];
-	LoginWrapper *mLogin;
 	Logger *mLogger;
 	Ghost *mGhost;
 

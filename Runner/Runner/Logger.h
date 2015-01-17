@@ -5,7 +5,6 @@
 //#include "KinectSkelMsgr.h"
 
 #include "Receivers.h"
-#include "LoginWrapper.h"
 
 #include <ctime>
 #include <stdlib.h>
@@ -22,7 +21,6 @@
 
 struct ServerCom;
 
-class LoginWrapper;
 
 typedef struct 
 {
@@ -38,8 +36,24 @@ class Logger : public PlyrDataMsgr,
                public SessionListener
 {
 public:
-  Logger(LoginWrapper *login);
+  Logger();
   ~Logger();
+
+
+  	void changeUsername(Ogre::String username);
+	std::string changePassword(Ogre::String password);
+	bool loggedIn() {  return mLoggedIn;  }
+
+	void sendProfileData(std::string data);
+	std::string getProfileData();
+
+
+	bool Login();
+	void Logout();
+
+	Ogre::String getUsername() { return mCurrentUsername;} 
+
+
 
   //bool TrackFullSkel(void) { return mTrackFullSkel; }
   virtual void ReceiveSkelData(SkelData *data);
@@ -59,26 +73,17 @@ protected:
   int LogAndSend(const char* attribName, int value);
   int LogAndSend(const char* attribName, float value);
 
-  //ServerCom *mSock;
-  //ServerCom *mLRTrueSock;
-  //ServerCom *mScoreSock;
-  //ServerCom *mLRSock;
-  //ServerCom *mFBSock;
-
-  //ServerCom *mCoinsLeftSock;
-  //ServerCom *mCoinsRightSock;
-  //ServerCom *mCoinsMiddleSock;
-  //ServerCom *mCoinsLeftMissedSock;
-  //ServerCom *mCoinsRightMissedSock;
-  //ServerCom *mCoinsMiddleMissedSock;
-  //ServerCom *mSpeedSock;
 
   connection *mSecureConnection;
+
+  	Ogre::String mCurrentUsername;
+	Ogre::String mCurrentPassword;
+
+	bool mLoggedIn;
 
   char mPlyrBuf[DEFAULT_BUFSIZE];
   char mKinBuf1[DEFAULT_BUFSIZE];
   char mKinBuf2[DEFAULT_BUFSIZE];
-  LoginWrapper *mLogin;
 
 private:
   time_t mTimeStampBeg;
@@ -96,7 +101,6 @@ private:
   std::mutex mDbLock;
   std::thread mDaemon;
 
-  Ogre::String mCurrentID;
   
   void WriteToLog(char *buf, size_t buflen);
   void daemonFunc();

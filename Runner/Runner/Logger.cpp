@@ -1,9 +1,3 @@
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <iostream>
-#include <fstream>
-
-
 #include <assert.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -13,6 +7,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 
 #include <winsock2.h>
 
@@ -23,13 +18,9 @@
 #pragma comment(lib, "wsock32.lib")
 
 #include "Logger.h"
-#include "LoginWrapper.h"
 #define DEFAULT_PORT "8080"
-#define DEFAULT_HOST "creamstout.cs.usfca.edu"
+#define DEFAULT_HOST "guinness.cs.usfca.edu"
 
-
-
-#define SERVER "localhost"
 #define PORT 8080
 
 SOCKET tcpConnect() 
@@ -39,7 +30,9 @@ SOCKET tcpConnect()
 	struct hostent *host;
 	struct sockaddr_in server;
 
-	host = gethostbyname(SERVER);
+	    std::string foo(DEFAULT_HOST);
+
+	host = gethostbyname(DEFAULT_HOST);
 	handle = socket(AF_INET, SOCK_STREAM, 0);
 	struct timeval timeout;      
 	timeout.tv_sec = 10;
@@ -122,26 +115,26 @@ void sslDisconnect (connection * c)
 	free(c);
 }
 
-int sslRead (connection * c, char *buffer, int readSize)
+int sslRead (connection * c, char *buffer, int minReadSize, int maxReadSize)
 {
-	// const int readSize = 1024;
-	// char *rc = NULL;
-	//  int received, count = 0;
-	//  char buffer[1024];
-
-	int received = 0;
+	int totalReceived = 0;
 	int iter = 0;
 
-	memset(buffer, 0, readSize * sizeof(char));
+	memset(buffer, 0, maxReadSize * sizeof(char));
 	bool read = false;
-	while (!read && iter < 100)
+	while (totalReceived < minReadSize && iter < 100)
 	{
-		received = SSL_read(c->sslHandle, buffer, readSize);
-		read = received >= 0; // If we didn't get anything at all, we'll try again
+		int rev =  SSL_read(c->sslHandle, buffer, maxReadSize);
+		if (rev > 0)
+		{
+			totalReceived += rev;
+			maxReadSize -= rev;
+			buffer += rev;
+		}
 		iter++;
 	}
 
-	return received;
+    return totalReceived;
 }
 
 
@@ -185,8 +178,8 @@ int sendDataAndGetAwk(connection *c, const char *text)
 	}
 	char buffer[10];
 
-	int bytes_read = sslRead(c, buffer, 10);
-	if (bytes_read <= 0 || strcmp(buffer, "1") != 0)
+	int bytes_read = sslRead(c, buffer, 2, 10);
+	if (bytes_read <= 0 || strcmp(buffer, "OK") != 0)
 	{
 		return -1;
 	}
@@ -202,56 +195,47 @@ Ogre::String MakeOKForFilename(Ogre::String str)
 
 }
 
-connection * init(const char * ID, const char *  timestamp)
+
+connection * init(std::string username, std::string password)
 {
 	connection * c;
 	char * cert;
-	FILE *fd;
 	char buffer[10];
-
-
-	Ogre::String IDandTS(ID);
-	IDandTS = IDandTS +  "|" + MakeOKForFilename(timestamp) + "\n";
 
 	c = sslConnect();
 
-	int bytes_read = sslRead(c, buffer, 10);
+	if (!c || !c->socket)
+	{
+		goto error;
+	}
+	int bytes_read = sslRead(c, buffer, 2, 10);
 	printf("response is: %s\n", buffer);
 	cert = (char *)malloc(sizeof(char) * 4097);
-	if (strcmp(buffer, "1") != 0) {
-		printf("check 1 failed\n");
+	if (strcmp(buffer, "OK") != 0) {
+		printf("Initial Connnection failed\n");
 		goto error;
 	}
-	memset(cert, 0, 4097);
-	assert(cert[4096] == '\0');
-	int err;
-	if( (err  = fopen_s( &fd, "game_cert", "r" )) !=0 )
-	{
-		printf("Error: %d", err);
 
-	}
-	fread(cert, sizeof(char), 4096, fd);
-	printf("%s\n", cert);
-	sslWrite(c, cert);
-	bytes_read = sslRead(c, buffer, 10);
-	if (strcmp(buffer, "1") != 0) {
-		printf("check 2 failed\n");
+	sslWrite(c, (username + "\n").c_str());
+
+	bytes_read = sslRead(c, buffer, 2, 10);
+	if (strcmp(buffer, "OK") != 0) {
+		printf("Bad Username!");
 		goto error;
 	}
-	sslWrite(c, IDandTS.c_str());
-	bytes_read = sslRead(c, buffer, 10);
-	if (strcmp(buffer, "1") != 0) {
-		printf("check 3 failed\n");
+
+	sslWrite(c, (password + "\n").c_str());
+
+	bytes_read = sslRead(c, buffer,2, 10);
+	if (strcmp(buffer, "OK") != 0) {
+		printf("Bad Password!");
 		goto error;
 	}
-	free(cert);
 	return c;
 error:
-	free(cert);
 	sslDisconnect(c);
-	return NULL;
+    return NULL;
 }
-
 
 /* A ServerCom struct contains all the necessary pieces for a socket connection */
 //struct ServerCom
@@ -271,7 +255,45 @@ error:
 //	}
 //};
 
-Logger::Logger(LoginWrapper *login) : mPlyrData(), mSkelLock(), mPlyrLock(), mDbLock()
+
+void Logger::changeUsername(Ogre::String username)
+{
+	if (mCurrentUsername != username)
+	{
+		mCurrentUsername = username;
+		Logout();
+	}
+
+}
+
+
+bool Logger::Login()
+{
+	connection *secureConnection = init(mCurrentUsername, mCurrentPassword);
+
+	if (secureConnection == NULL) {
+        printf("could not connect\n");
+		return false;
+	}
+	sslWrite(secureConnection, "LoginCheck\n");
+	mLoggedIn = true;
+	sslDisconnect(secureConnection);
+	return true;
+
+}
+void Logger::Logout()
+{
+	//mFailureOverlay->show();
+	//mSuccessOverlay->hide();
+	mLoggedIn = false;
+	if (mSecureConnection)
+	{
+		sslDisconnect(mSecureConnection);
+		mSecureConnection = NULL;
+	}
+}
+
+Logger::Logger() : mPlyrData(), mSkelLock(), mPlyrLock(), mDbLock()
 {
 	mSeconds = 0;
 	mMinutes = 0;
@@ -291,7 +313,6 @@ Logger::Logger(LoginWrapper *login) : mPlyrData(), mSkelLock(), mPlyrLock(), mDb
 	//mSpeedSock = new ServerCom();
 	mHost = DEFAULT_HOST;
 	mPort = DEFAULT_PORT;
-	mLogin = login;
 	mSessionStarted = false;
 	mSessionEnded = false;
 	mSecureConnection = NULL;
@@ -302,6 +323,32 @@ Logger::~Logger()
 }
 
 
+
+void Logger::sendProfileData(std::string data)
+{
+	char buffer[10000];
+	connection *secureConnection = init(mCurrentUsername, mCurrentPassword);
+	if (!secureConnection)
+	{
+		return;
+	}
+	sprintf_s(buffer, 10000, "SetProfile;runner;%s\n",data.c_str());
+	sslWrite(secureConnection, buffer);
+	 
+}
+std::string Logger::getProfileData()
+{
+	char buffer[10000];
+	connection *secureConnection = init(mCurrentUsername, mCurrentPassword);
+	if (!secureConnection)
+	{
+		return std::string("{}");
+	}
+	sslWrite(secureConnection,"GetProfile;runner\n");
+	int bytes_read = sslRead(secureConnection, buffer, 2, 10000);
+	return std::string(buffer);
+}
+
 void
 	Logger::StartSession()
 {
@@ -309,7 +356,7 @@ void
 	ISO 8601 format. Initial timestamp used for file names to differentiate 
 	between sessions. */
 
-	if (!mLogin->loggedIn())
+	if (!mLoggedIn)
 	{
 		// Throw here?
 		printf("DB_Send failed.\n");
@@ -317,21 +364,40 @@ void
 		printf("Not logged in!\n");
 		return;
 	}
-	mCurrentID = mLogin->getUsername();
+
+
+
 	time(&mTimeStampBeg);
 
 	strftime(mBegBuf, sizeof mBegBuf, "%Y-%m-%dT%H:%M:%SZ", gmtime(&mTimeStampBeg));
 	mSessionStarted = true;
 	mSessionEnded = false;
 
-	mSecureConnection = init(mCurrentID.c_str(), mBegBuf);
-	Connect();
+	mSecureConnection = init(mCurrentUsername, mCurrentPassword);
+
+	if (mSecureConnection == NULL)
+	{
+		mSessionStarted = false;
+		return;
+
+	}
 
 	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "db.patients.insert({\"patient_id\":%s, \"timestamp\":\"%s\"})\n", 
-		mCurrentID.c_str(), mBegBuf);
+	sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "StartSession;%s\n",mBegBuf);
+	sslWrite(mSecureConnection, mPlyrBuf);
 
-	int sent = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
+
+	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
+	//sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "db.patients.insert({\"patient_id\":%s, \"timestamp\":\"%s\"})\n", 
+	//	mCurrentUsername.c_str(), mBegBuf);
+
+
+	sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "insert;{\"game\":\"runner\", \"patient_id\":%s, \"timestamp\":\"%s\"})", 
+		mCurrentUsername.c_str(), mBegBuf);
+
+	int sent = sslWrite(mSecureConnection, mPlyrBuf);
+
+//	int sent = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
 
 	if (sent <= 0)
 	{
@@ -347,6 +413,25 @@ void
 
 	mDaemon = std::thread(&Logger::daemonFunc, this);
 }
+
+std::string Logger::changePassword(Ogre::String password)
+{
+	mCurrentPassword = password;
+
+	if (Login())
+	{
+		return getProfileData();
+	}
+	else
+	{
+		return "";
+	}
+
+
+
+}
+
+
 
 void
 	Logger::EndSession()
@@ -431,28 +516,25 @@ int Logger::LogAndSend(const char *attribName, float value)
 	}
 	int sentBytes;
 	memset(mPlyrBuf,0,DEFAULT_BUFSIZE);
+	//sprintf_s(mPlyrBuf, 
+	//	DEFAULT_BUFSIZE,
+	//	"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"%s.%d.%d\":%f}})\n",
+	//	mCurrentUsername.c_str(), mBegBuf, attribName, mMinutes, mSeconds % 60, value);
+
+
 	sprintf_s(mPlyrBuf, 
 		DEFAULT_BUFSIZE,
-		"db.patiens.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"%s.%d.%d\":%f}})\n",
-		mCurrentID.c_str(), mBegBuf, attribName, mMinutes, mSeconds % 60, value);
-
+		"set;{\"game\":\"runner\", \"patient_id\":\"%s\", \"timestamp\": \"%s\"};{\"%s.%d.%d.0\":%f}\n",
+		mCurrentUsername.c_str(), mBegBuf, attribName, mMinutes, mSeconds % 60, value);
 
 	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
 
-	sentBytes = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
-
-	char buffer[10];
-	int bytes_read = sslRead(mSecureConnection,buffer, 10);
+	 sentBytes = sslWrite(mSecureConnection, mPlyrBuf);
+//	sentBytes = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
 
 	if (sentBytes <= 0)
 	{
 		WriteToLog("sslWrite failed.\n", 18);
-	}
-	if (bytes_read <= 0)
-	{
-		WriteToLog("ssl write not acknowledged\n", 18);
-		// TODO:  Try to restart connection?
-		return -1;
 	}
 
 	return sentBytes;
@@ -469,26 +551,18 @@ int Logger::LogAndSend(const char *attribName, int value)
 	memset(mPlyrBuf,0,DEFAULT_BUFSIZE);
 	sprintf_s(mPlyrBuf, 
 		DEFAULT_BUFSIZE,
-		"db.patiens.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"%s.%d.%d\":%d}})\n",
-		mCurrentID.c_str(), mBegBuf, attribName, mMinutes, mSeconds % 60, value);
+		"set;{\"game\":\"runner\", \"patient_id\":\"%s\", \"timestamp\": \"%s\"};{\"%s.%d.%d.0\":%f}\n",
+		mCurrentUsername.c_str(), mBegBuf, attribName, mMinutes, mSeconds % 60, value);
 
 
 	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
 
-	sentBytes = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
-
-	char buffer[10];
-	int bytes_read = sslRead(mSecureConnection,buffer, 10);
+	sentBytes = sslWrite(mSecureConnection, mPlyrBuf);
+//	sentBytes = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
 
 	if (sentBytes <= 0)
 	{
 		WriteToLog("sslWrite failed.\n", 18);
-	}
-	if (bytes_read <= 0)
-	{
-		WriteToLog("ssl write not acknowledged\n", 18);
-		// TODO:  Try to restart connection?
-		return -1;
 	}
 
 	return sentBytes;
