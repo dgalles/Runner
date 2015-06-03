@@ -1,7 +1,5 @@
 #ifndef __Menu_h_
 #define __Menu_h_
-
-#include "OgrePrerequisites.h"
 #include "OgreColourValue.h"
 #include <OIS/OIS.h>
 

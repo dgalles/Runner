@@ -54,12 +54,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\OpenSSL-Win32\include;../curl-7.37.0-win32/curl-7.37.0-win32/include;../SDL2_mixer-2.0.0/include;../SDL2-2.0.3/include;$(OGRE_HOME)/include/OGRE/Overlay;$(OGRE_HOME)/boost/;$(OGRE_HOME)/include/OIS;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/include;C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../OpenSSL-Win32\include;../curl-7.37.0-win32/curl-7.37.0-win32/include;../SDL2_mixer-2.0.0/include;../SDL2-2.0.3/include;$(OGRE_HOME)/include/OGRE/Overlay;$(OGRE_HOME)/boost/;$(OGRE_HOME)/include/OIS;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/include;C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86;$(OGRE_HOME)/boost/lib;C:\OpenSSL-Win32\lib;$(OGRE_HOME)/lib/$(configuration);../SDL2_mixer-2.0.0/lib/x86/;../SDL2-2.0.3/lib/x86/;..\curl-7.37.0-win32\curl-7.37.0-win32\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86;$(OGRE_HOME)/boost/lib;../OpenSSL-Win32\lib;$(OGRE_HOME)/lib/$(configuration);../SDL2_mixer-2.0.0/lib/x86/;../SDL2-2.0.3/lib/x86/;..\curl-7.37.0-win32\curl-7.37.0-win32\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OIS_d.lib;OgreMain_d.lib;OgreOverlay_d.lib;winmm.lib;SDL2_mixer.lib;SDL2.lib;SDL2main.lib;Ws2_32.lib;libcurl.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -81,7 +81,9 @@ copy "..\curl-7.37.0-win32\curl-7.37.0-win32\dlls\* " "$(OutDir)"
 copy "game_cert"  "$(OurDir)"
 
 copy plugins_d.cfg "$(OutDir)"
-copy resources_d.cfg "$(OutDir)"</Command>
+copy resources_d.cfg "$(OutDir)"
+
+copy  ServerConfig.txt "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -93,14 +95,14 @@ copy resources_d.cfg "$(OutDir)"</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\OpenSSL-Win32\include;../curl-7.37.0-win32/curl-7.37.0-win32/include;../SDL2-2.0.3/include;../SDL2_mixer-2.0.0/include;$(OGRE_HOME)/include/OGRE/Overlay;$(OGRE_HOME)/boost/;$(OGRE_HOME)/include/OIS;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/include;C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../OpenSSL-Win32\include;../curl-7.37.0-win32/curl-7.37.0-win32/include;../SDL2-2.0.3/include;../SDL2_mixer-2.0.0/include;$(OGRE_HOME)/include/OGRE/Overlay;$(OGRE_HOME)/boost/;$(OGRE_HOME)/include/OIS;$(OGRE_HOME)/include/OGRE;$(OGRE_HOME)/include;C:\Program Files\Microsoft SDKs\Kinect\v1.8\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86;$(OGRE_HOME)/boost/lib;C:\OpenSSL-Win32\lib;$(OGRE_HOME)/lib/$(configuration);../SDL2_mixer-2.0.0/lib/x86/;../SDL2-2.0.3/lib/x86/;..\curl-7.37.0-win32\curl-7.37.0-win32\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Kinect\v1.8\lib\x86;$(OGRE_HOME)/boost/lib;../OpenSSL-Win32\lib;$(OGRE_HOME)/lib/$(configuration);../SDL2_mixer-2.0.0/lib/x86/;../SDL2-2.0.3/lib/x86/;..\curl-7.37.0-win32\curl-7.37.0-win32\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OgreMain.lib;OIS.lib;OgreOverlay.lib;SDL2_mixer.lib;SDL2.lib;SDL2main.lib;Ws2_32.lib;libcurl.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -122,7 +124,9 @@ copy "..\curl-7.37.0-win32\curl-7.37.0-win32\dlls\* " "$(OutDir)"
 copy "game_cert"  "$(OurDir)"
 
 copy plugins.cfg "$(OutDir)"
-copy resources.cfg "$(OutDir)"</Command>
+copy resources.cfg "$(OutDir)"
+
+copy  ServerConfig.txt "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

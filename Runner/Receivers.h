@@ -2,6 +2,7 @@
 #define __RECVRS_H
 
 #include "OgreString.h"
+#include "OgreVector3.h"
 
 
 struct Session
@@ -76,30 +77,47 @@ protected:
   float mPlyrLogInterval;
 };
 
+#define SKELETON_SIZE 21
+
 struct SkelData
 {
   float lrAngle;
   float fbAngle;
   float lrAngleTrue;
+  float completeSkeleton[SKELETON_SIZE * 3];
 
   SkelData()
   {
     lrAngle = 0.0f;
     fbAngle = 0.0f;
 	lrAngleTrue = 0.0f;
+	for (int i = 0; i < SKELETON_SIZE; i++)
+	{
+		completeSkeleton[i] = 0.0f;
+	}
   }
 
-  SkelData(float lr, float fb, float lrt)
+  SkelData(float lr, float fb, float lrt, Ogre::Vector3 skel[])
   {
     lrAngle = lr;
     fbAngle = fb;
 	lrAngleTrue = lrt;
+	for (int i = 0; i < SKELETON_SIZE; i++)
+	{
+		completeSkeleton[3*i] = skel[i].x;
+		completeSkeleton[3*i+1] = skel[i].y;
+		completeSkeleton[3*i+2] = skel[i].z;
+	}
   }
   SkelData(SkelData *sd)
   {
     lrAngle = sd->lrAngle;
     fbAngle = sd->fbAngle;
 	lrAngleTrue = sd->lrAngleTrue;
+	for (int i = 0; i < SKELETON_SIZE * 3; i++)
+	{
+		completeSkeleton[i] = sd->completeSkeleton[i];
+	}
   }
 };
 
@@ -123,8 +141,8 @@ public:
 protected:
   int mPlayerId;
   bool mConnected;
-  char *mHost;
-  char *mPort;
+  std::string mHost;
+  int mPort;
 };
 
 /*-----------------------------------------------------------*/

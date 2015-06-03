@@ -187,7 +187,7 @@ Kinect::update(float time)
 				lr = mLeftRightAngle.valueDegrees();
 				fb = mFrontBackAngle.valueDegrees();
 				lrt = mLeftRightTrue.valueDegrees();
-				(*it)->ReceiveSkelData(new SkelData(lr, fb, lrt));
+				(*it)->ReceiveSkelData(new SkelData(lr, fb, lrt, mSkelPositions));
 			} 
 			mTimeSinceLastLog = 0.0;
 		}
@@ -264,6 +264,12 @@ Kinect::updateKinectSkeleton()
 			Vector4 rightWrist =  pSkel->SkeletonPositions[NUI_SKELETON_POSITION_WRIST_RIGHT];
 			Vector4 leftHand =  pSkel->SkeletonPositions[NUI_SKELETON_POSITION_HAND_LEFT];
 			Vector4 rightHand =  pSkel->SkeletonPositions[NUI_SKELETON_POSITION_HAND_RIGHT];
+
+
+			for (int i = 0 ; i < NUI_SKELETON_POSITION_COUNT; i++)
+			{
+				mSkelPositions[i] = Ogre::Vector3(pSkel->SkeletonPositions[i].x,pSkel->SkeletonPositions[i].y,pSkel->SkeletonPositions[i].z);
+			}
 
 
 			int x = 3;

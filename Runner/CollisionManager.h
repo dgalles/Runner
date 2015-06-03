@@ -33,38 +33,3 @@ protected:
 };
 
 
-//class CollisionObject
-//{
-//public:
-//    CollisionObject();
-//    ~CollisionObject();
-//
-//
-//    void addOBB(Ogre::Vector3 halfExtents, Ogre::Vector3 position, Ogre::Quaternion orientation);
-//    void addOBB(Ogre::Vector3 halfExtents);
-//
-//    void setPosition(Ogre::Vector3 newPosition);
-//    void translate(Ogre::Vector3 deltaPosition);
-//
-//    void setOrientation(Ogre::Quaternion orentation);
-//
-//    bool collides(CollisionObject other, Ogre::Vector3 &MTD);
-//
-//protected:
-//    std::vector<OBB> mOBBBs;
-//    Ogre::AxisAlignedBox boundingBox;
-//    Ogre::Vector3 mPosition;
-//    Ogre::Vector3 mScale;
-//    Ogre::Quaternion mOrientation;
-//
-//    void resetAABB();
-//
-//
-//};
-//class CollisionManager
-//{
-//public:
-//    CollisionManager(void);
-//    ~CollisionManager(void);
-//};
-
