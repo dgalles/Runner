@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string>
 
+
+
 #include <winsock2.h>
 
 #include <openssl/rand.h>
@@ -17,22 +19,24 @@
 
 #pragma comment(lib, "wsock32.lib")
 
+#include "OgreOverlay.h"
+#include "OgreOverlayElement.h"
+#include "OgreOverlayManager.h"
+
+
 #include "Logger.h"
-#define DEFAULT_PORT "8080"
+#define DEFAULT_PORT 8080
 #define DEFAULT_HOST "guinness.cs.usfca.edu"
 
-#define PORT 8080
 
-SOCKET tcpConnect() 
+SOCKET tcpConnect(const char * hostname, int port) 
 {
 	int error;
 	SOCKET handle;
 	struct hostent *host;
 	struct sockaddr_in server;
 
-	    std::string foo(DEFAULT_HOST);
-
-	host = gethostbyname(DEFAULT_HOST);
+	host = gethostbyname(hostname);
 	handle = socket(AF_INET, SOCK_STREAM, 0);
 	struct timeval timeout;      
 	timeout.tv_sec = 10;
@@ -47,7 +51,7 @@ SOCKET tcpConnect()
 	else 
 	{
 		server.sin_family = AF_INET;
-		server.sin_port = htons(PORT);
+		server.sin_port = htons(port);
 		server.sin_addr = *((struct in_addr *) host->h_addr);
 		memset(&(server.sin_zero), 0, 8);
 
@@ -63,7 +67,7 @@ SOCKET tcpConnect()
 	return handle;
 }
 
-connection * sslConnect(void) 
+connection * sslConnect(const char *host, int port) 
 {
 	connection *c;
 
@@ -71,7 +75,7 @@ connection * sslConnect(void)
 	c->sslHandle = NULL;
 	c->sslContext = NULL;
 
-	c->socket = tcpConnect();
+	c->socket = tcpConnect(host, port);
 	if (c->socket) {
 		SSL_load_error_strings();
 		SSL_library_init();
@@ -196,13 +200,13 @@ Ogre::String MakeOKForFilename(Ogre::String str)
 }
 
 
-connection * init(std::string username, std::string password)
+connection * init(const char * host, int port, std::string username, std::string password)
 {
 	connection * c;
 	char * cert;
 	char buffer[10];
 
-	c = sslConnect();
+	c = sslConnect(host, port);
 
 	if (!c || !c->socket)
 	{
@@ -269,7 +273,14 @@ void Logger::changeUsername(Ogre::String username)
 
 bool Logger::Login()
 {
-	connection *secureConnection = init(mCurrentUsername, mCurrentPassword);
+	Ogre::OverlayManager& om = Ogre::OverlayManager::getSingleton();
+	Ogre::Overlay *success = om.getByName("Login/Success");
+	Ogre::Overlay *failure = om.getByName("Login/Failure");
+
+	failure->show();
+	success->hide();
+
+	connection *secureConnection = init(mHost.c_str(), mPort, mCurrentUsername, mCurrentPassword);
 
 	if (secureConnection == NULL) {
         printf("could not connect\n");
@@ -277,28 +288,44 @@ bool Logger::Login()
 	}
 	sslWrite(secureConnection, "LoginCheck\n");
 	mLoggedIn = true;
+
+	Ogre::OverlayElement *userNameView = Ogre::OverlayManager::getSingleton().getOverlayElement("Login/Success/Text");
+	userNameView->setCaption("Logged in as: " + mCurrentUsername);
+	failure->hide();
+	success->show();
+
+    //std::ofstream configFile;
+	//configFile.open ("config.txt", std::ios::out);
+
+//	configFile << result;
+//	configFile.close();
+
+
 	sslDisconnect(secureConnection);
 	return true;
 
 }
 void Logger::Logout()
 {
-	//mFailureOverlay->show();
-	//mSuccessOverlay->hide();
 	mLoggedIn = false;
 	if (mSecureConnection)
 	{
 		sslDisconnect(mSecureConnection);
 		mSecureConnection = NULL;
 	}
+		Ogre::OverlayManager& om = Ogre::OverlayManager::getSingleton();
+
+	Ogre::Overlay *success = om.getByName("Login/Success");
+	Ogre::Overlay *failure = om.getByName("Login/Failure");
+	success->hide();
+	failure->show();
+
 }
 
 Logger::Logger() : mPlyrData(), mSkelLock(), mPlyrLock(), mDbLock()
 {
-	mSeconds = 0;
-	mMinutes = 0;
-	mSeconds2 = 0;
-	mMinutes2 = 0;
+	timeStepsPlayer = 0;
+	timeStepsSkel = 0;
 	//mSock = new ServerCom();
 	//mScoreSock = new ServerCom();
 	//mLRSock = new ServerCom();
@@ -311,11 +338,34 @@ Logger::Logger() : mPlyrData(), mSkelLock(), mPlyrLock(), mDbLock()
 	//mCoinsRightSock = new ServerCom();
 	//mCoinsRightMissedSock = new ServerCom();
 	//mSpeedSock = new ServerCom();
-	mHost = DEFAULT_HOST;
+	mHost = std::string(DEFAULT_HOST);
 	mPort = DEFAULT_PORT;
 	mSessionStarted = false;
 	mSessionEnded = false;
 	mSecureConnection = NULL;
+
+	try
+	{
+		std::ifstream configFile ("ServerConfig.txt", std::ios::in );
+
+		std::string server;
+		int port;
+
+		configFile >> server;
+		configFile >> port;
+
+		mHost =  server;
+		mPort = port;
+
+	}
+	catch (...)
+	{
+		mHost = std::string(DEFAULT_HOST);
+		mPort = DEFAULT_PORT;
+	}
+
+
+
 }
 
 Logger::~Logger()
@@ -327,7 +377,7 @@ Logger::~Logger()
 void Logger::sendProfileData(std::string data)
 {
 	char buffer[10000];
-	connection *secureConnection = init(mCurrentUsername, mCurrentPassword);
+	connection *secureConnection = init(mHost.c_str(), mPort, mCurrentUsername, mCurrentPassword);
 	if (!secureConnection)
 	{
 		return;
@@ -339,7 +389,7 @@ void Logger::sendProfileData(std::string data)
 std::string Logger::getProfileData()
 {
 	char buffer[10000];
-	connection *secureConnection = init(mCurrentUsername, mCurrentPassword);
+	connection *secureConnection = init(mHost.c_str(), mPort, mCurrentUsername, mCurrentPassword);
 	if (!secureConnection)
 	{
 		return std::string("{}");
@@ -373,7 +423,7 @@ void
 	mSessionStarted = true;
 	mSessionEnded = false;
 
-	mSecureConnection = init(mCurrentUsername, mCurrentPassword);
+	mSecureConnection = init(mHost.c_str(), mPort, mCurrentUsername, mCurrentPassword);
 
 	if (mSecureConnection == NULL)
 	{
@@ -382,32 +432,32 @@ void
 
 	}
 
-	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "StartSession;%s\n",mBegBuf);
-	sslWrite(mSecureConnection, mPlyrBuf);
+	memset(mSendBuffer, 0, DEFAULT_BUFSIZE);
+	sprintf_s(mSendBuffer, DEFAULT_BUFSIZE, "StartSession;%s\n",mBegBuf);
+	sslWrite(mSecureConnection, mSendBuffer);
 
 
-	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
+	memset(mSendBuffer, 0, DEFAULT_BUFSIZE);
 	//sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "db.patients.insert({\"patient_id\":%s, \"timestamp\":\"%s\"})\n", 
 	//	mCurrentUsername.c_str(), mBegBuf);
 
 
-	sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "insert;{\"game\":\"runner\", \"patient_id\":%s, \"timestamp\":\"%s\"})", 
-		mCurrentUsername.c_str(), mBegBuf);
+	sprintf_s(mSendBuffer, DEFAULT_BUFSIZE, "insert;{\"game\":\"runner\", \"patient_id\":\"%s\",\"timestep\":%f,\"timestamp\":\"%s\"}\n)", 
+		mCurrentUsername.c_str(), 1.0f, mBegBuf);
 
-	int sent = sslWrite(mSecureConnection, mPlyrBuf);
+	int sent = sslWrite(mSecureConnection, mSendBuffer);
 
 //	int sent = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
 
 	if (sent <= 0)
 	{
-		WriteToLog("Failed to insert patient_it / timestamp.\n", DEFAULT_BUFSIZE);
+		WriteToLog("Failed to insert patient_it / timestamp.\n");
 	}
 
 
-	memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "In StartSession, starting daemon.\n");
-	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
+	memset(mSendBuffer, 0, DEFAULT_BUFSIZE);
+	sprintf_s(mSendBuffer, DEFAULT_BUFSIZE, "In StartSession, starting daemon.\n");
+	WriteToLog(mSendBuffer);
 
 	mConnected = true;
 
@@ -441,9 +491,9 @@ void
 		mSessionEnded = true;
 		time(&mTimeStampEnd);
 		mDaemon.join();
-		memset(mPlyrBuf, 0, DEFAULT_BUFSIZE);
-		sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "In EndSession, daemon has joined.\n");
-		WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
+		memset(mSendBuffer, 0, DEFAULT_BUFSIZE);
+		sprintf_s(mSendBuffer, DEFAULT_BUFSIZE, "In EndSession, daemon has joined.\n");
+		WriteToLog(mSendBuffer);
 
 	}
 	if (mSecureConnection)
@@ -508,61 +558,93 @@ void
 
 
 
-int Logger::LogAndSend(const char *attribName, float value)
+int Logger::LogAndSend(const char *attribName, float value, int time)
 {
 	if (!mSecureConnection)
 	{
 		return -1;
 	}
 	int sentBytes;
-	memset(mPlyrBuf,0,DEFAULT_BUFSIZE);
+	memset(mSendBuffer,0,DEFAULT_BUFSIZE);
 	//sprintf_s(mPlyrBuf, 
 	//	DEFAULT_BUFSIZE,
 	//	"db.patients.update({\"patient_id\":%s, \"timestamp\": \"%s\"}, {$set: {\"%s.%d.%d\":%f}})\n",
 	//	mCurrentUsername.c_str(), mBegBuf, attribName, mMinutes, mSeconds % 60, value);
 
 
-	sprintf_s(mPlyrBuf, 
+	sprintf_s(mSendBuffer, 
 		DEFAULT_BUFSIZE,
-		"set;{\"game\":\"runner\", \"patient_id\":\"%s\", \"timestamp\": \"%s\"};{\"%s.%d.%d.0\":%f}\n",
-		mCurrentUsername.c_str(), mBegBuf, attribName, mMinutes, mSeconds % 60, value);
+		"set;{\"game\":\"runner\", \"patient_id\":\"%s\", \"timestamp\": \"%s\"};{\"%s.%d\":%f}\n",
+		mCurrentUsername.c_str(), mBegBuf, attribName,time, value);
 
-	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
+	WriteToLog(mSendBuffer);
 
-	 sentBytes = sslWrite(mSecureConnection, mPlyrBuf);
+	 sentBytes = sslWrite(mSecureConnection, mSendBuffer);
 //	sentBytes = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
 
 	if (sentBytes <= 0)
 	{
-		WriteToLog("sslWrite failed.\n", 18);
+		WriteToLog("sslWrite failed.\n");
 	}
 
 	return sentBytes;
 }
 
 
-int Logger::LogAndSend(const char *attribName, int value)
+int Logger::LogAndSend(const char* attribName, float value[], int size, int time)
 {
 	if (!mSecureConnection)
 	{
 		return -1;
 	}
 	int sentBytes;
-	memset(mPlyrBuf,0,DEFAULT_BUFSIZE);
-	sprintf_s(mPlyrBuf, 
+	memset(mSendBuffer,0,DEFAULT_BUFSIZE);
+	sprintf_s(mSendBuffer, 
 		DEFAULT_BUFSIZE,
-		"set;{\"game\":\"runner\", \"patient_id\":\"%s\", \"timestamp\": \"%s\"};{\"%s.%d.%d.0\":%f}\n",
-		mCurrentUsername.c_str(), mBegBuf, attribName, mMinutes, mSeconds % 60, value);
+		"set;{\"game\":\"runner\", \"patient_id\":\"%s\", \"timestamp\": \"%s\"};{\"%s.%d\":[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]}\n",
+		mCurrentUsername.c_str(), mBegBuf, attribName, time, value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9],value[10],value[11],value[12],value[13],value[14],value[15],value[16],value[17],value[18],value[19],value[20],
+		                                                     value[21],value[22],value[23],value[24],value[25],value[26],value[27],value[28],value[29],value[30],value[31],value[32],value[33],value[34],value[35],value[36],value[37],value[38],value[39],value[40],value[41],
+	                                                         value[42],value[43],value[44],value[45],value[46],value[47],value[48],value[49],value[50],value[51],value[52],value[53],value[54],value[55],value[56],value[57],value[58],value[59],value[60],value[61],value[62]
+		);
 
 
-	WriteToLog(mPlyrBuf, DEFAULT_BUFSIZE);
+	WriteToLog(mSendBuffer);
 
-	sentBytes = sslWrite(mSecureConnection, mPlyrBuf);
+	sentBytes = sslWrite(mSecureConnection, mSendBuffer);
 //	sentBytes = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
 
 	if (sentBytes <= 0)
 	{
-		WriteToLog("sslWrite failed.\n", 18);
+		WriteToLog("sslWrite failed.\n");
+	}
+
+	return sentBytes;
+
+}
+
+
+int Logger::LogAndSend(const char *attribName, int value, int time)
+{
+	if (!mSecureConnection)
+	{
+		return -1;
+	}
+	int sentBytes;
+	memset(mSendBuffer,0,DEFAULT_BUFSIZE);
+	sprintf_s(mSendBuffer, 
+		DEFAULT_BUFSIZE,
+		"set;{\"game\":\"runner\", \"patient_id\":\"%s\", \"timestamp\": \"%s\"};{\"%s.%d\":%d}\n",
+		mCurrentUsername.c_str(), mBegBuf, attribName, time, value);
+
+
+	WriteToLog(mSendBuffer);
+
+	sentBytes = sslWrite(mSecureConnection, mSendBuffer);
+//	sentBytes = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
+
+	if (sentBytes <= 0)
+	{
+		WriteToLog("sslWrite failed.\n");
 	}
 
 	return sentBytes;
@@ -571,28 +653,29 @@ int Logger::LogAndSend(const char *attribName, int value)
 void
 	Logger::daemonSendPlyrData(PlyrData *pdata)
 {
-	mSeconds++;
-	mMinutes = mSeconds / 60;
 	int sentBytes = 0;
+	timeStepsPlayer++;
 
-	LogAndSend("CoinsL", pdata->leftCoinsCollected);
-	LogAndSend("CoinsR", pdata->rightCoinsCollected);
-	LogAndSend("CoinsM", pdata->middleCoinsCollected);
-	LogAndSend("CoinsMissL", pdata->leftCoinsMissed);
-	LogAndSend("CoinsMissR", pdata->rightCoinsMissed);
-	LogAndSend("CoinsMissM", pdata->middleCoinsCollected);
+	LogAndSend("CoinsL", pdata->leftCoinsCollected, timeStepsPlayer);
+	LogAndSend("CoinsR", pdata->rightCoinsCollected, timeStepsPlayer);
+	LogAndSend("CoinsM", pdata->middleCoinsCollected, timeStepsPlayer);
+	LogAndSend("CoinsMissL", pdata->leftCoinsMissed, timeStepsPlayer);
+	LogAndSend("CoinsMissR", pdata->rightCoinsMissed, timeStepsPlayer);
+	LogAndSend("CoinsMissM", pdata->middleCoinsCollected, timeStepsPlayer);
+	delete pdata;
 }
 
 void
 	Logger::daemonSendSkelData(SkelData *sdata)
 {
-	mSeconds2++;
-	mMinutes2 = mSeconds2 / 60;
+	timeStepsSkel++;
 
-	LogAndSend("skel_lr", sdata->lrAngle);
-	LogAndSend("skel_lr_true", sdata->lrAngleTrue);
-	LogAndSend("skel_fb", sdata->fbAngle);
+	LogAndSend("skel_lr", sdata->lrAngle, timeStepsSkel);
+	LogAndSend("skel_lr_true", sdata->lrAngleTrue, timeStepsSkel);
+	LogAndSend("skel_fb", sdata->fbAngle, timeStepsSkel);
+	LogAndSend("skel_complete", sdata->completeSkeleton,SKELETON_SIZE*3,timeStepsSkel);
 
+	delete sdata;
 	//memset(mKinBuf1, 0, DEFAULT_BUFSIZE);
 	//sprintf_s(mKinBuf1, 
 	//	DEFAULT_BUFSIZE, 
@@ -619,9 +702,8 @@ void
 	if(mSessionEnded || !mSessionStarted)
 		return;
 
-	PlyrData *localcpy = new PlyrData(data);
 	mPlyrLock.lock();
-	mPlyrData.push(localcpy);
+	mPlyrData.push(data);
 	mPlyrLock.unlock();
 }
 /*------------------------------------------------------------------------------
@@ -654,7 +736,7 @@ void
 * 
 */
 void
-	Logger::WriteToLog(char *buf, size_t buflen)
+	Logger::WriteToLog(char *buf)
 {
 	std::ofstream outfile;
 	outfile.open("db_log.txt", std::ofstream::out | std::ofstream::app);

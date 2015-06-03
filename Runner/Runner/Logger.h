@@ -17,7 +17,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#define DEFAULT_BUFSIZE 256
+#define DEFAULT_BUFSIZE 2048
 
 struct ServerCom;
 
@@ -70,8 +70,9 @@ public:
 
 protected:
 
-  int LogAndSend(const char* attribName, int value);
-  int LogAndSend(const char* attribName, float value);
+  int LogAndSend(const char* attribName, int value, int time);
+  int LogAndSend(const char* attribName, float value, int time);
+  int LogAndSend(const char* attribName, float value[], int size, int time);
 
 
   connection *mSecureConnection;
@@ -81,17 +82,13 @@ protected:
 
 	bool mLoggedIn;
 
-  char mPlyrBuf[DEFAULT_BUFSIZE];
-  char mKinBuf1[DEFAULT_BUFSIZE];
-  char mKinBuf2[DEFAULT_BUFSIZE];
+  char mSendBuffer[DEFAULT_BUFSIZE];
 
 private:
   time_t mTimeStampBeg;
   time_t mTimeStampEnd;
-  int mSeconds;
-  int mMinutes;
-  int mSeconds2;
-  int mMinutes2;
+  int timeStepsPlayer;
+  int timeStepsSkel;
   char mBegBuf[sizeof "2011-10-08T07:07:09Z"];
   char mEndBuf[sizeof "2011-10-08T07:07:09Z"];
   std::queue<SkelData *> mSkelData;
@@ -102,7 +99,7 @@ private:
   std::thread mDaemon;
 
   
-  void WriteToLog(char *buf, size_t buflen);
+  void WriteToLog(char *buf);
   void daemonFunc();
   void daemonSendPlyrData(PlyrData *pdata);
   void daemonSendSkelData(SkelData *pdata);

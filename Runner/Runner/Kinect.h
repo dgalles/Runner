@@ -44,6 +44,7 @@ public:
 	virtual void EndSession();
 
 protected:
+
 	void updateKinectSkeleton( );
 	std::vector<KinectSkelMsgr *> mSkelListeners;
 
@@ -56,6 +57,7 @@ protected:
 	DWORD         m_TrackedSkeletonIds[NUI_SKELETON_MAX_TRACKED_COUNT];
 	HANDLE        m_hThNuiProcess;
 	HANDLE        m_hEvNuiProcessStop;
+	Ogre::Vector3 mSkelPositions[NUI_SKELETON_POSITION_COUNT];
 
 	static DWORD WINAPI     Nui_ProcessThread(LPVOID pParam);
 	DWORD WINAPI            Nui_ProcessThread();

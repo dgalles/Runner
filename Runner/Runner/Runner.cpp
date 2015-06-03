@@ -29,7 +29,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <iostream>
 
 Runner::Runner()
 {
@@ -139,15 +138,15 @@ Runner::createScene()
 	mWorld->addCamera(mRunnerCamera[0]);
 
 
-	Ogre::OverlayManager::getSingleton().getByName("ServerConnection/Failure")->show();
+	Ogre::OverlayManager::getSingleton().getByName("Login/Failure")->show();
 
 	mLogger = new Logger();
 
-	if (mLogger == 0)
-	{
-	Ogre::OverlayManager::getSingleton().getByName("ServerConnection/Failure")->hide();
+	//if (mLogger == 0)
+	//{
+	//Ogre::OverlayManager::getSingleton().getByName("ServerConnection/Failure")->hide();
 
-	}
+	//}
 	
 	mGhost = new Ghost(mWorld);
 
@@ -790,7 +789,7 @@ Runner::setup(void)
 
 	WSADATA wsa_data;
 	if (WSAStartup (MAKEWORD(2,2), &wsa_data) != 0) 
-
+		return true;
     return true;
 
 }
