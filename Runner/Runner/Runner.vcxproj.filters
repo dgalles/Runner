@@ -117,9 +117,6 @@
     <ClInclude Include="InputHandler.h">
       <Filter>Library Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Kinect.h">
-      <Filter>Library Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Menu.h">
       <Filter>Library Headers</Filter>
     </ClInclude>
@@ -146,6 +143,9 @@
     </ClInclude>
     <ClInclude Include="FrameCounter.h">
       <Filter>Game Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Kinect_USF.h">
+      <Filter>Library Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

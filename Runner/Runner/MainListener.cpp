@@ -3,7 +3,7 @@
 #include "InputHandler.h"
 #include "World.h"
 #include "Camera.h"
-#include "Kinect.h"
+#include "Kinect_USF.h"
 #include "XInputManager.h"
 #include "Player.h"
 #include "HUD.h"

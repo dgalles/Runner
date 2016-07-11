@@ -40,7 +40,7 @@ void World::resetToDefaults()
 	mObsFreq = 0.15f;
 	mUseFrontBack = true;
 	mUseJumpDuck = true;
-
+	mLeftRightPercent = 0.6f;
 	mObsGap = 3;
 	mSimpleMaterials = false;
 	mBoostFreq = 1;
@@ -101,6 +101,7 @@ void World::setup(Ghost::GhostInfo *ghostData)
 		mSeeds[2] = ghostData->mSeed;
 		mCurrObjsGap = ghostData->mObsGap;
 		mCurrObjsFreq = ghostData->mObjsFreq;
+		mLeftRightPercent= ghostData->mleftRightPercent;
 		mCurrMagnetFreq = ghostData->mMagnetFreq;
 		mCurrShieldFreq = ghostData->mShieldFreq;
 		mCurrBoostFreq = ghostData->mBoostFreq;
@@ -190,6 +191,7 @@ void  World::setGhostInfo(Ghost::GhostInfo *info)
 	info->mSeed = mInitialSeed;
 	info->mShieldFreq = mCurrShieldFreq;
 	info->mUseFrontBack = mCurrUseFrontBack;
+	info->mleftRightPercent = mLeftRightPercent;
 }
 void World::reset(Ghost::GhostInfo *ghostData /*  = NULL */)
 {
@@ -678,32 +680,41 @@ void World::AddBarrierSegment(BezierPath::Kind type)
 void World::AddObjects(int segment, bool player)
 {
 
-	if (((trackPath->kind(segment) != BezierPath::Kind::BLADES) && trackPath->kind(segment) != BezierPath::Kind::BOOST
-		&& trackPath->kind(segment) != BezierPath::Kind::SHIELD && trackPath->kind(segment) != BezierPath::Kind::MAGNET ) || 
+
+	
+	BezierPath::Kind trackType = trackPath->kind(segment);
+
+
+	bool blades = (trackType ==  BezierPath::Kind::BLADES_LEFT) ||
+		(trackType ==  BezierPath::Kind::BLADES_RIGHT) ||
+		(trackType ==  BezierPath::Kind::BLADES_CENTER) ||
+		(trackType ==  BezierPath::Kind::BLADES_DOWN);
+
+	if ((!blades &&
+		(trackType !=  BezierPath::Kind::BOOST) &&
+		(trackType !=  BezierPath::Kind::MAGNET) &&
+		(trackType !=  BezierPath::Kind::SHIELD)) ||
 		trackPath->getObjectPlaced(segment))
 	{
 		return;
 	}
 
+
 	trackPath->setObjectPlaced(segment, true);
 
-	if (trackPath->kind(segment) == BezierPath::Kind::BLADES)
+	if (blades)
 	{
 
+		
 		float barrierPercent = 0.9f;
 
 		float relX[6];
 		float relY[6];
 		int numBlades = 0;
 
-		float b = (float) worldRand(1) /(float) RAND_MAX;
-		if (!mCurrUseFrontBack || !mCurrUseJumpDuck)
-		{
-			b = b * 0.749f;
-		}
 
 		HUD::Kind type;
-		if (b < 0.25)
+		if (trackType ==  BezierPath::Kind::BLADES_RIGHT)
 		{
 			type = HUD::Kind::right;
 			relX[0] = -width; 
@@ -726,7 +737,7 @@ void World::AddObjects(int segment, bool player)
 			numBlades = 6;
 
 		}
-		else if (b < 0.5)
+		else if  (trackType ==  BezierPath::Kind::BLADES_LEFT)
 		{
 			type = HUD::Kind::left;
 
@@ -750,7 +761,7 @@ void World::AddObjects(int segment, bool player)
 			numBlades = 6;
 
 		}
-		else if (b < 0.75)
+		else if (trackType == BezierPath::Kind::BLADES_CENTER)
 		{
 			type = HUD::Kind::center;
 
@@ -774,7 +785,7 @@ void World::AddObjects(int segment, bool player)
 
 			numBlades = 6;
 		}
-		else //  if (b < 1.0)
+		else if  (trackType == BezierPath::Kind::BLADES_DOWN)
 		{
 			type = HUD::Kind::down;
 
@@ -957,13 +968,39 @@ void
 	{
 		mLastObjSeg = 0;
 		r = (worldRand(0) / (float) RAND_MAX);
-		if (r < 0.25 && mCurrUseFrontBack && mCurrUseJumpDuck)
+		if (r < mLeftRightPercent)
 		{
-			AddJump();
+			r = (worldRand(0) / (float) RAND_MAX);
+			if (r < 0.3)
+			{
+				AddBarrierSegment(BezierPath::Kind::BLADES_LEFT);
+
+			}
+			else if (r < 0.6)
+			{
+				AddBarrierSegment(BezierPath::Kind::BLADES_RIGHT);
+
+			}
+			else
+			{
+				AddBarrierSegment(BezierPath::Kind::BLADES_CENTER);
+
+			}
 		}
-		else
+
+		else 
 		{
-			AddBarrierSegment(BezierPath::Kind::BLADES);
+			r = (worldRand(0) / (float) RAND_MAX);
+			if (r < 0.5f)
+			{
+				AddJump();
+			}
+			else
+			{
+				AddBarrierSegment(BezierPath::Kind::BLADES_DOWN);
+			}
+
+
 		}
 	}
 	else

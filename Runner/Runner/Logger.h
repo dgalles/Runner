@@ -1,7 +1,7 @@
 #ifndef __LOGGER_H
 #define __LOGGER_H
 //
-//#include "Kinect.h"
+//#include "Kinect_USF.h"
 //#include "KinectSkelMsgr.h"
 
 #include "Receivers.h"
@@ -36,10 +36,8 @@ class Logger : public PlyrDataMsgr,
                public SessionListener
 {
 public:
-  Logger();
-  ~Logger();
-
-
+  
+	static Logger *getInstance();
   	void changeUsername(Ogre::String username);
 	std::string changePassword(Ogre::String password);
 	bool loggedIn() {  return mLoggedIn;  }
@@ -47,7 +45,8 @@ public:
 	void sendProfileData(std::string data);
 	std::string getProfileData();
 
-
+	float getTimeStep() { return mTimeStep; }
+	void setTimeStep(float newTimeStep) { mTimeStep = newTimeStep;}
 	bool Login();
 	void Logout();
 
@@ -58,6 +57,9 @@ public:
   //bool TrackFullSkel(void) { return mTrackFullSkel; }
   virtual void ReceiveSkelData(SkelData *data);
 
+  virtual void ReceiveSkelDataK2(SkelDataK2 *data);
+
+
   /* DBMsgr inherited functions */
   virtual bool IsConnected(void) { return mConnected; }
 
@@ -66,14 +68,18 @@ public:
 
 
   virtual void StartSession();
+
+    virtual void StartSession(Ogre::String header);
   virtual void EndSession();
 
 protected:
 
+	float mTimeStep;
   int LogAndSend(const char* attribName, int value, int time);
   int LogAndSend(const char* attribName, float value, int time);
   int LogAndSend(const char* attribName, float value[], int size, int time);
 
+  Logger();
 
   connection *mSecureConnection;
 
@@ -92,6 +98,8 @@ private:
   char mBegBuf[sizeof "2011-10-08T07:07:09Z"];
   char mEndBuf[sizeof "2011-10-08T07:07:09Z"];
   std::queue<SkelData *> mSkelData;
+  std::queue<SkelDataK2 *> mSkelDataK2;
+
   std::queue<PlyrData *> mPlyrData;
   std::mutex mSkelLock;
   std::mutex mPlyrLock;
@@ -103,6 +111,8 @@ private:
   void daemonFunc();
   void daemonSendPlyrData(PlyrData *pdata);
   void daemonSendSkelData(SkelData *pdata);
+  void daemonSendSkelDataK2(SkelDataK2 *sdata);
+
 
   int DB_Connect(char *host, char *port, ServerCom *com);
   int DB_Disconnect(ServerCom *com);
