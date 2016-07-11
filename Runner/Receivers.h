@@ -79,6 +79,8 @@ protected:
 
 #define SKELETON_SIZE 21
 
+#define SKELETON_SIZE_K2 25
+
 struct SkelData
 {
   float lrAngle;
@@ -121,10 +123,53 @@ struct SkelData
   }
 };
 
+struct SkelDataK2
+{
+  float lrAngle;
+  float fbAngle;
+  float lrAngleTrue;
+  float completeSkeleton[SKELETON_SIZE_K2 * 3];
+
+  SkelDataK2()
+  {
+	for (int i = 0; i < SKELETON_SIZE_K2; i++)
+	{
+		completeSkeleton[i] = 0.0f;
+	}
+  }
+
+  SkelDataK2(float lr, float fb, float lrt, Ogre::Vector3 skel[])
+  {
+	      lrAngle = lr;
+    fbAngle = fb;
+	lrAngleTrue = lrt;
+	for (int i = 0; i < SKELETON_SIZE_K2; i++)
+	{
+		completeSkeleton[3*i] = skel[i].x;
+		completeSkeleton[3*i+1] = skel[i].y;
+		completeSkeleton[3*i+2] = skel[i].z;
+	}
+  }
+  SkelDataK2(SkelDataK2 *sd)
+  {
+	      lrAngle = sd->lrAngle;
+    fbAngle = sd->fbAngle;
+	lrAngleTrue = sd->lrAngleTrue;
+	for (int i = 0; i < SKELETON_SIZE_K2 * 3; i++)
+	{
+		completeSkeleton[i] = sd->completeSkeleton[i];
+	}
+  }
+};
+
+
 class KinectSkelMsgr
 {
 public:
   virtual void ReceiveSkelData(SkelData *data) { }
+    virtual void ReceiveSkelDataK2(SkelDataK2 *data) { }
+
+
 
 protected:
   float mSkelLogInterval;

@@ -5,7 +5,7 @@
 #include "OgreSceneManager.h"
 #include "Bezier.h"
 #include "ItemQueue.h"
-#include "Kinect.h"
+#include "Kinect_USF.h"
 #include "HUD.h"
 #include "RunnerObject.h"
 #include "InputHandler.h"
@@ -14,6 +14,7 @@
 #include "Sound.h"
 #include "Ghost.h"
 #include "Menu.h"
+#include "Logger.h"
 const float Player::SPEED_MULTIPLYER = 20;
 
 
@@ -607,7 +608,7 @@ void Player::setLeanEqualsDuck(bool val)
 void Player::SendData(float time)
 {
 	mTimeSinceLastLog += time;
-	if(mTimeSinceLastLog >= 1.0)
+	if(mTimeSinceLastLog >= Logger::getInstance()->getTimeStep())
 	{
 
 		float speed = mCurrentSpeed;
@@ -622,7 +623,6 @@ void Player::SendData(float time)
 		} 
 		mTimeSinceLastLog = 0.0;
 	}
-
 }
 
 void 
@@ -950,7 +950,7 @@ void
 	}
     if (mWaitingOnKey)
 	{
-		if (InputHandler::getInstance()->IsKeyDown(OIS::KC_SPACE))
+		if (InputHandler::getInstance()->IsKeyDown(OIS::KC_SPACE) || InputHandler::getInstance()->IsKeyDown(OIS::KC_ESCAPE))
 		{
 			MenuManager::getInstance()->getMenu("gameOver")->enable();
 			mWorld->getHUD()->showRaceOver(false);

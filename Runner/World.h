@@ -94,6 +94,8 @@ public:
 	int getCoinsMissedRight() { return mRightCoinsMissed; }
 	int getCoinsMissedMiddle() { return mMiddleCoinsMissed; }
 
+	float getLeftRightPercent() { return mLeftRightPercent;}
+	void setLeftRightPercent(float lrP) { mLeftRightPercent = lrP; }
 
 	int getShieldFreq() { return mShieldFreq; }
 	void setShieldFreq(int n) { mShieldFreq = n; }
@@ -150,6 +152,7 @@ protected:
 
 	float mObsFreq;
 	float mCurrObjsFreq;
+	float mLeftRightPercent;
 	bool mUseJumpDuck;
 	bool mCurrUseJumpDuck;
 

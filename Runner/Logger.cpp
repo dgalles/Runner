@@ -9,8 +9,6 @@
 #include <stdlib.h>
 #include <string>
 
-
-
 #include <winsock2.h>
 
 #include <openssl/rand.h>
@@ -28,7 +26,18 @@
 #define DEFAULT_PORT 8080
 #define DEFAULT_HOST "guinness.cs.usfca.edu"
 
+Logger *instance = 0;
 
+
+Logger *Logger::getInstance()
+{
+	if (instance == 0)
+	{
+		instance = new Logger();
+	}
+	return instance;
+
+}
 SOCKET tcpConnect(const char * hostname, int port) 
 {
 	int error;
@@ -326,24 +335,13 @@ Logger::Logger() : mPlyrData(), mSkelLock(), mPlyrLock(), mDbLock()
 {
 	timeStepsPlayer = 0;
 	timeStepsSkel = 0;
-	//mSock = new ServerCom();
-	//mScoreSock = new ServerCom();
-	//mLRSock = new ServerCom();
-	//mLRTrueSock = new ServerCom();
-	//mFBSock = new ServerCom();
-	//mCoinsLeftSock = new ServerCom();
-	//mCoinsLeftMissedSock = new ServerCom();
-	//mCoinsMiddleMissedSock = new ServerCom();
-	//mCoinsMiddleSock = new ServerCom();
-	//mCoinsRightSock = new ServerCom();
-	//mCoinsRightMissedSock = new ServerCom();
-	//mSpeedSock = new ServerCom();
+
 	mHost = std::string(DEFAULT_HOST);
 	mPort = DEFAULT_PORT;
 	mSessionStarted = false;
 	mSessionEnded = false;
 	mSecureConnection = NULL;
-
+	mTimeStep = 0.2f;
 	try
 	{
 		std::ifstream configFile ("ServerConfig.txt", std::ios::in );
@@ -366,10 +364,6 @@ Logger::Logger() : mPlyrData(), mSkelLock(), mPlyrLock(), mDbLock()
 
 
 
-}
-
-Logger::~Logger()
-{
 }
 
 
@@ -399,8 +393,16 @@ std::string Logger::getProfileData()
 	return std::string(buffer);
 }
 
+
+void Logger::StartSession()
+{
+
+	StartSession("");
+}
+
+
 void
-	Logger::StartSession()
+	Logger::StartSession(Ogre::String header)
 {
 	/* Timestamp based on example from stack overflow on constructing stamp in
 	ISO 8601 format. Initial timestamp used for file names to differentiate 
@@ -410,7 +412,6 @@ void
 	{
 		// Throw here?
 		printf("DB_Send failed.\n");
-
 		printf("Not logged in!\n");
 		return;
 	}
@@ -419,7 +420,7 @@ void
 
 	time(&mTimeStampBeg);
 
-	strftime(mBegBuf, sizeof mBegBuf, "%Y-%m-%dT%H:%M:%SZ", gmtime(&mTimeStampBeg));
+	strftime(mBegBuf, sizeof mBegBuf, "%Y-%m-%dT%H:%M:%SZ", localtime(&mTimeStampBeg));
 	mSessionStarted = true;
 	mSessionEnded = false;
 
@@ -438,16 +439,23 @@ void
 
 
 	memset(mSendBuffer, 0, DEFAULT_BUFSIZE);
-	//sprintf_s(mPlyrBuf, DEFAULT_BUFSIZE, "db.patients.insert({\"patient_id\":%s, \"timestamp\":\"%s\"})\n", 
-	//	mCurrentUsername.c_str(), mBegBuf);
 
 
-	sprintf_s(mSendBuffer, DEFAULT_BUFSIZE, "insert;{\"game\":\"runner\", \"patient_id\":\"%s\",\"timestep\":%f,\"timestamp\":\"%s\"}\n)", 
-		mCurrentUsername.c_str(), 1.0f, mBegBuf);
+	if (header.length() > 0)
+	{
+		sprintf_s(mSendBuffer, DEFAULT_BUFSIZE, "insert;{\"game\":\"runner\", \"patient_id\":\"%s\",\"timestep\":%f,\"timestamp\":\"%s\", %s}\n", 
+			mCurrentUsername.c_str(), mTimeStep, mBegBuf,header.c_str());
+
+	}
+	else
+	{
+		sprintf_s(mSendBuffer, DEFAULT_BUFSIZE, "insert;{\"game\":\"runner\", \"patient_id\":\"%s\",\"timestep\":%f,\"timestamp\":\"%s\"}\n", 
+			mCurrentUsername.c_str(), mTimeStep, mBegBuf);
+	}
+
+
 
 	int sent = sslWrite(mSecureConnection, mSendBuffer);
-
-//	int sent = sendDataAndGetAwk(mSecureConnection, mPlyrBuf);
 
 	if (sent <= 0)
 	{
@@ -542,6 +550,16 @@ void
 
 			daemonSendSkelData(sdata);
 		}
+		else if (!mSkelDataK2.empty())
+		{
+			SkelDataK2 *k2data = mSkelDataK2.front();
+			mSkelDataK2.pop();
+			mSkelLock.unlock();
+
+			daemonSendSkelDataK2(k2data);
+
+		}
+
 		else
 		{
 			mSkelLock.unlock();
@@ -661,7 +679,7 @@ void
 	LogAndSend("CoinsM", pdata->middleCoinsCollected, timeStepsPlayer);
 	LogAndSend("CoinsMissL", pdata->leftCoinsMissed, timeStepsPlayer);
 	LogAndSend("CoinsMissR", pdata->rightCoinsMissed, timeStepsPlayer);
-	LogAndSend("CoinsMissM", pdata->middleCoinsCollected, timeStepsPlayer);
+	LogAndSend("CoinsMissM", pdata->middleCoinsMissed, timeStepsPlayer);
 	delete pdata;
 }
 
@@ -689,6 +707,20 @@ void
 	//if(DB_Send(mKinBuf1, strlen(mKinBuf1), mLRSock) == 1)
 	//	WriteToLog("DB_Send failed.\n", 18);
 
+
+}
+
+void
+	Logger::daemonSendSkelDataK2(SkelDataK2 *sdata)
+{
+	timeStepsSkel++;
+
+	LogAndSend("skel_lr", sdata->lrAngle, timeStepsSkel);
+	LogAndSend("skel_lr_true", sdata->lrAngleTrue, timeStepsSkel);
+	LogAndSend("skel_fb", sdata->fbAngle, timeStepsSkel);
+	LogAndSend("skel_complete", sdata->completeSkeleton,SKELETON_SIZE_K2*3,timeStepsSkel);
+
+	delete sdata;
 
 }
 
@@ -722,6 +754,23 @@ void
 	mSkelLock.unlock();
 
 }
+
+
+void
+	Logger::ReceiveSkelDataK2(SkelDataK2 *data) 
+{
+	if(mSessionEnded || !mSessionStarted)
+	{
+		return;
+	}
+	SkelDataK2 *localcpy = data;
+	mSkelLock.lock();
+	mSkelDataK2.push(localcpy);
+	mSkelLock.unlock();
+
+}
+
+
 /*------------------------------------------------------------------------------
 * Writes all relevant data to output file.
 * File name convention: 

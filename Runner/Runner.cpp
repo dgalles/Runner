@@ -13,7 +13,7 @@
 
 #include "Ogre.h"
 #include "OgreConfigFile.h"
-#include "Kinect.h"
+#include "Kinect_USF.h"
 #include "Menu.h"
 #include "Store.h"
 #include "OgreOverlaySystem.h"
@@ -140,7 +140,7 @@ Runner::createScene()
 
 	Ogre::OverlayManager::getSingleton().getByName("Login/Failure")->show();
 
-	mLogger = new Logger();
+	mLogger =Logger::getInstance();
 
 	//if (mLogger == 0)
 	//{
@@ -172,7 +172,10 @@ void
 	mPlayer[0]->startGame();
 	//mPlayer[1]->startGame();
 	mGhost->startRecording();
-	mLogger->StartSession();
+
+
+
+	mLogger->StartSession( "\"subgame\":\"normal\", \"againstghost\":\"false\"");
 	mKinect->StartSession();
 }
 
@@ -191,7 +194,21 @@ void Runner::startRace()
 	mPlayer[0]->startGame();
 	//mPlayer[1]->startGame();
 	mGhost->startRecording();
-	mLogger->StartSession();
+	char buffer[500];
+	char *raceType;
+
+	if (mPlayer[0]->getRaceType() == Player::RaceType::CONCECUTIVECOINS)
+	{
+		raceType = "concecutivecoins";
+	}
+	else
+	{
+		raceType = "totalcoins";
+	}
+
+	sprintf_s(buffer, 500, "\"subgame\":\"race\", \"racetype\":\"%s\", \"goal\":%d, \"againstghost\":\"false\"", raceType, mPlayer[0]->getRaceGoal());
+
+	mLogger->StartSession( buffer);
 	mKinect->StartSession();
 }
 
@@ -450,7 +467,28 @@ void
 	mPlayer[0]->startGame();
 	//mPlayer[1]->startGame();
 	mGhost->startPlayback();
-	mLogger->StartSession();
+	if (mPlayer[0]->getRacing())
+	{
+		char *raceType;
+		char buffer[500];
+		if (mPlayer[0]->getRaceType() == Player::RaceType::CONCECUTIVECOINS)
+		{
+			raceType = "concecutivecoins";
+		}
+		else
+		{
+			raceType = "totalcoins";
+		}
+
+		sprintf_s(buffer, 500, "\"subgame\":\"race\", \"againstghost\":\"true\", \"racetype\":\"%s\", \"goal\": %d ", raceType, mPlayer[0]->getRaceGoal());
+
+		mLogger->StartSession(buffer);
+	}
+	else
+	{
+		mLogger->StartSession( "\"subgame\":\"normal\", \"againstghost\": \"true\"");
+
+	}
 	mKinect->StartSession();
 }
 
@@ -538,6 +576,8 @@ Runner::setupMenus(bool loginRequired)
 
 	obstacleMenu->AddChooseFloat("Obstacle Frequency", [w](float x) {w->setObstacleFrequency(x); }, 0.0f, 1.0f,w->getObstacleFrequency(), 0.1f, true);
     obstacleMenu->AddChooseInt("Minimum Obstacle Separation", [w](int x) {w->setObstacleSeparation(x); }, 0, 15, w->getObstacleSeparation(), 1, true);
+		obstacleMenu->AddChooseFloat("Obstacle Left/Right Percent", [w](float x) {w->setLeftRightPercent(x); }, 0.0f, 1, w->getLeftRightPercent(), 0.1f, true);
+
 	 obstacleMenu->AddChooseBool("Arrow Indicators", [h](bool show) {h->showArrows(show);}, h->arrowsShown(), true);
 	std::vector<Ogre::String> namesArrowDist;
 	std::vector<std::function<void()>> callbacksArrowDist;
@@ -589,6 +629,7 @@ Runner::setupMenus(bool loginRequired)
 	callbacksDuckLean.push_back([p,w]() {  p->setLeanEqualsDuck(false); w->setUseJumpDuck(false); });
 
 	gameplayOptions->AddChooseEnum("Forward / Back Controls",namesDuckLean,callbacksDuckLean,0, true);	
+
 
     gameplayOptions->AddChooseInt("Manual Speed Change Rate", [p](int x) {p->setManualAceelerateRate(x); }, 0, 20, p->getManualAccelerateRate(), 1, true);
 
@@ -712,6 +753,8 @@ Runner::setupMenus(bool loginRequired)
     advancedOptions->AddSelectElement("Reset Profile", [advancedOptions, confirmMenu]() {advancedOptions->disable();confirmMenu->enable();});
 	advancedOptions->AddSelectElement("Return to Options Menu", [advancedOptions, options]() {advancedOptions->disable(); options->enable();});
 	advancedOptions->AddSelectElement("Add Coins", [p]() {p->setTotalCoins(p->getTotalCoins() + 100);});
+		advancedOptions->AddChooseFloat("Network Update Freq", [](float x) {Logger::getInstance()->setTimeStep(x); }, 0.1f, 1.f, Logger::getInstance()->getTimeStep(), 0.1f, true);
+
     confirmMenu->AddSelectElement("Reset Profile (Cannot be undone!)", [this, p, w, a, advancedOptions, confirmMenu, menus]() {p->resetToDefaults();
 																											   w->resetToDefaults(); 
 																											   a->ResetAll();

@@ -1,6 +1,6 @@
 #include "Ogre.h"
 #include "OgreFrameListener.h"
-#include "Kinect.h"
+#include "Kinect_USF.h"
 
 class InputHandler;
 class AIManager;

@@ -128,7 +128,7 @@ void Ghost::updateGhost(float time)
 		if (lean2 > 0 && mGhostInfo->mLeanEqualsDuck)
 		{
 			mRunnerObject->pitch(Ogre::Radian(Ogre::Degree(-lean2)));
-			mRunnerObject->setPosition(pos  + up *( - Ogre::Math::Sin(Ogre::Degree(lean2)) * mRunnerObject->minPointLocalScaled().z* 0.8f) + yPos);
+			mRunnerObject->setPosition(pos  + up *( - Ogre::Math::Sin(Ogre::Degree(lean2)) * mRunnerObject->minPointLocalScaled().z* 0.8f) +0);
 		}
 
 		if (lean2 <  0 &&  mGhostInfo->mLeanEqualsDuck)

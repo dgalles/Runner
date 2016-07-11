@@ -51,6 +51,7 @@ public:
 		bool mRacing;
 		int mRaceGoal;
 		int mRaceType;
+		float mleftRightPercent;
 	};
 
 	GhostInfo *getData() { return mGhostInfo; }
